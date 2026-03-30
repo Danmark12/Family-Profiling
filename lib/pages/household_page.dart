@@ -4,6 +4,7 @@ import '../db/config.dart';
 import '../models/household.dart';
 import 'household_detail_page.dart';
 import 'add_household_page.dart';
+import 'edit_household_page.dart'; // NEW IMPORT
 
 class HouseholdPage extends StatefulWidget {
   const HouseholdPage({super.key});
@@ -36,15 +37,13 @@ class _HouseholdPageState extends State<HouseholdPage> {
 
   void filterHouseholds() {
     displayedHouseholds = households.where((hh) {
-      final matchesSearch = hh.householdNo
-              .toString()
-              .contains(searchText) ||
+      final matchesSearch =
+          hh.householdNo.toString().contains(searchText) ||
           (hh.householdHead ?? "")
               .toLowerCase()
               .contains(searchText.toLowerCase());
 
-      final matchesPurok =
-          selectedPurok == null || hh.zone == selectedPurok;
+      final matchesPurok = selectedPurok == null || hh.zone == selectedPurok;
 
       return matchesSearch && matchesPurok;
     }).toList();
@@ -78,7 +77,7 @@ class _HouseholdPageState extends State<HouseholdPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const AddHouseholdPage(),
+                      builder: (_) => EditHouseholdPage(household: hh),
                     ),
                   ).then((_) => fetchHouseholds());
                 },
@@ -143,7 +142,7 @@ class _HouseholdPageState extends State<HouseholdPage> {
 
                 const SizedBox(width: 12),
 
-                // ✅ UPDATED PUROK DROPDOWN WITH "ALL"
+                // ✅ PUROK DROPDOWN WITH "ALL"
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
@@ -155,19 +154,18 @@ class _HouseholdPageState extends State<HouseholdPage> {
                     value: selectedPurok,
                     hint: const Text("Purok"),
                     underline: const SizedBox(),
-
-                    // ✅ ADD THIS PART
                     items: [
                       const DropdownMenuItem<int?>(
                         value: null,
                         child: Text("All"),
                       ),
-                      ...getPuroks().map((e) => DropdownMenuItem<int?>(
-                            value: e,
-                            child: Text(e.toString()),
-                          )),
+                      ...getPuroks().map(
+                        (e) => DropdownMenuItem<int?>(
+                          value: e,
+                          child: Text(e.toString()),
+                        ),
+                      ),
                     ],
-
                     onChanged: (val) {
                       setState(() {
                         selectedPurok = val;
@@ -196,8 +194,7 @@ class _HouseholdPageState extends State<HouseholdPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    HouseholdDetailPage(hh: hh),
+                                builder: (_) => HouseholdDetailPage(hh: hh),
                               ),
                             );
                           } else {
@@ -229,8 +226,7 @@ class _HouseholdPageState extends State<HouseholdPage> {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.folder,
-                                  color: Colors.grey),
+                              const Icon(Icons.folder, color: Colors.grey),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
@@ -255,8 +251,7 @@ class _HouseholdPageState extends State<HouseholdPage> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (_) => const AddHouseholdPage()),
+            MaterialPageRoute(builder: (_) => const AddHouseholdPage()),
           ).then((_) => fetchHouseholds());
         },
       ),
