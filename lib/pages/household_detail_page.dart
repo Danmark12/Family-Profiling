@@ -10,8 +10,10 @@ class HouseholdDetailPage extends StatelessWidget {
   Widget buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 16, bottom: 8),
-      child: Text(title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
     );
   }
 
@@ -23,16 +25,19 @@ class HouseholdDetailPage extends StatelessWidget {
       ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-        child: Text(value.toString()),
+        child: Text(value?.toString() ?? '-'),
       ),
     ]);
   }
+
+  String boolText(bool value) => value ? "Yes" : "No";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(hh.name),
+        title: Text("Household #${hh.householdNo}"),
+        backgroundColor: Colors.green[700],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -40,77 +45,78 @@ class HouseholdDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // BASIC INFO
+            // ✅ BASIC INFO
             buildSectionTitle("Basic Information"),
             Table(
               columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
               border: TableBorder.all(color: Colors.grey),
               children: [
                 buildRow("Household No.", hh.householdNo),
-                buildRow("Name", hh.name),
-                buildRow("Purok", hh.purok),
+                buildRow("Household Head", hh.householdHead),
+                buildRow("Barangay", hh.barangay),
+                buildRow("Purok/Zone", hh.zone),
                 buildRow("Occupation", hh.occupation),
                 buildRow("Education", hh.education),
-              ],
-            ),
-
-            // POPULATION
-            buildSectionTitle("Population"),
-            Table(
-              columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
-              border: TableBorder.all(color: Colors.grey),
-              children: [
-                buildRow("Male", hh.male),
-                buildRow("Female", hh.female),
+                buildRow("Male Members", hh.male),
+                buildRow("Female Members", hh.female),
                 buildRow("Total Members", hh.total),
-                buildRow("Pregnant", hh.pregnant),
-                buildRow("Lactating", hh.lactating),
+                buildRow("Families in Household", hh.families),
+                buildRow("Pregnant Members", hh.pregnant),
+                buildRow("Lactating Members", hh.lactating),
               ],
             ),
 
-            // NUTRITIONAL STATUS
-            buildSectionTitle("Preschool Nutritional Status"),
+            // ✅ INFANTS & CHILDREN
+            buildSectionTitle("Children (by Age)"),
             Table(
               columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
               border: TableBorder.all(color: Colors.grey),
               children: [
-                buildRow("Severely Underweight", hh.su),
-                buildRow("Underweight", hh.uw),
-                buildRow("Normal Weight", hh.nw),
-                buildRow("Severely Wasted", hh.sw),
-                buildRow("Wasted", hh.w),
-                buildRow("Overweight", hh.ow),
-                buildRow("Obese", hh.ob),
-                buildRow("Severely Stunted", hh.ss),
-                buildRow("Stunted", hh.st),
+                buildRow("0-5 months", hh.infant0to5),
+                buildRow("6-11 months", hh.infant6to11),
+                buildRow("12-23 months", hh.infant12to23),
+                buildRow("24-59 months", hh.infant24to59),
               ],
             ),
 
-            // INFANTS & CHILDREN
-            buildSectionTitle("Infants & Children"),
+            // ✅ NUTRITION STATUS
+            buildSectionTitle("Nutrition Status"),
             Table(
               columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
               border: TableBorder.all(color: Colors.grey),
               children: [
-                buildRow("0-5 months", hh.inf0_5),
-                buildRow("6-11 months", hh.inf6_11),
-                buildRow("Preschool 0-23 months", hh.pre0_23),
-                buildRow("Preschool 12-59 months", hh.pre12_59),
-                buildRow("Preschool 24-59 months", hh.pre24_59),
-                buildRow("Exclusively Breastfed 0-5", hh.breastfed),
-                buildRow("Dewormed", hh.dewormed),
-                buildRow("Fully Immunized Children (FIC)", hh.fic),
+                buildRow("Severe Underweight", hh.underweightSevere),
+                buildRow("Underweight", hh.underweight),
+                buildRow("Normal", hh.normal),
+                buildRow("Severe Wasted", hh.wastedSevere),
+                buildRow("Wasted", hh.wasted),
+                buildRow("Overweight", hh.overweight),
+                buildRow("Obese", hh.obese),
+                buildRow("Severe Stunted", hh.stuntedSevere),
+                buildRow("Stunted", hh.stunted),
               ],
             ),
 
-            // HOUSEHOLD PRACTICES
+            // ✅ FACILITIES
+            buildSectionTitle("Facilities"),
+            Table(
+              columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
+              border: TableBorder.all(color: Colors.grey),
+              children: [
+                buildRow("Toilet Type", hh.toilet),
+                buildRow("Water Source", hh.water),
+                buildRow("Food Production", hh.food),
+              ],
+            ),
+
+            // ✅ HOUSEHOLD PRACTICES
             buildSectionTitle("Household Practices"),
             Table(
               columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
               border: TableBorder.all(color: Colors.grey),
               children: [
-                buildRow("Iodized Salt", hh.iodized),
-                buildRow("Eatery/Carenderia", hh.eatery),
+                buildRow("Uses Iodized Salt", boolText(hh.iodizedSalt)),
+                buildRow("Uses IFR", boolText(hh.ifr)),
               ],
             ),
 

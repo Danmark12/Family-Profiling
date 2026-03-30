@@ -29,9 +29,10 @@ class _HomePageState extends State<HomePage> {
     int m = 0;
     int f = 0;
 
+    // ✅ Safely handle nullable ints
     for (var hh in data) {
-      m += hh.male.toInt();
-      f += hh.female.toInt();
+      m += hh.male ?? 0;
+      f += hh.female ?? 0;
     }
 
     setState(() {
@@ -66,7 +67,11 @@ class _HomePageState extends State<HomePage> {
                     child: BarChart(
                       BarChartData(
                         alignment: BarChartAlignment.spaceAround,
-                        maxY: (totalMale > totalFemale ? totalMale : totalFemale).toDouble() + 5,
+                        maxY: (totalMale > totalFemale
+                                    ? totalMale
+                                    : totalFemale)
+                                .toDouble() +
+                            5,
                         barTouchData: BarTouchData(enabled: true),
                         titlesData: FlTitlesData(
                           leftTitles: AxisTitles(
@@ -102,7 +107,8 @@ class _HomePageState extends State<HomePage> {
                             x: 1,
                             barRods: [
                               BarChartRodData(
-                                  toY: totalFemale.toDouble(), color: Colors.pink)
+                                  toY: totalFemale.toDouble(),
+                                  color: Colors.pink)
                             ],
                           ),
                         ],

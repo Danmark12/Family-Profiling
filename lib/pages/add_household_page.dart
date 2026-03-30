@@ -11,269 +11,406 @@ class AddHouseholdPage extends StatefulWidget {
 }
 
 class _AddHouseholdPageState extends State<AddHouseholdPage> {
-  final _formKey = GlobalKey<FormState>();
-  final PageController _pageController = PageController();
+  int householdNo = 1;
 
-  int _currentPage = 0;
+  // DROPDOWNS
+  String? barangay, occupation, education, toilet, water, food;
+
+  // CHECKBOXES
+  bool iodizedSalt = false;
+  bool ifr = false;
 
   // CONTROLLERS
-  final hhNo = TextEditingController();
-  final name = TextEditingController();
-  final occupation = TextEditingController();
-  String purok = "Purok 1";
-  String education = "Elem. undergraduate";
+  final hhHeadCtrl = TextEditingController();
+  final zoneCtrl = TextEditingController();
+  final maleCtrl = TextEditingController();
+  final femaleCtrl = TextEditingController();
+  final totalCtrl = TextEditingController();
+  final familiesCtrl = TextEditingController();
+  final pregCtrl = TextEditingController();
+  final lactatingCtrl = TextEditingController();
+  final infant0to5Ctrl = TextEditingController();
+  final infant6to11Ctrl = TextEditingController();
+  final infant12to23Ctrl = TextEditingController();
+  final infant24to59Ctrl = TextEditingController();
+  final underweightSevereCtrl = TextEditingController();
+  final underweightCtrl = TextEditingController();
+  final normalCtrl = TextEditingController();
+  final wastedSevereCtrl = TextEditingController();
+  final wastedCtrl = TextEditingController();
+  final overweightCtrl = TextEditingController();
+  final obeseCtrl = TextEditingController();
+  final stuntedSevereCtrl = TextEditingController();
+  final stuntedCtrl = TextEditingController();
 
-  final male = TextEditingController();
-  final female = TextEditingController();
-  final pregnant = TextEditingController();
-  final lactating = TextEditingController();
+  final Color borderColor = const Color(0xFFDADCE0);
 
-  final su = TextEditingController();
-  final uw = TextEditingController();
-  final nw = TextEditingController();
-  final sw = TextEditingController();
-  final w = TextEditingController();
-  final ow = TextEditingController();
-  final ob = TextEditingController();
-  final ss = TextEditingController();
-  final st = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _getNextHouseholdNo();
+  }
 
-  final inf0_5 = TextEditingController();
-  final inf6_11 = TextEditingController();
-  final pre0_23 = TextEditingController();
-  final pre12_59 = TextEditingController();
-  final pre24_59 = TextEditingController();
-  final breastfed = TextEditingController();
-  final dewormed = TextEditingController();
-  final fic = TextEditingController();
+  Future<void> _getNextHouseholdNo() async {
+    final last = await DBHelper.instance.getLastHouseholdNo();
+    setState(() {
+      householdNo = (last != null ? last + 1 : 1);
+    });
+  }
 
-  String iodized = "Yes";
-  String eatery = "No";
+  @override
+  void dispose() {
+    hhHeadCtrl.dispose();
+    zoneCtrl.dispose();
+    maleCtrl.dispose();
+    femaleCtrl.dispose();
+    totalCtrl.dispose();
+    familiesCtrl.dispose();
+    pregCtrl.dispose();
+    lactatingCtrl.dispose();
+    infant0to5Ctrl.dispose();
+    infant6to11Ctrl.dispose();
+    infant12to23Ctrl.dispose();
+    infant24to59Ctrl.dispose();
+    underweightSevereCtrl.dispose();
+    underweightCtrl.dispose();
+    normalCtrl.dispose();
+    wastedSevereCtrl.dispose();
+    wastedCtrl.dispose();
+    overweightCtrl.dispose();
+    obeseCtrl.dispose();
+    stuntedSevereCtrl.dispose();
+    stuntedCtrl.dispose();
+    super.dispose();
+  }
 
-  int get total => (int.tryParse(male.text) ?? 0) + (int.tryParse(female.text) ?? 0);
+  int? parse(TextEditingController c) => int.tryParse(c.text);
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Add Household"),
-      ),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-
-                  // PAGE 1 – BASIC INFO
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        TextFormField(controller: hhNo, decoration: const InputDecoration(labelText: "Household No"), keyboardType: TextInputType.number),
-                        TextFormField(controller: name, decoration: const InputDecoration(labelText: "Household Head")),
-                        TextFormField(controller: occupation, decoration: const InputDecoration(labelText: "Occupation")),
-                        DropdownButtonFormField(
-                          value: purok,
-                          items: ["Purok 1","Purok 2","Purok 3"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                          onChanged: (v) => purok = v!,
-                          decoration: const InputDecoration(labelText: "Purok"),
-                        ),
-                        DropdownButtonFormField(
-                          value: education,
-                          items: ["Elem. undergraduate","Elem. Graduate","HU undergraduate","HS Graduate"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                          onChanged: (v) => education = v!,
-                          decoration: const InputDecoration(labelText: "Education"),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // PAGE 2 – POPULATION
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        TextFormField(controller: male, decoration: const InputDecoration(labelText: "Male"), keyboardType: TextInputType.number),
-                        TextFormField(controller: female, decoration: const InputDecoration(labelText: "Female"), keyboardType: TextInputType.number),
-                        Text("Total: $total"),
-                        TextFormField(controller: pregnant, decoration: const InputDecoration(labelText: "Pregnant")),
-                        TextFormField(controller: lactating, decoration: const InputDecoration(labelText: "Lactating")),
-                      ],
-                    ),
-                  ),
-
-                  // PAGE 3 – NUTRITION
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        TextFormField(controller: su, decoration: const InputDecoration(labelText: "Severely underweight"), keyboardType: TextInputType.number),
-                        TextFormField(controller: uw, decoration: const InputDecoration(labelText: "Underweight"), keyboardType: TextInputType.number),
-                        TextFormField(controller: nw, decoration: const InputDecoration(labelText: "Normal weight"), keyboardType: TextInputType.number),
-                        TextFormField(controller: sw, decoration: const InputDecoration(labelText: "Severely wasted"), keyboardType: TextInputType.number),
-                        TextFormField(controller: w, decoration: const InputDecoration(labelText: "Wasted"), keyboardType: TextInputType.number),
-                        TextFormField(controller: ow, decoration: const InputDecoration(labelText: "Overweight"), keyboardType: TextInputType.number),
-                        TextFormField(controller: ob, decoration: const InputDecoration(labelText: "Obese"), keyboardType: TextInputType.number),
-                        TextFormField(controller: ss, decoration: const InputDecoration(labelText: "Severely stunted"), keyboardType: TextInputType.number),
-                        TextFormField(controller: st, decoration: const InputDecoration(labelText: "Stunted"), keyboardType: TextInputType.number),
-                      ],
-                    ),
-                  ),
-
-                  // PAGE 4 – INFANTS & CHILDREN
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        TextFormField(controller: inf0_5, decoration: const InputDecoration(labelText: "Infants 0-5 months"), keyboardType: TextInputType.number),
-                        TextFormField(controller: inf6_11, decoration: const InputDecoration(labelText: "Infants 6-11 months"), keyboardType: TextInputType.number),
-                        TextFormField(controller: pre0_23, decoration: const InputDecoration(labelText: "Preschool 0-23 months"), keyboardType: TextInputType.number),
-                        TextFormField(controller: pre12_59, decoration: const InputDecoration(labelText: "Preschool 12-59 months"), keyboardType: TextInputType.number),
-                        TextFormField(controller: pre24_59, decoration: const InputDecoration(labelText: "Preschool 24-59 months"), keyboardType: TextInputType.number),
-                        TextFormField(controller: breastfed, decoration: const InputDecoration(labelText: "0-5 months exclusively breastfed"), keyboardType: TextInputType.number),
-                        TextFormField(controller: dewormed, decoration: const InputDecoration(labelText: "School children dewormed"), keyboardType: TextInputType.number),
-                        TextFormField(controller: fic, decoration: const InputDecoration(labelText: "Fully immunized children (FIC)"), keyboardType: TextInputType.number),
-                      ],
-                    ),
-                  ),
-
-                  // PAGE 5 – HOUSEHOLD PRACTICES
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        DropdownButtonFormField(
-                          value: iodized,
-                          items: ["Yes","No"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                          onChanged: (v) => iodized = v!,
-                          decoration: const InputDecoration(labelText: "Iodized Salt"),
-                        ),
-                        DropdownButtonFormField(
-                          value: eatery,
-                          items: ["Yes","No"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                          onChanged: (v) => eatery = v!,
-                          decoration: const InputDecoration(labelText: "Eatery/Carenderia"),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // PAGE 6 – REVIEW & SUBMIT
-                  SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Text("Review your entries", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                        Text("Household No: ${hhNo.text}"),
-                        Text("Name: ${name.text}"),
-                        Text("Occupation: ${occupation.text}"),
-                        Text("Purok: $purok"),
-                        Text("Education: $education"),
-                        Text("Male: ${male.text}"),
-                        Text("Female: ${female.text}"),
-                        Text("Total: $total"),
-                        Text("Pregnant: ${pregnant.text}"),
-                        Text("Lactating: ${lactating.text}"),
-                        Text("Severely underweight: ${su.text}"),
-                        Text("Underweight: ${uw.text}"),
-                        Text("Normal weight: ${nw.text}"),
-                        Text("Severely wasted: ${sw.text}"),
-                        Text("Wasted: ${w.text}"),
-                        Text("Overweight: ${ow.text}"),
-                        Text("Obese: ${ob.text}"),
-                        Text("Severely stunted: ${ss.text}"),
-                        Text("Stunted: ${st.text}"),
-                        Text("Infants 0-5 months: ${inf0_5.text}"),
-                        Text("Infants 6-11 months: ${inf6_11.text}"),
-                        Text("Preschool 0-23 months: ${pre0_23.text}"),
-                        Text("Preschool 12-59 months: ${pre12_59.text}"),
-                        Text("Preschool 24-59 months: ${pre24_59.text}"),
-                        Text("Breastfed: ${breastfed.text}"),
-                        Text("Dewormed: ${dewormed.text}"),
-                        Text("FIC: ${fic.text}"),
-                        Text("Iodized Salt: $iodized"),
-                        Text("Eatery: $eatery"),
-
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          child: const Text("Submit"),
-                          onPressed: () async {
-                            await DBHelper.instance.insert(Household(
-                              householdNo: int.parse(hhNo.text),
-                              name: name.text,
-                              purok: purok,
-                              occupation: occupation.text,
-                              education: education,
-                              male: int.parse(male.text),
-                              female: int.parse(female.text),
-                              total: total,
-                              pregnant: int.parse(pregnant.text),
-                              lactating: int.parse(lactating.text),
-
-                              su: int.tryParse(su.text) ?? 0,
-                              uw: int.tryParse(uw.text) ?? 0,
-                              nw: int.tryParse(nw.text) ?? 0,
-                              sw: int.tryParse(sw.text) ?? 0,
-                              w: int.tryParse(w.text) ?? 0,
-                              ow: int.tryParse(ow.text) ?? 0,
-                              ob: int.tryParse(ob.text) ?? 0,
-                              ss: int.tryParse(ss.text) ?? 0,
-                              st: int.tryParse(st.text) ?? 0,
-
-                              inf0_5: int.tryParse(inf0_5.text) ?? 0,
-                              inf6_11: int.tryParse(inf6_11.text) ?? 0,
-                              pre0_23: int.tryParse(pre0_23.text) ?? 0,
-                              pre12_59: int.tryParse(pre12_59.text) ?? 0,
-                              pre24_59: int.tryParse(pre24_59.text) ?? 0,
-                              breastfed: int.tryParse(breastfed.text) ?? 0,
-                              dewormed: int.tryParse(dewormed.text) ?? 0,
-                              fic: int.tryParse(fic.text) ?? 0,
-                              iodized: iodized,
-                              eatery: eatery,
-                            ));
-                            Navigator.pop(context);
-                          },
-                        )
-                      ],
-                    ),
-                  )
-
-                ],
-              ),
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(title: const Text("Add Household")),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Container(
+            margin: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(30),
+            width: screenWidth > 900 ? 800 : screenWidth * 0.95,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 20)],
             ),
-
-            // NAVIGATION BUTTONS
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if(_currentPage>0)
-                  ElevatedButton(
-                    child: const Text("Previous"),
-                    onPressed: (){
-                      _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-                      setState(()=>_currentPage--);
-                    },
+
+                const Center(
+                  child: Text("Add Household", style: TextStyle(fontSize: 22)),
+                ),
+                const SizedBox(height: 25),
+
+                // Household Number
+                _buildNumberField(
+                  "Household No.",
+                  value: householdNo.toString(),
+                  readOnly: true,
+                ),
+                const SizedBox(height: 20),
+
+                // Zone & Barangay
+                _twoFields(
+                  _buildNumberField(
+                    "Zone / Purok",
+                    controller: zoneCtrl,
                   ),
-                ElevatedButton(
-                  child: Text(_currentPage==5?"Finish":"Next"),
-                  onPressed: (){
-                    if(_currentPage<5){
-                      _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-                      setState(()=>_currentPage++);
-                    }
-                  },
-                )
+                  _buildDropdown(
+                    "Barangay",
+                    barangay,
+                    [
+                      "Amoros","Bolisong","Cogon","Himaya","Hinigdaan",
+                      "Kalabaylabay","Molugan","Pedro S. Baculio",
+                      "Poblacion","Quibonbon","Sambulawan",
+                      "San Francisco de Asis","Sinaloc","Taytay","Ulaliman"
+                    ],
+                    (val) => setState(() => barangay = val),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Household Head / Spouse
+                _buildTextField("Name of Household Head / Spouse", controller: hhHeadCtrl),
+                const SizedBox(height: 20),
+
+                // Occupation & Education
+                _twoFields(
+                  _buildDropdown(
+                    "Occupation",
+                    occupation,
+                    [
+                      "Manager",
+                      "Professional",
+                      "Technician & associate professionals",
+                      "Clerical support workers",
+                      "Service and sales workers",
+                      "Skilled Agricultural, forestry and fishery workers",
+                      "Craft and related workers",
+                      "Plant and machine operators and assemblers",
+                      "Elementary occupations",
+                      "Armed Forces occupations",
+                      "Others",
+                      "None"
+                    ],
+                    (val) => setState(() => occupation = val),
+                  ),
+                  _buildDropdown(
+                    "Educational Attainment",
+                    education,
+                    [
+                      "EU - Elem. Undergraduate",
+                      "EG - Elem. Graduate",
+                      "HU - HS Undergraduate",
+                      "HG - HS Graduate",
+                      "CU - College Undergraduate",
+                      "CG - College Graduate",
+                      "V - Vocational",
+                      "O - Others"
+                    ],
+                    (val) => setState(() => education = val),
+                  ),
+                ),
+                const SizedBox(height: 25),
+
+                // Household Members
+                const Text("Household Members", style: TextStyle(fontSize: 18)),
+                const SizedBox(height: 15),
+                _twoFields(
+                  _buildNumberField("No. of HH members", controller: totalCtrl),
+                  _buildNumberField("Male", controller: maleCtrl),
+                ),
+                const SizedBox(height: 15),
+                _twoFields(
+                  _buildNumberField("Female", controller: femaleCtrl),
+                  _buildNumberField("No. of Families", controller: familiesCtrl),
+                ),
+                const SizedBox(height: 25),
+
+                // Infants & Preschool Children
+                const Text("Infants & Preschool Children", style: TextStyle(fontSize: 18)),
+                const SizedBox(height: 15),
+                _twoFields(
+                  _buildNumberField("0-5 months old", controller: infant0to5Ctrl),
+                  _buildNumberField("6-11 months old", controller: infant6to11Ctrl),
+                ),
+                const SizedBox(height: 15),
+                _twoFields(
+                  _buildNumberField("12-23 months old", controller: infant12to23Ctrl),
+                  _buildNumberField("24-59 months old", controller: infant24to59Ctrl),
+                ),
+                const SizedBox(height: 25),
+
+                // Women Status
+                const Text("Women Status", style: TextStyle(fontSize: 18)),
+                const SizedBox(height: 15),
+                _twoFields(
+                  _buildNumberField("Pregnant", controller: pregCtrl),
+                  _buildNumberField("Lactating", controller: lactatingCtrl),
+                ),
+                const SizedBox(height: 25),
+
+                // Nutritional Status
+                const Text("Nutritional Status", style: TextStyle(fontSize: 18)),
+                const SizedBox(height: 15),
+                _twoFields(
+                  _buildNumberField("Severely Underweight", controller: underweightSevereCtrl),
+                  _buildNumberField("Underweight", controller: underweightCtrl),
+                ),
+                const SizedBox(height: 15),
+                _twoFields(
+                  _buildNumberField("Normal weight", controller: normalCtrl),
+                  _buildNumberField("Severely Wasted", controller: wastedSevereCtrl),
+                ),
+                const SizedBox(height: 15),
+                _twoFields(
+                  _buildNumberField("Wasted", controller: wastedCtrl),
+                  _buildNumberField("Overweight", controller: overweightCtrl),
+                ),
+                const SizedBox(height: 15),
+                _twoFields(
+                  _buildNumberField("Obese", controller: obeseCtrl),
+                  _buildNumberField("Severely Stunted", controller: stuntedSevereCtrl),
+                ),
+                const SizedBox(height: 15),
+                _buildNumberField("Stunted", controller: stuntedCtrl),
+                const SizedBox(height: 25),
+
+                // Facilities
+                const Text("Facilities", style: TextStyle(fontSize: 18)),
+                const SizedBox(height: 15),
+                _twoFields(
+                  _buildDropdown(
+                    "Toilet Type",
+                    toilet,
+                    ["WS - Water Sealed","OP - Open pit","O - Others","N - None"],
+                    (val) => setState(() => toilet = val),
+                  ),
+                  _buildDropdown(
+                    "Water Source",
+                    water,
+                    ["P - Pipe","W - Well","S - Spring"],
+                    (val) => setState(() => water = val),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                _buildDropdown(
+                  "Food Production",
+                  food,
+                  ["VG - Vegetable garden","P/L - Poultry/Livestock","FP - Fishpond"],
+                  (val) => setState(() => food = val),
+                ),
+                const SizedBox(height: 20),
+
+                // Checkboxes
+                CheckboxListTile(
+                  value: iodizedSalt,
+                  onChanged: (val) => setState(() => iodizedSalt = val!),
+                  title: const Text("Households using iodized salt"),
+                ),
+                CheckboxListTile(
+                  value: ifr,
+                  onChanged: (val) => setState(() => ifr = val!),
+                  title: const Text("HH using IFR"),
+                ),
+                const SizedBox(height: 20),
+
+                // Save button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      // CREATE HOUSEHOLD OBJECT
+                      final household = Household(
+                        householdNo: householdNo,
+                        householdHead: hhHeadCtrl.text,
+                        zone: int.tryParse(zoneCtrl.text),
+                        barangay: barangay,
+                        occupation: occupation,
+                        education: education,
+                        male: parse(maleCtrl),
+                        female: parse(femaleCtrl),
+                        total: parse(totalCtrl),
+                        families: parse(familiesCtrl),
+                        pregnant: parse(pregCtrl),
+                        lactating: parse(lactatingCtrl),
+                        infant0to5: parse(infant0to5Ctrl),
+                        infant6to11: parse(infant6to11Ctrl),
+                        infant12to23: parse(infant12to23Ctrl),
+                        infant24to59: parse(infant24to59Ctrl),
+                        underweightSevere: parse(underweightSevereCtrl),
+                        underweight: parse(underweightCtrl),
+                        normal: parse(normalCtrl),
+                        wastedSevere: parse(wastedSevereCtrl),
+                        wasted: parse(wastedCtrl),
+                        overweight: parse(overweightCtrl),
+                        obese: parse(obeseCtrl),
+                        stuntedSevere: parse(stuntedSevereCtrl),
+                        stunted: parse(stuntedCtrl),
+                        toilet: toilet,
+                        water: water,
+                        food: food,
+                        iodizedSalt: iodizedSalt,
+                        ifr: ifr,
+                      );
+
+                      // INSERT TO DB
+                      await DBHelper.instance.insertHousehold(household);
+
+                      // INCREMENT HOUSEHOLD NO
+                      setState(() => householdNo++);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Saved successfully!")),
+                      );
+
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color.fromARGB(255, 5, 114, 3),
+                      side: const BorderSide(color: Color.fromARGB(255, 9, 119, 3)),
+                      padding: const EdgeInsets.all(16),
+                    ),
+                    child: const Text("Save Household"),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 16),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _twoFields(Widget a, Widget b) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          return Column(children: [a, const SizedBox(height: 15), b]);
+        } else {
+          return Row(
+            children: [
+              Flexible(flex: 1, child: a),
+              const SizedBox(width: 15),
+              Flexible(flex: 1, child: b),
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildTextField(String label, {TextEditingController? controller}) {
+    return TextField(
+      controller: controller,
+      decoration: _inputDecoration(label),
+    );
+  }
+
+  Widget _buildNumberField(String label,
+      {TextEditingController? controller, String? value, bool readOnly = false}) {
+    return TextField(
+      controller: controller ?? (value != null ? TextEditingController(text: value) : null),
+      readOnly: readOnly,
+      keyboardType: TextInputType.number,
+      decoration: _inputDecoration(label),
+    );
+  }
+
+  Widget _buildDropdown(String label, String? value, List<String> items,
+      Function(String?) onChanged) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      isExpanded: true,
+      decoration: _inputDecoration(label),
+      hint: Text("Select $label", overflow: TextOverflow.ellipsis),
+      items: items
+          .map((e) => DropdownMenuItem(
+                value: e,
+                child: Text(e, overflow: TextOverflow.ellipsis),
+              ))
+          .toList(),
+      onChanged: onChanged,
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: borderColor)),
     );
   }
 }
