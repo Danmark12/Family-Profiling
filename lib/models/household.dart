@@ -18,6 +18,7 @@ class Household {
   int? female;
   int? total;
   int? families;
+  int? infantsComplementary;
   int? pregnant;
   int? lactating;
   int? infant0to5;
@@ -70,6 +71,7 @@ class Household {
     this.stunted,
     this.iodizedSalt = false,
     this.ifr = false,
+    this.infantsComplementary,
   });
 
   // Convert Household object to Map<String, dynamic> for SQLite
@@ -89,6 +91,7 @@ class Household {
       'female': female,
       'total': total,
       'families': families,
+      'infantsComplementary': infantsComplementary,
       'pregnant': pregnant,
       'lactating': lactating,
       'infant0to5': infant0to5,
@@ -126,6 +129,7 @@ class Household {
       female: map['female'] as int?,
       total: map['total'] as int?,
       families: map['families'] as int?,
+     infantsComplementary: map['infantsComplementary'] as int?,
       pregnant: map['pregnant'] as int?,
       lactating: map['lactating'] as int?,
       infant0to5: map['infant0to5'] as int?,

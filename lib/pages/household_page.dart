@@ -119,6 +119,8 @@ class _HouseholdPageState extends State<HouseholdPage> {
                 // SEARCH BAR
                 Expanded(
                   flex: 3,
+  //               SizedBox(
+  // width: 150,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     decoration: BoxDecoration(
@@ -130,7 +132,7 @@ class _HouseholdPageState extends State<HouseholdPage> {
                       decoration: const InputDecoration(
                         hintText: "Search",
                         border: InputBorder.none,
-                        icon: Icon(Icons.search),
+                        icon: Icon(Icons.search), 
                       ),
                       onChanged: (val) {
                         searchText = val;

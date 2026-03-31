@@ -27,6 +27,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
   final femaleCtrl = TextEditingController();
   final totalCtrl = TextEditingController();
   final familiesCtrl = TextEditingController();
+  final infantsComplementaryCtrl = TextEditingController();
   final pregCtrl = TextEditingController();
   final lactatingCtrl = TextEditingController();
   final infant0to5Ctrl = TextEditingController();
@@ -66,6 +67,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
     femaleCtrl.dispose();
     totalCtrl.dispose();
     familiesCtrl.dispose();
+    infantsComplementaryCtrl.dispose();
     pregCtrl.dispose();
     lactatingCtrl.dispose();
     infant0to5Ctrl.dispose();
@@ -195,7 +197,14 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
                 _twoFields(
                   _buildNumberField("Female", controller: femaleCtrl),
                   _buildNumberField("No. of Families", controller: familiesCtrl),
+                  
                 ),
+                const SizedBox(height: 15),
+                _twoFields(
+                  _buildNumberField("No. of Infants given complementary foods", controller: infantsComplementaryCtrl),
+                  Container(), // Empty placeholder
+                ),
+
                 const SizedBox(height: 25),
 
                 // Infants & Preschool Children
@@ -303,6 +312,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
                         female: parse(femaleCtrl),
                         total: parse(totalCtrl),
                         families: parse(familiesCtrl),
+                        infantsComplementary: parse(infantsComplementaryCtrl), // NEW
                         pregnant: parse(pregCtrl),
                         lactating: parse(lactatingCtrl),
                         infant0to5: parse(infant0to5Ctrl),

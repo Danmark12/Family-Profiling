@@ -61,6 +61,7 @@ class HouseholdDetailPage extends StatelessWidget {
                 buildRow("Female Members", hh.female),
                 buildRow("Total Members", hh.total),
                 buildRow("Families in Household", hh.families),
+                buildRow("Infants given complementary foods", hh.infantsComplementary), 
                 buildRow("Pregnant Members", hh.pregnant),
                 buildRow("Lactating Members", hh.lactating),
               ],

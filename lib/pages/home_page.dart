@@ -16,7 +16,8 @@ class _HomePageState extends State<HomePage> {
   int totalFemale = 0;
   bool isLoading = true;
 
-  final avocado = const Color(0xFF568203);
+  final maleColor = const Color(0xFF4A90E2); // soft blue
+  final femaleColor = const Color(0xFFFF69B4); // soft pink
 
   @override
   void initState() {
@@ -29,7 +30,6 @@ class _HomePageState extends State<HomePage> {
     int m = 0;
     int f = 0;
 
-    // ✅ Safely handle nullable ints
     for (var hh in data) {
       m += hh.male ?? 0;
       f += hh.female ?? 0;
@@ -44,10 +44,18 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final maxPopulation = (totalMale > totalFemale ? totalMale : totalFemale)
+        .toDouble(); // for scaling circles
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Home"),
-        backgroundColor: avocado,
+        title: const Text(
+          "Home",
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -55,72 +63,147 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  const Text(
-                    "Population by Gender",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 24),
+                  // Floating Card
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 4,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          const Text(
+                            "Total Population",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
 
-                  // BAR CHART
-                  AspectRatio(
-                    aspectRatio: 1.5,
-                    child: BarChart(
-                      BarChartData(
-                        alignment: BarChartAlignment.spaceAround,
-                        maxY: (totalMale > totalFemale
-                                    ? totalMale
-                                    : totalFemale)
-                                .toDouble() +
-                            5,
-                        barTouchData: BarTouchData(enabled: true),
-                        titlesData: FlTitlesData(
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 40,
-                              getTitlesWidget: (value, meta) {
-                                return Text(value.toInt().toString());
-                              },
+                          // Smaller BAR CHART without grid/side numbers
+                          SizedBox(
+                            height: 150, // smaller height
+                            child: BarChart(
+                              BarChartData(
+                                alignment: BarChartAlignment.spaceAround,
+                                maxY: maxPopulation + 5,
+                                barTouchData: BarTouchData(enabled: false),
+                                gridData: FlGridData(show: false),
+                                titlesData: FlTitlesData(
+                                  leftTitles: AxisTitles(
+                                    sideTitles: SideTitles(showTitles: false),
+                                  ),
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(showTitles: false),
+                                  ),
+                                ),
+                                borderData: FlBorderData(show: false),
+                                barGroups: [
+                                  BarChartGroupData(
+                                    x: 0,
+                                    barRods: [
+                                      BarChartRodData(
+                                        toY: totalMale.toDouble(),
+                                        color: maleColor,
+                                        width: 24,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ],
+                                  ),
+                                  BarChartGroupData(
+                                    x: 1,
+                                    barRods: [
+                                      BarChartRodData(
+                                        toY: totalFemale.toDouble(),
+                                        color: femaleColor,
+                                        width: 24,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (value, meta) {
-                                if (value == 0) return const Text("Male");
-                                if (value == 1) return const Text("Female");
-                                return const Text("");
-                              },
-                            ),
-                          ),
-                        ),
-                        borderData: FlBorderData(show: false),
-                        barGroups: [
-                          BarChartGroupData(
-                            x: 0,
-                            barRods: [
-                              BarChartRodData(
-                                  toY: totalMale.toDouble(), color: avocado)
-                            ],
-                          ),
-                          BarChartGroupData(
-                            x: 1,
-                            barRods: [
-                              BarChartRodData(
-                                  toY: totalFemale.toDouble(),
-                                  color: Colors.pink)
+                          const SizedBox(height: 16),
+
+                          // Gender Indicators
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Column(
+                                children: [
+                                  Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Container(
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: maleColor
+                                              .withOpacity(totalMale / maxPopulation),
+                                        ),
+                                      ),
+                                      const Icon(
+                                        Icons.male,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    "$totalMale",
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Container(
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: femaleColor
+                                              .withOpacity(totalFemale / maxPopulation),
+                                        ),
+                                      ),
+                                      const Icon(
+                                        Icons.female,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    "$totalFemale",
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ],
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                   Text(
-                    "Total Male: $totalMale\nTotal Female: $totalFemale",
-                    style: const TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
+                    "Total Population: ${totalMale + totalFemale}",
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),

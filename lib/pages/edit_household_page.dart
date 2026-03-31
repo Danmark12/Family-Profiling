@@ -27,6 +27,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
   late TextEditingController femaleCtrl;
   late TextEditingController totalCtrl;
   late TextEditingController familiesCtrl;
+  late TextEditingController infantsComplementaryCtrl;
   late TextEditingController pregCtrl;
   late TextEditingController lactatingCtrl;
   late TextEditingController infant0to5Ctrl;
@@ -57,6 +58,8 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
     femaleCtrl = TextEditingController(text: h.female?.toString());
     totalCtrl = TextEditingController(text: h.total?.toString());
     familiesCtrl = TextEditingController(text: h.families?.toString());
+    infantsComplementaryCtrl = TextEditingController(text: widget.household?.infantsComplementary?.toString() ?? '',
+);
     pregCtrl = TextEditingController(text: h.pregnant?.toString());
     lactatingCtrl = TextEditingController(text: h.lactating?.toString());
     infant0to5Ctrl = TextEditingController(text: h.infant0to5?.toString());
@@ -92,6 +95,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
     femaleCtrl.dispose();
     totalCtrl.dispose();
     familiesCtrl.dispose();
+    infantsComplementaryCtrl.dispose();
     pregCtrl.dispose();
     lactatingCtrl.dispose();
     infant0to5Ctrl.dispose();
@@ -206,6 +210,11 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
                   _buildNumberField("Female", controller: femaleCtrl),
                   _buildNumberField("No. of Families", controller: familiesCtrl),
                 ),
+                const SizedBox(height: 15),
+                _buildNumberField(
+  "Infants given complementary foods",
+  controller: infantsComplementaryCtrl,
+),
                 const SizedBox(height: 25),
 
                 // Infants & Preschool Children
@@ -319,6 +328,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
                         infant6to11: parse(infant6to11Ctrl),
                         infant12to23: parse(infant12to23Ctrl),
                         infant24to59: parse(infant24to59Ctrl),
+                        infantsComplementary: parse(infantsComplementaryCtrl),
                         underweightSevere: parse(underweightSevereCtrl),
                         underweight: parse(underweightCtrl),
                         normal: parse(normalCtrl),

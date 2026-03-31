@@ -40,6 +40,7 @@ class DBHelper {
         female INTEGER,
         total INTEGER,
         families INTEGER,
+        infantsComplementary INTEGER,
         pregnant INTEGER,
         lactating INTEGER,
         infant0to5 INTEGER,
