@@ -4,124 +4,141 @@ import '../models/household.dart';
 
 class HouseholdDetailPage extends StatelessWidget {
   final Household hh;
-
   const HouseholdDetailPage({super.key, required this.hh});
 
-  Widget buildSectionTitle(String title) {
+  // helper to show a row
+  Widget buildRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(top: 16, bottom: 8),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              "$label:",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            flex: 5,
+            child: Text(value),
+          ),
+        ],
       ),
     );
   }
 
-  TableRow buildRow(String label, dynamic value) {
-    return TableRow(children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+  // helper to show a card section
+  Widget buildSection(String title, List<Widget> children) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            ...children
+          ],
+        ),
       ),
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-        child: Text(value?.toString() ?? '-'),
-      ),
-    ]);
+    );
   }
 
-  String boolText(bool value) => value ? "Yes" : "No";
+  String boolToYesNo(int? value) {
+    if (value == null) return "-";
+    return value == 1 ? "Yes" : "No";
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Household #${hh.householdNo}"),
-        backgroundColor: Colors.green[700],
+        title: Text("Household ${hh.householdNo}"),
+        backgroundColor: const Color(0xFF568203),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // ✅ BASIC INFO
-            buildSectionTitle("Basic Information"),
-            Table(
-              columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
-              border: TableBorder.all(color: Colors.grey),
-              children: [
-                buildRow("Household No.", hh.householdNo),
-                buildRow("Household Head", hh.householdHead),
-                buildRow("Barangay", hh.barangay),
-                buildRow("Purok/Zone", hh.zone),
-                buildRow("Occupation", hh.occupation),
-                buildRow("Education", hh.education),
-                buildRow("Male Members", hh.male),
-                buildRow("Female Members", hh.female),
-                buildRow("Total Members", hh.total),
-                buildRow("Families in Household", hh.families),
-                buildRow("Infants given complementary foods", hh.infantsComplementary), 
-                buildRow("Pregnant Members", hh.pregnant),
-                buildRow("Lactating Members", hh.lactating),
-              ],
-            ),
+            buildSection("Basic Info", [
+              buildRow("Zone/Purok", hh.zone ?? "-"),
+              buildRow("Barangay", hh.barangay ?? "-"),
+              buildRow("4Ps", boolToYesNo(hh.fourPs)),
+              buildRow("Indigenous People", boolToYesNo(hh.indigenousPeople)),
+              buildRow("Iodized Salt", boolToYesNo(hh.iodizedSalt)),
+            ]),
 
-            // ✅ INFANTS & CHILDREN
-            buildSectionTitle("Children (by Age)"),
-            Table(
-              columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
-              border: TableBorder.all(color: Colors.grey),
-              children: [
-                buildRow("0-5 months", hh.infant0to5),
-                buildRow("6-11 months", hh.infant6to11),
-                buildRow("12-23 months", hh.infant12to23),
-                buildRow("24-59 months", hh.infant24to59),
-              ],
-            ),
+            buildSection("Father", [
+              buildRow("Name", hh.fatherName ?? "-"),
+              buildRow("Occupation", hh.fatherOccupation ?? "-"),
+              buildRow("Education", hh.fatherEducation ?? "-"),
+            ]),
 
-            // ✅ NUTRITION STATUS
-            buildSectionTitle("Nutrition Status"),
-            Table(
-              columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
-              border: TableBorder.all(color: Colors.grey),
-              children: [
-                buildRow("Severe Underweight", hh.underweightSevere),
-                buildRow("Underweight", hh.underweight),
-                buildRow("Normal", hh.normal),
-                buildRow("Severe Wasted", hh.wastedSevere),
-                buildRow("Wasted", hh.wasted),
-                buildRow("Overweight", hh.overweight),
-                buildRow("Obese", hh.obese),
-                buildRow("Severe Stunted", hh.stuntedSevere),
-                buildRow("Stunted", hh.stunted),
-              ],
-            ),
+            buildSection("Mother", [
+              buildRow("Name", hh.motherName ?? "-"),
+              buildRow("Occupation", hh.motherOccupation ?? "-"),
+              buildRow("Education", hh.motherEducation ?? "-"),
+            ]),
 
-            // ✅ FACILITIES
-            buildSectionTitle("Facilities"),
-            Table(
-              columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
-              border: TableBorder.all(color: Colors.grey),
-              children: [
-                buildRow("Toilet Type", hh.toilet),
-                buildRow("Water Source", hh.water),
-                buildRow("Food Production", hh.food),
-              ],
-            ),
+            buildSection("Household Members", [
+              buildRow("Male", hh.male?.toString() ?? "-"),
+              buildRow("Female", hh.female?.toString() ?? "-"),
+              buildRow("Total", hh.total?.toString() ?? "-"),
+              buildRow("Families", hh.families?.toString() ?? "-"),
+              buildRow("Fully Immunized Children", hh.fullyImmunized?.toString() ?? "-"),
+            ]),
 
-            // ✅ HOUSEHOLD PRACTICES
-            buildSectionTitle("Household Practices"),
-            Table(
-              columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(3)},
-              border: TableBorder.all(color: Colors.grey),
-              children: [
-                buildRow("Uses Iodized Salt", boolText(hh.iodizedSalt)),
-                buildRow("Uses IFR", boolText(hh.ifr)),
-              ],
-            ),
+            buildSection("IYCF", [
+              buildRow("Exclusive", hh.exclusive?.toString() ?? "-"),
+              buildRow("Mixed", hh.mixed?.toString() ?? "-"),
+              buildRow("Bottle Fed", hh.bottleFed?.toString() ?? "-"),
+              buildRow("Complementary Feeding", hh.complementary?.toString() ?? "-"),
+            ]),
 
-            const SizedBox(height: 30),
+            buildSection("Women Status", [
+              buildRow("Pregnant <19", hh.preg19?.toString() ?? "-"),
+              buildRow("Pregnant 20+", hh.preg20?.toString() ?? "-"),
+              buildRow("Lactating", hh.lactating?.toString() ?? "-"),
+            ]),
+
+            buildSection("Age Groups", [
+              buildRow("0-5 months", hh.infant0to5?.toString() ?? "-"),
+              buildRow("6-11 months", hh.infant6to11?.toString() ?? "-"),
+              buildRow("12-23 months", hh.child12to23?.toString() ?? "-"),
+              buildRow("24-59 months", hh.child24to59?.toString() ?? "-"),
+              buildRow("5-9 years", hh.age5to9?.toString() ?? "-"),
+              buildRow("10-19 years", hh.age10to19?.toString() ?? "-"),
+              buildRow("20-59 years", hh.age20to59?.toString() ?? "-"),
+              buildRow("60+ years", hh.age60above?.toString() ?? "-"),
+              buildRow("PWD", hh.pwd?.toString() ?? "-"),
+            ]),
+
+            buildSection("Nutritional Status", [
+              buildRow("Severely Underweight", hh.severelyUnderweight?.toString() ?? "-"),
+              buildRow("Underweight", hh.underweight?.toString() ?? "-"),
+              buildRow("Normal", hh.normal?.toString() ?? "-"),
+              buildRow("Severely Wasted", hh.severelyWasted?.toString() ?? "-"),
+              buildRow("Wasted", hh.wasted?.toString() ?? "-"),
+              buildRow("Overweight", hh.overweight?.toString() ?? "-"),
+              buildRow("Obese", hh.obese?.toString() ?? "-"),
+              buildRow("Severely Stunted", hh.severelyStunted?.toString() ?? "-"),
+              buildRow("Stunted", hh.stunted?.toString() ?? "-"),
+            ]),
+
+            buildSection("Facilities", [
+              buildRow("Toilet Type", hh.toilet ?? "-"),
+              buildRow("Garbage Disposal", hh.garbage ?? "-"),
+              buildRow("Water Source", hh.water ?? "-"),
+              buildRow("Food Production", hh.food ?? "-"),
+              buildRow("Dwelling Type", hh.dwellingType ?? "-"),
+            ]),
+
+            const SizedBox(height: 20),
           ],
         ),
       ),

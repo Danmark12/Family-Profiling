@@ -12,88 +12,139 @@ class ConsolidatedPage extends StatefulWidget {
 
 class _ConsolidatedPageState extends State<ConsolidatedPage> {
   List<Household> households = [];
-
-  // Totals
-  int totalMembers = 0;
-  int totalMales = 0;
-  int totalFemales = 0;
-  int totalFamilies = 0;
-  int totalInfantsComplementary = 0;
-
-  bool loading = true;
+  String? filterZone;
+  String? filterBarangay;
 
   @override
   void initState() {
     super.initState();
-    fetchHouseholds();
+    _loadHouseholds();
   }
 
-  Future<void> fetchHouseholds() async {
-    setState(() => loading = true);
+  Future<void> _loadHouseholds() async {
+    final data = await DBHelper.instance.getAllHouseholds();
+    setState(() {
+      households = data.map((e) => Household.fromMap(e)).toList();
+    });
+  }
 
-    households = await DBHelper.instance.getAllHouseholds();
+  // Filter households by Zone and Barangay
+  List<Household> get filteredHouseholds {
+    return households.where((h) {
+      final zoneMatch = filterZone == null || filterZone!.isEmpty || h.zone?.toLowerCase().contains(filterZone!.toLowerCase()) == true;
+      final barangayMatch = filterBarangay == null || filterBarangay!.isEmpty || h.barangay?.toLowerCase().contains(filterBarangay!.toLowerCase()) == true;
+      return zoneMatch && barangayMatch;
+    }).toList();
+  }
 
-    // Calculate totals
-    totalMembers = households.fold(0, (sum, h) => sum + (h.total ?? 0));
-    totalMales = households.fold(0, (sum, h) => sum + (h.male ?? 0));
-    totalFemales = households.fold(0, (sum, h) => sum + (h.female ?? 0));
-    totalFamilies = households.fold(0, (sum, h) => sum + (h.families ?? 0));
-    totalInfantsComplementary =
-        households.fold(0, (sum, h) => sum + (h.infantsComplementary ?? 0));
-
-    setState(() => loading = false);
+  Map<String, int> calculateTotals() {
+    final list = filteredHouseholds;
+    return {
+      "Total Households": list.length,
+      "Total Male": list.fold(0, (sum, h) => sum + (h.male ?? 0)),
+      "Total Female": list.fold(0, (sum, h) => sum + (h.female ?? 0)),
+      "Total Population": list.fold(0, (sum, h) => sum + (h.total ?? 0)),
+      "4Ps Beneficiaries": list.fold(0, (sum, h) => sum + (h.fourPs)),
+      "Indigenous People": list.fold(0, (sum, h) => sum + (h.indigenousPeople)),
+      "Uses Iodized Salt": list.fold(0, (sum, h) => sum + (h.iodizedSalt)),
+      "Fully Immunized Children": list.fold(0, (sum, h) => sum + (h.fullyImmunized ?? 0)),
+      "PWD": list.fold(0, (sum, h) => sum + (h.pwd ?? 0)),
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    const avocado = Color(0xFF568203);
+    final totals = calculateTotals();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: const Text(
-          "Consolidated Data",
-          style: TextStyle(color: Colors.black),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: fetchHouseholds,
-              child: ListView(
-                padding: const EdgeInsets.all(20),
+      appBar: AppBar(title: const Text("Consolidated Report")),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            const Text(
+              "Family Profile",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+
+            // Filters
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: "Purok / Zone",
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (v) => setState(() => filterZone = v),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    decoration: const InputDecoration(
+                      labelText: "Barangay",
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (v) => setState(() => filterBarangay = v),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Document-like table
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Table(
+                border: TableBorder.symmetric(
+                  inside: const BorderSide(color: Colors.black),
+                ),
+                columnWidths: const {
+                  0: FlexColumnWidth(3),
+                  1: FlexColumnWidth(1),
+                },
                 children: [
-                  _buildStatCard("Total Members", totalMembers, avocado),
-                  _buildStatCard("Total Males", totalMales, avocado),
-                  _buildStatCard("Total Females", totalFemales, avocado),
-                  _buildStatCard("Total Families", totalFamilies, avocado),
-                  _buildStatCard(
-                      "Infants Given Complementary Foods",
-                      totalInfantsComplementary,
-                      avocado),
+                  // Header row
+                  const TableRow(
+                    decoration: BoxDecoration(color: Colors.grey),
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text("Indicator", style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text("Number", style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  // Data rows
+                  ...totals.entries.map(
+                    (e) => TableRow(children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(e.key),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(e.value.toString()),
+                      ),
+                    ]),
+                  ),
                 ],
               ),
             ),
-    );
-  }
+            const SizedBox(height: 20),
 
-  Widget _buildStatCard(String title, int value, Color color) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-        trailing: Text(
-          value.toString(),
-          style: TextStyle(
-            fontSize: 20,
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
+            Text("Total Records Shown: ${filteredHouseholds.length}"),
+          ],
         ),
       ),
     );

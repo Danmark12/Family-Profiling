@@ -4,7 +4,8 @@ import '../db/config.dart';
 import '../models/household.dart';
 import 'household_detail_page.dart';
 import 'add_household_page.dart';
-import 'edit_household_page.dart'; // NEW IMPORT
+import 'edit_household_page.dart';
+import 'archive.dart';
 
 class HouseholdPage extends StatefulWidget {
   const HouseholdPage({super.key});
@@ -19,7 +20,7 @@ class _HouseholdPageState extends State<HouseholdPage> {
   Set<int> selectedIds = {};
 
   String searchText = "";
-  int? selectedPurok;
+  String? selectedPurok;
 
   final Color avocado = const Color(0xFF568203);
 
@@ -30,7 +31,8 @@ class _HouseholdPageState extends State<HouseholdPage> {
   }
 
   Future<void> fetchHouseholds() async {
-    households = await DBHelper.instance.getAllHouseholds();
+    final data = await DBHelper.instance.getAllHouseholds();
+    households = data.map((e) => Household.fromMap(e)).toList();
     displayedHouseholds = List.from(households);
     filterHouseholds();
   }
@@ -39,11 +41,11 @@ class _HouseholdPageState extends State<HouseholdPage> {
     displayedHouseholds = households.where((hh) {
       final matchesSearch =
           hh.householdNo.toString().contains(searchText) ||
-          (hh.householdHead ?? "")
-              .toLowerCase()
-              .contains(searchText.toLowerCase());
+          (hh.fatherName ?? "").toLowerCase().contains(searchText.toLowerCase()) ||
+          (hh.motherName ?? "").toLowerCase().contains(searchText.toLowerCase());
 
-      final matchesPurok = selectedPurok == null || hh.zone == selectedPurok;
+      final matchesPurok =
+          selectedPurok == null || hh.zone == selectedPurok;
 
       return matchesSearch && matchesPurok;
     }).toList();
@@ -51,10 +53,10 @@ class _HouseholdPageState extends State<HouseholdPage> {
     setState(() {});
   }
 
-  List<int> getPuroks() {
+  List<String> getPuroks() {
     final list = households
-        .map((e) => e.zone ?? 0)
-        .where((e) => e > 0)
+        .map((e) => e.zone ?? "")
+        .where((e) => e.isNotEmpty)
         .toSet()
         .toList();
     list.sort();
@@ -83,13 +85,34 @@ class _HouseholdPageState extends State<HouseholdPage> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.archive),
-                title: const Text("Archive"),
+                leading: const Icon(Icons.archive, color: Colors.orange),
+                title: const Text("Archive", style: TextStyle(color: Colors.orange)),
                 onTap: () async {
                   Navigator.pop(context);
-                  if (hh.id != null) {
-                    await DBHelper.instance.archive(hh.id!);
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text("Confirm Archive"),
+                      content: const Text("Are you sure you want to archive this household?"),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text("Cancel"),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text("Archive", style: TextStyle(color: Colors.orange)),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirm == true) {
+                    await DBHelper.instance.archiveHousehold(hh.id!);
                     fetchHouseholds();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Household archived")),
+                    );
                   }
                 },
               ),
@@ -108,19 +131,28 @@ class _HouseholdPageState extends State<HouseholdPage> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.archive_outlined),
+            tooltip: "Archived Households",
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ArchivedHouseholdPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
-          // 🔍 SEARCH + PUROK DROPDOWN
+          // SEARCH + PUROK FILTER
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                // SEARCH BAR
                 Expanded(
                   flex: 3,
-  //               SizedBox(
-  // width: 150,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     decoration: BoxDecoration(
@@ -130,9 +162,9 @@ class _HouseholdPageState extends State<HouseholdPage> {
                     ),
                     child: TextField(
                       decoration: const InputDecoration(
-                        hintText: "Search",
+                        hintText: "Search by Name or HH No.",
                         border: InputBorder.none,
-                        icon: Icon(Icons.search), 
+                        icon: Icon(Icons.search),
                       ),
                       onChanged: (val) {
                         searchText = val;
@@ -141,10 +173,7 @@ class _HouseholdPageState extends State<HouseholdPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(width: 12),
-
-                // ✅ PUROK DROPDOWN WITH "ALL"
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
@@ -152,26 +181,24 @@ class _HouseholdPageState extends State<HouseholdPage> {
                     borderRadius: BorderRadius.circular(8),
                     color: Colors.white,
                   ),
-                  child: DropdownButton<int?>(
+                  child: DropdownButton<String?>(
                     value: selectedPurok,
                     hint: const Text("Purok"),
                     underline: const SizedBox(),
                     items: [
-                      const DropdownMenuItem<int?>(
+                      const DropdownMenuItem<String?>(
                         value: null,
                         child: Text("All"),
                       ),
                       ...getPuroks().map(
-                        (e) => DropdownMenuItem<int?>(
+                        (e) => DropdownMenuItem<String?>(
                           value: e,
-                          child: Text(e.toString()),
+                          child: Text(e),
                         ),
                       ),
                     ],
                     onChanged: (val) {
-                      setState(() {
-                        selectedPurok = val;
-                      });
+                      selectedPurok = val;
                       filterHouseholds();
                     },
                   ),
@@ -180,7 +207,7 @@ class _HouseholdPageState extends State<HouseholdPage> {
             ),
           ),
 
-          // 📋 HOUSEHOLD LIST
+          // HOUSEHOLD LIST
           Expanded(
             child: displayedHouseholds.isEmpty
                 ? const Center(child: Text("No households found"))
@@ -192,29 +219,18 @@ class _HouseholdPageState extends State<HouseholdPage> {
 
                       return GestureDetector(
                         onTap: () {
-                          if (selectedIds.isEmpty) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => HouseholdDetailPage(hh: hh),
-                              ),
-                            );
-                          } else {
-                            setState(() {
-                              if (isSelected) {
-                                selectedIds.remove(hh.id);
-                              } else {
-                                selectedIds.add(hh.id ?? 0);
-                              }
-                            });
-                          }
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HouseholdDetailPage(hh: hh),
+                            ),
+                          );
                         },
                         onLongPress: () {
                           showBottomSheet(hh);
                         },
                         child: Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 4),
+                          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: isSelected
@@ -222,18 +238,31 @@ class _HouseholdPageState extends State<HouseholdPage> {
                                 : Colors.white,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                                color: isSelected
-                                    ? avocado
-                                    : Colors.grey.shade300),
+                                color: isSelected ? avocado : Colors.grey.shade300),
                           ),
                           child: Row(
                             children: [
                               const Icon(Icons.folder, color: Colors.grey),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: Text(
-                                  "HH ${hh.householdNo} - ${hh.householdHead ?? "-"}",
-                                  style: const TextStyle(fontSize: 16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Household ${hh.householdNo}",
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      "Father: ${hh.fatherName ?? '-'} | Mother: ${hh.motherName ?? '-'}",
+                                      style: const TextStyle(color: Colors.grey),
+                                    ),
+                                    Text(
+                                      "Purok: ${hh.zone ?? '-'} | ${hh.barangay ?? '-'}",
+                                      style: const TextStyle(color: Colors.grey),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -246,7 +275,6 @@ class _HouseholdPageState extends State<HouseholdPage> {
         ],
       ),
 
-      // ➕ ADD BUTTON
       floatingActionButton: FloatingActionButton(
         backgroundColor: avocado,
         child: const Icon(Icons.add),
