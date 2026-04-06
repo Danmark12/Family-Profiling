@@ -20,12 +20,13 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // <-- updated version for users table
       onCreate: _createDB,
     );
   }
 
   Future _createDB(Database db, int version) async {
+    // HOUSEHOLDS TABLE
     await db.execute('''
 CREATE TABLE households(
 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,9 +91,44 @@ dwellingType TEXT,
 archived INTEGER DEFAULT 0
 )
 ''');
+
+    // USERS TABLE FOR LOGIN/REGISTER
+    await db.execute('''
+CREATE TABLE users(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+name TEXT,
+barangay TEXT,
+password TEXT
+)
+''');
   }
 
-  // ✅ GET LAST HOUSEHOLD NUMBER
+  // ---------------- USERS FUNCTIONS ----------------
+
+  // Register a new user
+  Future<int> registerUser(String name, String barangay, String password) async {
+    final db = await database;
+    return await db.insert('users', {
+      'name': name,
+      'barangay': barangay,
+      'password': password
+    });
+  }
+
+  // Login user
+  Future<Map<String, dynamic>?> loginUser(String name, String password) async {
+    final db = await database;
+    final res = await db.query(
+      'users',
+      where: 'name = ? AND password = ?',
+      whereArgs: [name, password],
+    );
+    if (res.isNotEmpty) return res.first;
+    return null;
+  }
+
+  // ---------------- HOUSEHOLD FUNCTIONS ----------------
+
   Future<int?> getLastHouseholdNo() async {
     final db = await database;
     final result = await db.rawQuery(
@@ -104,13 +140,11 @@ archived INTEGER DEFAULT 0
     return null;
   }
 
-  // ✅ INSERT
   Future<int> insertHousehold(Map<String, dynamic> data) async {
     final db = await database;
     return await db.insert('households', data);
   }
 
-  // ✅ GET ALL HOUSEHOLDS (optionally include archived)
   Future<List<Map<String, dynamic>>> getAllHouseholds({bool includeArchived = false}) async {
     final db = await database;
     final whereClause = includeArchived ? null : 'archived = 0';
@@ -121,7 +155,6 @@ archived INTEGER DEFAULT 0
     );
   }
 
-  // ✅ GET SINGLE HOUSEHOLD
   Future<Map<String, dynamic>?> getHousehold(int id) async {
     final db = await database;
     final result = await db.query(
@@ -133,7 +166,6 @@ archived INTEGER DEFAULT 0
     return null;
   }
 
-  // ✅ UPDATE HOUSEHOLD
   Future<void> updateHousehold(int id, Map<String, dynamic> data) async {
     final db = await database;
     await db.update(
@@ -144,7 +176,6 @@ archived INTEGER DEFAULT 0
     );
   }
 
-  // ✅ ARCHIVE HOUSEHOLD (soft delete)
   Future<void> archiveHousehold(int id) async {
     final db = await database;
     await db.update(
@@ -155,7 +186,6 @@ archived INTEGER DEFAULT 0
     );
   }
 
-  // ✅ UNARCHIVE HOUSEHOLD
   Future<void> unarchiveHousehold(int id) async {
     final db = await database;
     await db.update(
@@ -166,7 +196,6 @@ archived INTEGER DEFAULT 0
     );
   }
 
-  // ✅ DELETE HOUSEHOLD PERMANENTLY
   Future<void> deleteHouseholdPermanently(int id) async {
     final db = await database;
     await db.delete(
@@ -176,7 +205,6 @@ archived INTEGER DEFAULT 0
     );
   }
 
-  // ✅ GET ALL ARCHIVED HOUSEHOLDS
   Future<List<Map<String, dynamic>>> getArchivedHouseholds() async {
     final db = await database;
     return await db.query(
