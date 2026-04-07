@@ -10,7 +10,6 @@ class AddHouseholdPage extends StatefulWidget {
 }
 
 class _AddHouseholdPageState extends State<AddHouseholdPage> {
-
   int householdNo = 1;
 
   // Dropdowns
@@ -65,10 +64,13 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
   final ss = TextEditingController();
   final st = TextEditingController();
 
+  int? userId; // logged-in user ID
+
   @override
   void initState() {
     super.initState();
     _loadNo();
+    _loadUserBarangay();
 
     male.addListener(_total);
     female.addListener(_total);
@@ -85,17 +87,27 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
     setState(() => householdNo = (last ?? 0) + 1);
   }
 
+  Future<void> _loadUserBarangay() async {
+    // TODO: replace with actual logged-in user ID from session/shared preferences
+    userId = 1; // example for testing
+    final user = await DBHelper.instance.getUserById(userId!);
+    if (user != null) {
+      setState(() {
+        barangay = user['barangay'];
+      });
+    }
+  }
+
   int? num(TextEditingController c) =>
       c.text.isEmpty ? null : int.tryParse(c.text);
 
   @override
   Widget build(BuildContext context) {
-
-    final barangays = [
-      "Amoros","Bolisong","Cogon","Himaya","Hinigdaan","Kalabaylabay",
-      "Molugan","Pedro S. Baculio","Poblacion","Quibonbon",
-      "Sambulawan","San Francisco de Asis","Sinaloc","Taytay","Ulaliman"
-    ];
+    // final barangays = [
+    //   "Amoros","Bolisong","Cogon","Himaya","Hinigdaan","Kalabaylabay",
+    //   "Molugan","Pedro S. Baculio","Poblacion","Quibonbon",
+    //   "Sambulawan","San Francisco de Asis","Sinaloc","Taytay","Ulaliman"
+    // ];
 
     final occupations = [
       "Private Employee","Government Employee","Self-Employed/Business Owner",
@@ -113,58 +125,81 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-
           Text("Household No.: $householdNo"),
 
           _field("Zone / Purok", zone),
-          _drop("Barangay", barangay, barangays, (v)=>setState(()=>barangay=v)),
 
-          CheckboxListTile(value: fourPs, onChanged:(v)=>setState(()=>fourPs=v!), title:const Text("4Ps")),
-          CheckboxListTile(value: indigenousPeople, onChanged:(v)=>setState(()=>indigenousPeople=v!), title:const Text("Indigenous People")),
+          // 🔹 Barangay dropdown prefilled with user barangay
+          // _drop(
+          //   "Barangay",
+          //   barangay,
+          //   barangays,
+          //   null, // user cannot change it
+          //   disabled: true,
+          // ),
+          _field("Barangay", TextEditingController(text: barangay ?? ""), readOnly: true, type: TextInputType.text),
 
-const Text("Father"),
-CheckboxListTile(
-  value: noFather,
-  onChanged: (v) {
-    setState(() {
-      noFather = v!;
-      if (noFather) {
-        father.clear();
-        fatherOccupation = null;
-        fatherEducation = null;
-      }
-    });
-  },
-  title: const Text("None"),
-),
-_field("Name of Father", father, type: TextInputType.text, readOnly: noFather),
-_drop("Occupation", fatherOccupation, occupations, noFather ? null : (v) => setState(() => fatherOccupation = v), disabled: noFather),
-_drop("Educational Attainment", fatherEducation, educ, noFather ? null : (v) => setState(() => fatherEducation = v), disabled: noFather),
+          CheckboxListTile(
+              value: fourPs,
+              onChanged: (v) => setState(() => fourPs = v!),
+              title: const Text("4Ps")),
+          CheckboxListTile(
+              value: indigenousPeople,
+              onChanged: (v) => setState(() => indigenousPeople = v!),
+              title: const Text("Indigenous People")),
 
-const Text("Mother"),
-CheckboxListTile(
-  value: noMother,
-  onChanged: (v) {
-    setState(() {
-      noMother = v!;
-      if (noMother) {
-        mother.clear();
-        motherOccupation = null;
-        motherEducation = null;
-      }
-    });
-  },
-  title: const Text("None"),
-),
-_field("Name of Mother", mother, type: TextInputType.text, readOnly: noMother),
-_drop("Occupation", motherOccupation, occupations, noMother ? null : (v) => setState(() => motherOccupation = v), disabled: noMother),
-_drop("Educational Attainment", motherEducation, educ, noMother ? null : (v) => setState(() => motherEducation = v), disabled: noMother),
+          const Text("Father"),
+          CheckboxListTile(
+            value: noFather,
+            onChanged: (v) {
+              setState(() {
+                noFather = v!;
+                if (noFather) {
+                  father.clear();
+                  fatherOccupation = null;
+                  fatherEducation = null;
+                }
+              });
+            },
+            title: const Text("None"),
+          ),
+          _field("Name of Father", father,
+              type: TextInputType.text, readOnly: noFather),
+          _drop("Occupation", fatherOccupation, occupations,
+              noFather ? null : (v) => setState(() => fatherOccupation = v),
+              disabled: noFather),
+          _drop("Educational Attainment", fatherEducation, educ,
+              noFather ? null : (v) => setState(() => fatherEducation = v),
+              disabled: noFather),
 
+          const Text("Mother"),
+          CheckboxListTile(
+            value: noMother,
+            onChanged: (v) {
+              setState(() {
+                noMother = v!;
+                if (noMother) {
+                  mother.clear();
+                  motherOccupation = null;
+                  motherEducation = null;
+                }
+              });
+            },
+            title: const Text("None"),
+          ),
+          _field("Name of Mother", mother,
+              type: TextInputType.text, readOnly: noMother),
+          _drop("Occupation", motherOccupation, occupations,
+              noMother ? null : (v) => setState(() => motherOccupation = v),
+              disabled: noMother),
+          _drop("Educational Attainment", motherEducation, educ,
+              noMother ? null : (v) => setState(() => motherEducation = v),
+              disabled: noMother),
 
           const Text("Household Members"),
           _field("Male", male),
           _field("Female", female),
-          _field("Total", total, readOnly:true),
+          _field("Total", total, readOnly: true),
           _field("Families", families),
           _field("Fully Immunized Children", immunized),
 
@@ -202,13 +237,26 @@ _drop("Educational Attainment", motherEducation, educ, noMother ? null : (v) => 
           _field("Stunted", st),
 
           const Text("Facilities"),
-          _drop("Toilet Type", toilet, ["Water Sealed","Antipolo","Open Pit","Shared","No Toilet"], (v)=>setState(()=>toilet=v)),
-          _drop("Garbage Disposal", garbage, ["Barangay Collector","Compost Pit","Burning","Dumping"], (v)=>setState(()=>garbage=v)),
-          _drop("Water Source", water, ["Pipe Water","Deep Well","Purified","Shallow Well","Artesian","Spring"], (v)=>setState(()=>water=v)),
-          _drop("Food Production", food, ["Vegetable Garden","Poultry","Fishpond","No Garden"], (v)=>setState(()=>food=v)),
-          _drop("Dwelling Type", dwellingType, ["Semi Concrete","Wooden","Nipa","Barong","Makeshift"], (v)=>setState(()=>dwellingType=v)),
+          _drop("Toilet Type", toilet,
+              ["Water Sealed", "Antipolo", "Open Pit", "Shared", "No Toilet"],
+              (v) => setState(() => toilet = v)),
+          _drop("Garbage Disposal", garbage,
+              ["Barangay Collector", "Compost Pit", "Burning", "Dumping"],
+              (v) => setState(() => garbage = v)),
+          _drop("Water Source", water,
+              ["Pipe Water", "Deep Well", "Purified", "Shallow Well", "Artesian", "Spring"],
+              (v) => setState(() => water = v)),
+          _drop("Food Production", food,
+              ["Vegetable Garden", "Poultry", "Fishpond", "No Garden"],
+              (v) => setState(() => food = v)),
+          _drop("Dwelling Type", dwellingType,
+              ["Semi Concrete", "Wooden", "Nipa", "Barong", "Makeshift"],
+              (v) => setState(() => dwellingType = v)),
 
-          CheckboxListTile(value: iodizedSalt, onChanged:(v)=>setState(()=>iodizedSalt=v!), title:const Text("Uses Iodized Salt")),
+          CheckboxListTile(
+              value: iodizedSalt,
+              onChanged: (v) => setState(() => iodizedSalt = v!),
+              title: const Text("Uses Iodized Salt")),
 
           ElevatedButton(
             onPressed: () async {
@@ -216,34 +264,27 @@ _drop("Educational Attainment", motherEducation, educ, noMother ? null : (v) => 
                 "householdNo": householdNo,
                 "zone": zone.text,
                 "barangay": barangay,
-
-                "fourPs": fourPs?1:0,
-                "indigenousPeople": indigenousPeople?1:0,
-                "iodizedSalt": iodizedSalt?1:0,
-
+                "fourPs": fourPs ? 1 : 0,
+                "indigenousPeople": indigenousPeople ? 1 : 0,
+                "iodizedSalt": iodizedSalt ? 1 : 0,
                 "fatherName": father.text,
                 "fatherOccupation": fatherOccupation,
                 "fatherEducation": fatherEducation,
-
                 "motherName": mother.text,
                 "motherOccupation": motherOccupation,
                 "motherEducation": motherEducation,
-
                 "male": num(male),
                 "female": num(female),
                 "total": num(total),
                 "families": num(families),
                 "fullyImmunized": num(immunized),
-
                 "exclusive": num(exclusive),
                 "mixed": num(mixed),
                 "bottleFed": num(bottle),
                 "complementary": num(complementary),
-
                 "preg19": num(preg19),
                 "preg20": num(preg20),
                 "lactating": num(lactating),
-
                 "infant0to5": num(i0_5),
                 "infant6to11": num(i6_11),
                 "child12to23": num(c12_23),
@@ -253,7 +294,6 @@ _drop("Educational Attainment", motherEducation, educ, noMother ? null : (v) => 
                 "age20to59": num(a20_59),
                 "age60above": num(a60),
                 "pwd": num(pwd),
-
                 "severelyUnderweight": num(su),
                 "underweight": num(uw),
                 "normal": num(nw),
@@ -263,7 +303,6 @@ _drop("Educational Attainment", motherEducation, educ, noMother ? null : (v) => 
                 "obese": num(ob),
                 "severelyStunted": num(ss),
                 "stunted": num(st),
-
                 "toilet": toilet,
                 "garbage": garbage,
                 "water": water,
@@ -284,19 +323,25 @@ _drop("Educational Attainment", motherEducation, educ, noMother ? null : (v) => 
     );
   }
 
-Widget _field(String l, TextEditingController c, {bool readOnly=false, TextInputType? type}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: TextField(
-      controller: c,
-      readOnly: readOnly,
-      keyboardType: type ?? TextInputType.number, // use number by default
-      decoration: InputDecoration(labelText: l, border: const OutlineInputBorder()),
-    ),
-  );
-}
+  Widget _field(String l, TextEditingController c,
+      {bool readOnly = false, TextInputType? type}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextField(
+        controller: c,
+        readOnly: readOnly,
+        keyboardType: type ?? TextInputType.number,
+        decoration: InputDecoration(
+          labelText: l,
+          border: const OutlineInputBorder(),
+        ),
+      ),
+    );
+  }
 
-  Widget _drop(String l, String? v, List<String> items, void Function(String?)? onChanged, {bool disabled=false}) {
+  Widget _drop(String l, String? v, List<String> items,
+      void Function(String?)? onChanged,
+      {bool disabled = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: InputDecorator(
@@ -307,7 +352,8 @@ Widget _field(String l, TextEditingController c, {bool readOnly=false, TextInput
             icon: const Icon(Icons.arrow_drop_down),
             enabled: !disabled,
             onSelected: onChanged,
-            itemBuilder: (c)=>items.map((e)=>PopupMenuItem(value:e, child:Text(e))).toList(),
+            itemBuilder: (c) =>
+                items.map((e) => PopupMenuItem(value: e, child: Text(e))).toList(),
           ),
         ),
         child: Text(v ?? "Select"),

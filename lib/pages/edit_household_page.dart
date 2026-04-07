@@ -13,6 +13,7 @@ class EditHouseholdPage extends StatefulWidget {
 }
 
 class _EditHouseholdPageState extends State<EditHouseholdPage> {
+
   // Dropdowns
   String? barangay, toilet, garbage, water, food, dwellingType;
   String? fatherOccupation, fatherEducation;
@@ -64,6 +65,9 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
   late final ob = TextEditingController();
   late final ss = TextEditingController();
   late final st = TextEditingController();
+
+  // ✅ NEW: barangay controller (fix empty issue)
+  late final TextEditingController barangayController;
 
   @override
   void initState() {
@@ -141,6 +145,9 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
     iodizedSalt = hh.iodizedSalt == 1;
     noFather = hh.fatherOccupation == null || hh.fatherOccupation == "None";
     noMother = hh.motherOccupation == null || hh.motherOccupation == "None";
+
+    // ✅ FIX: initialize controller ONCE
+    barangayController = TextEditingController(text: barangay ?? "");
   }
 
   int? num(TextEditingController c) =>
@@ -148,11 +155,6 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
 
   @override
   Widget build(BuildContext context) {
-    final barangays = [
-      "Amoros","Bolisong","Cogon","Himaya","Hinigdaan","Kalabaylabay",
-      "Molugan","Pedro S. Baculio","Poblacion","Quibonbon",
-      "Sambulawan","San Francisco de Asis","Sinaloc","Taytay","Ulaliman"
-    ];
 
     final occupations = [
       "Private Employee","Government Employee","Self-Employed/Business Owner",
@@ -176,48 +178,50 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
             Text("Household No.: ${widget.household.householdNo}"),
 
             _field("Zone / Purok", zone),
-            _drop("Barangay", barangay, barangays, (v)=>setState(()=>barangay=v)),
+
+            // ✅ FIXED BARANGAY FIELD (NO ARROW, NO EMPTY)
+            _field("Barangay", barangayController, readOnly: true, type: TextInputType.text),
 
             CheckboxListTile(value: fourPs, onChanged:(v)=>setState(()=>fourPs=v!), title:const Text("4Ps")),
             CheckboxListTile(value: indigenousPeople, onChanged:(v)=>setState(()=>indigenousPeople=v!), title:const Text("Indigenous People")),
 
-const Text("Father"),
-CheckboxListTile(
-  value: noFather,
-  onChanged: (v) {
-    setState(() {
-      noFather = v!;
-      if (noFather) {
-        father.clear();
-        fatherOccupation = null;
-        fatherEducation = null;
-      }
-    });
-  },
-  title: const Text("None"),
-),
-_field("Name of Father", father, type: TextInputType.text, readOnly: noFather),
-_drop("Occupation", fatherOccupation, occupations, noFather ? null : (v) => setState(() => fatherOccupation = v), disabled: noFather),
-_drop("Educational Attainment", fatherEducation, educ, noFather ? null : (v) => setState(() => fatherEducation = v), disabled: noFather),
+            const Text("Father"),
+            CheckboxListTile(
+              value: noFather,
+              onChanged: (v) {
+                setState(() {
+                  noFather = v!;
+                  if (noFather) {
+                    father.clear();
+                    fatherOccupation = null;
+                    fatherEducation = null;
+                  }
+                });
+              },
+              title: const Text("None"),
+            ),
+            _field("Name of Father", father, type: TextInputType.text, readOnly: noFather),
+            _drop("Occupation", fatherOccupation, occupations, noFather ? null : (v) => setState(() => fatherOccupation = v), disabled: noFather),
+            _drop("Educational Attainment", fatherEducation, educ, noFather ? null : (v) => setState(() => fatherEducation = v), disabled: noFather),
 
-const Text("Mother"),
-CheckboxListTile(
-  value: noMother,
-  onChanged: (v) {
-    setState(() {
-      noMother = v!;
-      if (noMother) {
-        mother.clear();
-        motherOccupation = null;
-        motherEducation = null;
-      }
-    });
-  },
-  title: const Text("None"),
-),
-_field("Name of Mother", mother, type: TextInputType.text, readOnly: noMother),
-_drop("Occupation", motherOccupation, occupations, noMother ? null : (v) => setState(() => motherOccupation = v), disabled: noMother),
-_drop("Educational Attainment", motherEducation, educ, noMother ? null : (v) => setState(() => motherEducation = v), disabled: noMother),
+            const Text("Mother"),
+            CheckboxListTile(
+              value: noMother,
+              onChanged: (v) {
+                setState(() {
+                  noMother = v!;
+                  if (noMother) {
+                    mother.clear();
+                    motherOccupation = null;
+                    motherEducation = null;
+                  }
+                });
+              },
+              title: const Text("None"),
+            ),
+            _field("Name of Mother", mother, type: TextInputType.text, readOnly: noMother),
+            _drop("Occupation", motherOccupation, occupations, noMother ? null : (v) => setState(() => motherOccupation = v), disabled: noMother),
+            _drop("Educational Attainment", motherEducation, educ, noMother ? null : (v) => setState(() => motherEducation = v), disabled: noMother),
 
             const Text("Household Members"),
             _field("Male", male),
@@ -333,18 +337,17 @@ _drop("Educational Attainment", motherEducation, educ, noMother ? null : (v) => 
     );
   }
 
-// Change your existing _field method to this
-Widget _field(String l, TextEditingController c, {bool readOnly=false, TextInputType? type}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: TextField(
-      controller: c,
-      readOnly: readOnly,
-      keyboardType: type ?? TextInputType.number, // default to number, but allow text override
-      decoration: InputDecoration(labelText: l, border: const OutlineInputBorder()),
-    ),
-  );
-}
+  Widget _field(String l, TextEditingController c, {bool readOnly=false, TextInputType? type}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: TextField(
+        controller: c,
+        readOnly: readOnly,
+        keyboardType: type ?? TextInputType.number,
+        decoration: InputDecoration(labelText: l, border: const OutlineInputBorder()),
+      ),
+    );
+  }
 
   Widget _drop(String l, String? v, List<String> items, void Function(String?)? onChanged, {bool disabled=false}) {
     return Padding(

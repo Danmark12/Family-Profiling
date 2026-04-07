@@ -1,6 +1,7 @@
 // lib/pages/home_page.dart
 import 'package:flutter/material.dart';
-import 'settings.dart'; // Make sure this page exists
+import 'settings.dart';   // Make sure this page exists
+import 'profile.dart';    // Profile page
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -12,10 +13,20 @@ class HomePage extends StatelessWidget {
         title: const Text("Census Dashboard"),
         centerTitle: true,
         actions: [
+          // Profile Icon
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
+              );
+            },
+          ),
+          // Settings Icon
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Navigate to Settings Page
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const SettingsPage()),
@@ -46,7 +57,7 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Stats Section (2 rows)
+            // Stats Section (First Row)
             Row(
               children: [
                 _buildCard("Total Households", "0", Icons.home, Colors.orange),
@@ -56,6 +67,7 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 15),
 
+            // Stats Section (Second Row)
             Row(
               children: [
                 _buildCard("Male", "0", Icons.male, Colors.blue),
@@ -77,6 +89,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
+  // ---------------- HELPER FUNCTION TO BUILD CARDS ----------------
   Widget _buildCard(String title, String value, IconData icon, Color color) {
     return Expanded(
       child: Card(

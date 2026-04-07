@@ -1,10 +1,7 @@
-// main.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'pages/home_page.dart';
-import 'pages/household_page.dart';
-import 'pages/barangay_page.dart';
 import 'pages/login.dart';
+import 'pages/nav_page.dart'; // New nav page
 
 void main() {
   runApp(const CensusApp());
@@ -17,12 +14,12 @@ class CensusApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(), // Check login first
+      home: const SplashScreen(),
     );
   }
 }
 
-// Splash screen to decide which page to show
+// Splash screen to decide initial page
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -44,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (isLoggedIn) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const MainScreen()),
+        MaterialPageRoute(builder: (_) => const HomeNavPage()),
       );
     } else {
       Navigator.pushReplacement(
@@ -58,42 +55,6 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(child: CircularProgressIndicator()),
-    );
-  }
-}
-
-// MainScreen with BottomNavigationBar
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int index = 0;
-
-  final pages = [
-    const HomePage(),
-    const HouseholdPage(),
-    const BarangayPage(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: pages[index], // Page content without inner Scaffold
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: index,
-        selectedItemColor: const Color(0xFF568203),
-        unselectedItemColor: Colors.grey,
-        onTap: (i) => setState(() => index = i),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: "Household"),
-          BottomNavigationBarItem(icon: Icon(Icons.location_city), label: "Barangay"),
-        ],
-      ),
     );
   }
 }
