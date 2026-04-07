@@ -52,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
           passwordController.text.trim(),
         );
 
-        // Success snackbar
+        // Success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Account registered successfully'),
@@ -65,7 +65,13 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         );
 
-        // Delay before redirect to login
+        // Clear fields
+        nameController.clear();
+        passwordController.clear();
+        confirmController.clear();
+        setState(() => selectedBarangay = null);
+
+        // Delay then go to login
         await Future.delayed(const Duration(seconds: 2));
 
         Navigator.pushReplacement(
@@ -73,10 +79,10 @@ class _RegisterPageState extends State<RegisterPage> {
           MaterialPageRoute(builder: (_) => const LoginPage()),
         );
       } catch (e) {
-        // Error snackbar (e.g., duplicate name)
+        // Clean error handling (duplicate username)
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: const Text('Username already exists'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -101,7 +107,11 @@ class _RegisterPageState extends State<RegisterPage> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
               boxShadow: const [
-                BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 6)),
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 10,
+                  offset: Offset(0, 6),
+                ),
               ],
             ),
             child: Column(
@@ -118,72 +128,118 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: const Icon(Icons.people, color: Colors.white, size: 30),
                 ),
                 const SizedBox(height: 8),
+
                 const Text(
                   'Register',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+
                 const SizedBox(height: 12),
+
                 Form(
                   key: _formKey,
                   child: Column(
                     children: [
-                      // Name
+                      // NAME
                       TextFormField(
                         controller: nameController,
                         decoration: inputStyle('Name', Icons.person),
-                        validator: (val) => val!.isEmpty ? 'Enter name' : null,
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Enter name';
+                          }
+                          return null;
+                        },
                       ),
+
                       const SizedBox(height: 8),
-                      // Barangay
+
+                      // BARANGAY
                       DropdownButtonFormField<String>(
                         value: selectedBarangay,
-                        hint: const Text('Select Barangay', style: TextStyle(fontSize: 12)),
+                        hint: const Text(
+                          'Select Barangay',
+                          style: TextStyle(fontSize: 12),
+                        ),
                         items: barangays.map((b) {
                           return DropdownMenuItem(
                             value: b,
-                            child: Text(b, style: const TextStyle(fontSize: 12)),
+                            child: Text(
+                              b,
+                              style: const TextStyle(fontSize: 12),
+                            ),
                           );
                         }).toList(),
                         onChanged: (val) => setState(() => selectedBarangay = val),
                         decoration: inputStyle('Barangay', Icons.location_city),
-                        validator: (val) => val == null ? 'Select barangay' : null,
+                        validator: (val) =>
+                            val == null ? 'Select barangay' : null,
                       ),
+
                       const SizedBox(height: 8),
-                      // Password
+
+                      // PASSWORD
                       TextFormField(
                         controller: passwordController,
                         decoration: inputStyle('Password', Icons.lock),
                         obscureText: true,
-                        validator: (val) => val!.isEmpty ? 'Enter password' : null,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) {
+                            return 'Enter password';
+                          }
+                          if (val.length < 4) {
+                            return 'Minimum 4 characters';
+                          }
+                          return null;
+                        },
                       ),
+
                       const SizedBox(height: 8),
-                      // Confirm Password
+
+                      // CONFIRM PASSWORD
                       TextFormField(
                         controller: confirmController,
-                        decoration: inputStyle('Confirm Password', Icons.lock_outline),
+                        decoration:
+                            inputStyle('Confirm Password', Icons.lock_outline),
                         obscureText: true,
-                        validator: (val) => val != passwordController.text ? 'Passwords do not match' : null,
+                        validator: (val) {
+                          if (val != passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
                       ),
+
                       const SizedBox(height: 12),
-                      // Register Button
+
+                      // REGISTER BUTTON
                       SizedBox(
                         width: double.infinity,
                         child: TextButton(
                           onPressed: registerUser,
-                          style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 10)),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
                           child: Text(
                             'Register',
-                            style: TextStyle(color: avocado, fontWeight: FontWeight.bold, fontSize: 14),
+                            style: TextStyle(
+                              color: avocado,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       ),
+
                       const SizedBox(height: 4),
-                      // Navigate to Login
+
+                      // GO TO LOGIN
                       TextButton(
                         onPressed: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => const LoginPage()),
+                            MaterialPageRoute(
+                                builder: (_) => const LoginPage()),
                           );
                         },
                         child: const Text(

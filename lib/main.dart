@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/login.dart';
-import 'pages/nav_page.dart'; // New nav page
+import 'pages/nav_page.dart';
 
 void main() {
   runApp(const CensusApp());
@@ -14,12 +14,16 @@ class CensusApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'Census App',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+      ),
       home: const SplashScreen(),
     );
   }
 }
 
-// Splash screen to decide initial page
+// ---------------- SPLASH SCREEN ----------------
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -28,22 +32,31 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+
   @override
   void initState() {
     super.initState();
-    checkLogin();
+    _checkLogin();
   }
 
-  Future<void> checkLogin() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  Future<void> _checkLogin() async {
+    await Future.delayed(const Duration(milliseconds: 800)); // smoother UX
 
-    if (isLoggedIn) {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    int? userId = prefs.getInt('userId');
+
+    // ✅ IMPORTANT FIX: check both
+    if (isLoggedIn && userId != null) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomeNavPage()),
       );
     } else {
+      // clear invalid session (safety)
+      await prefs.clear();
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -54,7 +67,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }

@@ -1,10 +1,60 @@
 // lib/pages/home_page.dart
 import 'package:flutter/material.dart';
-import 'settings.dart';   // Make sure this page exists
-import 'profile.dart';    // Profile page
+import 'package:shared_preferences/shared_preferences.dart';
+import '../db/config.dart';
+import 'settings.dart';
+import 'profile.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int totalHouseholds = 0;
+  int totalResidents = 0;
+  int male = 0;
+  int female = 0;
+
+  int? userId; // ✅ STORE USER ID HERE
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // ✅ FIXED KEY
+    userId = prefs.getInt('userId');
+
+    if (userId == null) return;
+
+    final households = await DBHelper.instance.getAllHouseholds(userId!);
+
+    int totalRes = 0;
+    int totalMale = 0;
+    int totalFemale = 0;
+
+    for (var h in households) {
+      int m = h['male'] ?? 0;
+      int f = h['female'] ?? 0;
+      totalRes += m + f;
+      totalMale += m;
+      totalFemale += f;
+    }
+
+    setState(() {
+      totalHouseholds = households.length;
+      totalResidents = totalRes;
+      male = totalMale;
+      female = totalFemale;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +63,6 @@ class HomePage extends StatelessWidget {
         title: const Text("Census Dashboard"),
         centerTitle: true,
         actions: [
-          // Profile Icon
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
@@ -23,61 +72,69 @@ class HomePage extends StatelessWidget {
               );
             },
           ),
-          // Settings Icon
+
+          // ✅ FIXED SETTINGS BUTTON
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
+              if (userId == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("User not loaded yet")),
+                );
+                return;
+              }
+
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
+                MaterialPageRoute(
+                  builder: (context) =>
+                      SettingsPage(currentUserId: userId!),
+                ),
               );
             },
           ),
         ],
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Welcome Card
             Card(
               elevation: 3,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: ListTile(
-                leading: const Icon(Icons.person, size: 40, color: Colors.blue),
-                title: const Text(
+              child: const ListTile(
+                leading: Icon(Icons.person, size: 40, color: Colors.blue),
+                title: Text(
                   "Welcome",
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                subtitle: const Text("Census Management System"),
+                subtitle: Text("Census Management System"),
               ),
             ),
 
             const SizedBox(height: 20),
 
-            // Stats Section (First Row)
             Row(
               children: [
-                _buildCard("Total Households", "0", Icons.home, Colors.orange),
-                _buildCard("Total Residents", "0", Icons.people, Colors.green),
+                _buildCard("Total Households", totalHouseholds, Icons.home, Colors.orange),
+                _buildCard("Total Residents", totalResidents, Icons.people, Colors.green),
               ],
             ),
 
             const SizedBox(height: 15),
 
-            // Stats Section (Second Row)
             Row(
               children: [
-                _buildCard("Male", "0", Icons.male, Colors.blue),
-                _buildCard("Female", "0", Icons.female, Colors.pink),
+                _buildCard("Male", male, Icons.male, Colors.blue),
+                _buildCard("Female", female, Icons.female, Colors.pink),
               ],
             ),
 
             const SizedBox(height: 30),
 
-            // Info Section
             const Text(
               "Use the navigation below to manage households and barangay data.",
               textAlign: TextAlign.center,
@@ -89,8 +146,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // ---------------- HELPER FUNCTION TO BUILD CARDS ----------------
-  Widget _buildCard(String title, String value, IconData icon, Color color) {
+  Widget _buildCard(String title, int value, IconData icon, Color color) {
     return Expanded(
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 5),
@@ -102,13 +158,15 @@ class HomePage extends StatelessWidget {
             children: [
               Icon(icon, size: 30, color: color),
               const SizedBox(height: 10),
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w500)),
+              Text(
+                title,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+              ),
               const SizedBox(height: 5),
-              Text(value,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                value.toString(),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
         ),

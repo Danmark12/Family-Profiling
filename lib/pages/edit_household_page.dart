@@ -13,7 +13,6 @@ class EditHouseholdPage extends StatefulWidget {
 }
 
 class _EditHouseholdPageState extends State<EditHouseholdPage> {
-
   // Dropdowns
   String? barangay, toilet, garbage, water, food, dwellingType;
   String? fatherOccupation, fatherEducation;
@@ -66,7 +65,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
   late final ss = TextEditingController();
   late final st = TextEditingController();
 
-  // ✅ NEW: barangay controller (fix empty issue)
+  // Barangay controller fix
   late final TextEditingController barangayController;
 
   @override
@@ -146,25 +145,36 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
     noFather = hh.fatherOccupation == null || hh.fatherOccupation == "None";
     noMother = hh.motherOccupation == null || hh.motherOccupation == "None";
 
-    // ✅ FIX: initialize controller ONCE
+    // Initialize barangay controller
     barangayController = TextEditingController(text: barangay ?? "");
   }
 
-  int? num(TextEditingController c) =>
-      c.text.isEmpty ? null : int.tryParse(c.text);
+  int? _num(TextEditingController c) => c.text.isEmpty ? null : int.tryParse(c.text);
 
   @override
   Widget build(BuildContext context) {
-
     final occupations = [
-      "Private Employee","Government Employee","Self-Employed/Business Owner",
-      "Farmer/Fisherfolk","Overseas Filipino Worker","Skilled Laborer",
-      "Unemployed","Housewife/Househusband","Others","None"
+      "Private Employee",
+      "Government Employee",
+      "Self-Employed/Business Owner",
+      "Farmer/Fisherfolk",
+      "Overseas Filipino Worker",
+      "Skilled Laborer",
+      "Unemployed",
+      "Housewife/Househusband",
+      "Others",
+      "None"
     ];
 
     final educ = [
-      "Elementary Level","Elementary Graduate","High School Level",
-      "High School Graduate","College Level","Graduate","Vocational","Others"
+      "Elementary Level",
+      "Elementary Graduate",
+      "High School Level",
+      "High School Graduate",
+      "College Level",
+      "Graduate",
+      "Vocational",
+      "Others"
     ];
 
     return Scaffold(
@@ -174,16 +184,21 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Text("Household No.: ${widget.household.householdNo}"),
 
             _field("Zone / Purok", zone),
 
-            // ✅ FIXED BARANGAY FIELD (NO ARROW, NO EMPTY)
+            // Barangay readonly
             _field("Barangay", barangayController, readOnly: true, type: TextInputType.text),
 
-            CheckboxListTile(value: fourPs, onChanged:(v)=>setState(()=>fourPs=v!), title:const Text("4Ps")),
-            CheckboxListTile(value: indigenousPeople, onChanged:(v)=>setState(()=>indigenousPeople=v!), title:const Text("Indigenous People")),
+            CheckboxListTile(
+                value: fourPs,
+                onChanged: (v) => setState(() => fourPs = v!),
+                title: const Text("4Ps")),
+            CheckboxListTile(
+                value: indigenousPeople,
+                onChanged: (v) => setState(() => indigenousPeople = v!),
+                title: const Text("Indigenous People")),
 
             const Text("Father"),
             CheckboxListTile(
@@ -201,8 +216,12 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
               title: const Text("None"),
             ),
             _field("Name of Father", father, type: TextInputType.text, readOnly: noFather),
-            _drop("Occupation", fatherOccupation, occupations, noFather ? null : (v) => setState(() => fatherOccupation = v), disabled: noFather),
-            _drop("Educational Attainment", fatherEducation, educ, noFather ? null : (v) => setState(() => fatherEducation = v), disabled: noFather),
+            _drop("Occupation", fatherOccupation, occupations,
+                noFather ? null : (v) => setState(() => fatherOccupation = v),
+                disabled: noFather),
+            _drop("Educational Attainment", fatherEducation, educ,
+                noFather ? null : (v) => setState(() => fatherEducation = v),
+                disabled: noFather),
 
             const Text("Mother"),
             CheckboxListTile(
@@ -220,13 +239,17 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
               title: const Text("None"),
             ),
             _field("Name of Mother", mother, type: TextInputType.text, readOnly: noMother),
-            _drop("Occupation", motherOccupation, occupations, noMother ? null : (v) => setState(() => motherOccupation = v), disabled: noMother),
-            _drop("Educational Attainment", motherEducation, educ, noMother ? null : (v) => setState(() => motherEducation = v), disabled: noMother),
+            _drop("Occupation", motherOccupation, occupations,
+                noMother ? null : (v) => setState(() => motherOccupation = v),
+                disabled: noMother),
+            _drop("Educational Attainment", motherEducation, educ,
+                noMother ? null : (v) => setState(() => motherEducation = v),
+                disabled: noMother),
 
             const Text("Household Members"),
             _field("Male", male),
             _field("Female", female),
-            _field("Total", total, readOnly:true),
+            _field("Total", total, readOnly: true),
             _field("Families", families),
             _field("Fully Immunized Children", immunized),
 
@@ -270,52 +293,55 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
             _drop("Food Production", food, ["Vegetable Garden","Poultry","Fishpond","No Garden"], (v)=>setState(()=>food=v)),
             _drop("Dwelling Type", dwellingType, ["Semi Concrete","Wooden","Nipa","Barong","Makeshift"], (v)=>setState(()=>dwellingType=v)),
 
-            CheckboxListTile(value: iodizedSalt, onChanged:(v)=>setState(()=>iodizedSalt=v!), title:const Text("Uses Iodized Salt")),
+            CheckboxListTile(
+                value: iodizedSalt,
+                onChanged: (v) => setState(() => iodizedSalt = v!),
+                title: const Text("Uses Iodized Salt")),
 
             ElevatedButton(
               onPressed: () async {
                 await DBHelper.instance.updateHousehold(widget.household.id!, {
                   "zone": zone.text,
                   "barangay": barangay,
-                  "fourPs": fourPs?1:0,
-                  "indigenousPeople": indigenousPeople?1:0,
-                  "iodizedSalt": iodizedSalt?1:0,
+                  "fourPs": fourPs ? 1 : 0,
+                  "indigenousPeople": indigenousPeople ? 1 : 0,
+                  "iodizedSalt": iodizedSalt ? 1 : 0,
                   "fatherName": father.text,
                   "fatherOccupation": fatherOccupation,
                   "fatherEducation": fatherEducation,
                   "motherName": mother.text,
                   "motherOccupation": motherOccupation,
                   "motherEducation": motherEducation,
-                  "male": num(male),
-                  "female": num(female),
-                  "total": num(total),
-                  "families": num(families),
-                  "fullyImmunized": num(immunized),
-                  "exclusive": num(exclusive),
-                  "mixed": num(mixed),
-                  "bottleFed": num(bottle),
-                  "complementary": num(complementary),
-                  "preg19": num(preg19),
-                  "preg20": num(preg20),
-                  "lactating": num(lactating),
-                  "infant0to5": num(i0_5),
-                  "infant6to11": num(i6_11),
-                  "child12to23": num(c12_23),
-                  "child24to59": num(c24_59),
-                  "age5to9": num(a5_9),
-                  "age10to19": num(a10_19),
-                  "age20to59": num(a20_59),
-                  "age60above": num(a60),
-                  "pwd": num(pwd),
-                  "severelyUnderweight": num(su),
-                  "underweight": num(uw),
-                  "normal": num(nw),
-                  "severelyWasted": num(sw),
-                  "wasted": num(w),
-                  "overweight": num(ow),
-                  "obese": num(ob),
-                  "severelyStunted": num(ss),
-                  "stunted": num(st),
+                  "male": _num(male),
+                  "female": _num(female),
+                  "total": _num(total),
+                  "families": _num(families),
+                  "fullyImmunized": _num(immunized),
+                  "exclusive": _num(exclusive),
+                  "mixed": _num(mixed),
+                  "bottleFed": _num(bottle),
+                  "complementary": _num(complementary),
+                  "preg19": _num(preg19),
+                  "preg20": _num(preg20),
+                  "lactating": _num(lactating),
+                  "infant0to5": _num(i0_5),
+                  "infant6to11": _num(i6_11),
+                  "child12to23": _num(c12_23),
+                  "child24to59": _num(c24_59),
+                  "age5to9": _num(a5_9),
+                  "age10to19": _num(a10_19),
+                  "age20to59": _num(a20_59),
+                  "age60above": _num(a60),
+                  "pwd": _num(pwd),
+                  "severelyUnderweight": _num(su),
+                  "underweight": _num(uw),
+                  "normal": _num(nw),
+                  "severelyWasted": _num(sw),
+                  "wasted": _num(w),
+                  "overweight": _num(ow),
+                  "obese": _num(ob),
+                  "severelyStunted": _num(ss),
+                  "stunted": _num(st),
                   "toilet": toilet,
                   "garbage": garbage,
                   "water": water,
@@ -337,33 +363,40 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
     );
   }
 
-  Widget _field(String l, TextEditingController c, {bool readOnly=false, TextInputType? type}) {
+  Widget _field(String label, TextEditingController controller,
+      {bool readOnly = false, TextInputType? type}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: TextField(
-        controller: c,
+        controller: controller,
         readOnly: readOnly,
         keyboardType: type ?? TextInputType.number,
-        decoration: InputDecoration(labelText: l, border: const OutlineInputBorder()),
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
       ),
     );
   }
 
-  Widget _drop(String l, String? v, List<String> items, void Function(String?)? onChanged, {bool disabled=false}) {
+  Widget _drop(String label, String? value, List<String> items,
+      void Function(String?)? onChanged,
+      {bool disabled = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: InputDecorator(
         decoration: InputDecoration(
-          labelText: l,
+          labelText: label,
           border: const OutlineInputBorder(),
           suffixIcon: PopupMenuButton<String>(
             icon: const Icon(Icons.arrow_drop_down),
             enabled: !disabled,
             onSelected: onChanged,
-            itemBuilder: (c)=>items.map((e)=>PopupMenuItem(value:e, child:Text(e))).toList(),
+            itemBuilder: (c) =>
+                items.map((e) => PopupMenuItem(value: e, child: Text(e))).toList(),
           ),
         ),
-        child: Text(v ?? "Select"),
+        child: Text(value ?? "Select"),
       ),
     );
   }

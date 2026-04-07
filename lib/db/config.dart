@@ -29,6 +29,16 @@ class DBHelper {
 
   // ---------------- ONCREATE ----------------
   Future _createDB(Database db, int version) async {
+    // ---------------- USERS TABLE ----------------
+    await db.execute('''
+CREATE TABLE users(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT UNIQUE,
+  barangay TEXT,
+  password TEXT
+)
+''');
+
     // ---------------- HOUSEHOLDS TABLE ----------------
     await db.execute('''
 CREATE TABLE households(
@@ -80,17 +90,8 @@ CREATE TABLE households(
   water TEXT,
   food TEXT,
   dwellingType TEXT,
-  archived INTEGER DEFAULT 0
-)
-''');
-
-    // ---------------- USERS TABLE ----------------
-    await db.execute('''
-CREATE TABLE users(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT UNIQUE,
-  barangay TEXT,
-  password TEXT
+  archived INTEGER DEFAULT 0,
+  userId INTEGER
 )
 ''');
   }
@@ -98,14 +99,12 @@ CREATE TABLE users(
   // ---------------- ONUPGRADE ----------------
   Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      // future upgrades here
-      // e.g., await db.execute("ALTER TABLE users ADD COLUMN email TEXT;");
+      // Add userId column to households table for multi-user support
+      await db.execute("ALTER TABLE households ADD COLUMN userId INTEGER");
     }
   }
 
   // ---------------- USERS FUNCTIONS ----------------
-
-  // Register a new user
   Future<int> registerUser(String name, String barangay, String password) async {
     final db = await database;
     return await db.insert('users', {
@@ -115,52 +114,36 @@ CREATE TABLE users(
     });
   }
 
-  // Login user (checks name + password)
   Future<Map<String, dynamic>?> loginUser(String name, String password) async {
     final db = await database;
-
     final res = await db.query(
       'users',
       where: 'name = ?',
       whereArgs: [name],
     );
-
-    if (res.isNotEmpty) {
-      if (res.first['password'] == password) {
-        return res.first;
-      }
+    if (res.isNotEmpty && res.first['password'] == password) {
+      return res.first;
     }
     return null;
   }
 
-  // Get user by ID (for profile page)
   Future<Map<String, dynamic>?> getUserById(int id) async {
     final db = await database;
-    final res = await db.query(
-      'users',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    final res = await db.query('users', where: 'id = ?', whereArgs: [id]);
     if (res.isNotEmpty) return res.first;
     return null;
   }
 
-  // Alias for loginUserById (so profile.dart works)
-Future<Map<String, dynamic>?> loginUserById(int id) async {
-  return getUserById(id);
-}
-// ---------------- UPDATE USER ----------------
-Future<int> updateUser(int id, Map<String, dynamic> data) async {
-  final db = await database;
-  return await db.update(
-    'users',
-    data,
-    where: 'id = ?',
-    whereArgs: [id],
-  );
-}
-  // ---------------- HOUSEHOLD FUNCTIONS ----------------
+  Future<Map<String, dynamic>?> loginUserById(int id) async {
+    return getUserById(id);
+  }
 
+  Future<int> updateUser(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.update('users', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ---------------- HOUSEHOLDS FUNCTIONS ----------------
   Future<int?> getLastHouseholdNo() async {
     final db = await database;
     final result = await db.rawQuery(
@@ -172,87 +155,95 @@ Future<int> updateUser(int id, Map<String, dynamic> data) async {
     return null;
   }
 
-  Future<int> insertHousehold(Map<String, dynamic> data) async {
+  // ----------- NEW METHOD FOR USER-SPECIFIC HOUSEHOLD NO -----------
+  Future<int?> getLastHouseholdNoByUser(int userId) async {
     final db = await database;
+    final result = await db.rawQuery(
+      "SELECT householdNo FROM households WHERE userId = ? ORDER BY householdNo DESC LIMIT 1",
+      [userId],
+    );
+    if (result.isNotEmpty && result.first['householdNo'] != null) {
+      return result.first['householdNo'] as int;
+    }
+    return null;
+  }
+
+  // Insert household linked to a user
+  Future<int> insertHousehold(Map<String, dynamic> data, int userId) async {
+    final db = await database;
+    data['userId'] = userId;
     return await db.insert('households', data);
   }
 
-  Future<List<Map<String, dynamic>>> getAllHouseholds({bool includeArchived = false}) async {
+  // Fetch households for current user
+  Future<List<Map<String, dynamic>>> getUserHouseholds(int userId) async {
     final db = await database;
-    final whereClause = includeArchived ? null : 'archived = 0';
+    return await db.query(
+      'households',
+      where: 'archived = 0 AND userId = ?',
+      whereArgs: [userId],
+      orderBy: 'householdNo ASC',
+    );
+  }
+
+  // Get all households for current user
+  Future<List<Map<String, dynamic>>> getAllHouseholds(int userId, {bool includeArchived = false}) async {
+    final db = await database;
+    final whereClause = includeArchived ? 'userId = ?' : 'archived = 0 AND userId = ?';
     return await db.query(
       'households',
       where: whereClause,
+      whereArgs: [userId],
       orderBy: 'householdNo DESC',
     );
   }
 
-  Future<List<Map<String, dynamic>>> getHouseholdsByBarangay(String barangay, {bool includeArchived = false}) async {
+  Future<List<Map<String, dynamic>>> getHouseholdsByBarangay(String barangay, int userId, {bool includeArchived = false}) async {
     final db = await database;
-    final whereClause = includeArchived ? 'barangay = ?' : 'barangay = ? AND archived = 0';
+    final whereClause = includeArchived
+        ? 'barangay = ? AND userId = ?'
+        : 'barangay = ? AND archived = 0 AND userId = ?';
     return await db.query(
       'households',
       where: whereClause,
-      whereArgs: [barangay],
+      whereArgs: [barangay, userId],
       orderBy: 'householdNo DESC',
     );
   }
 
   Future<Map<String, dynamic>?> getHousehold(int id) async {
     final db = await database;
-    final result = await db.query(
-      'households',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    final result = await db.query('households', where: 'id = ?', whereArgs: [id]);
     if (result.isNotEmpty) return result.first;
     return null;
   }
 
   Future<void> updateHousehold(int id, Map<String, dynamic> data) async {
     final db = await database;
-    await db.update(
-      'households',
-      data,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.update('households', data, where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> archiveHousehold(int id) async {
     final db = await database;
-    await db.update(
-      'households',
-      {'archived': 1},
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.update('households', {'archived': 1}, where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> unarchiveHousehold(int id) async {
     final db = await database;
-    await db.update(
-      'households',
-      {'archived': 0},
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.update('households', {'archived': 0}, where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> deleteHouseholdPermanently(int id) async {
     final db = await database;
-    await db.delete(
-      'households',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete('households', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<List<Map<String, dynamic>>> getArchivedHouseholds() async {
+  Future<List<Map<String, dynamic>>> getArchivedHouseholds(int userId) async {
     final db = await database;
     return await db.query(
       'households',
-      where: 'archived = 1',
+      where: 'archived = 1 AND userId = ?',
+      whereArgs: [userId],
       orderBy: 'householdNo DESC',
     );
   }

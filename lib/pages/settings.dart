@@ -1,12 +1,13 @@
 // lib/pages/settings_page.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'archive.dart'; // Your archived households page
-import 'login.dart';
+import 'archive.dart'; // Updated page
 import 'logout.dart';
 
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+  final int currentUserId; // Logged-in user ID
+
+  const SettingsPage({super.key, required this.currentUserId});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,9 @@ class SettingsPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ArchivedHouseholdPage(),
+                      builder: (context) => ArchivedHouseholdPage(
+                        currentUserId: currentUserId, // pass the user ID
+                      ),
                     ),
                   );
                 },

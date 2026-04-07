@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../db/config.dart';
-import 'nav_page.dart'; // Home navigation page
+import 'nav_page.dart';
 import 'register.dart';
 
 class LoginPage extends StatefulWidget {
@@ -14,27 +14,35 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+
   final TextEditingController nameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
   final Color avocado = const Color(0xFF568203);
+
+  bool isLoading = false;
 
   // ---------------- LOGIN FUNCTION ----------------
   Future<void> login() async {
-    if (_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => isLoading = true);
+
+    try {
       final user = await DBHelper.instance.loginUser(
         nameController.text.trim(),
         passwordController.text.trim(),
       );
 
       if (user != null) {
-        // Save user info in SharedPreferences
+        // Save user session
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
         await prefs.setInt('userId', user['id']);
         await prefs.setString('userName', user['name']);
         await prefs.setString('userBarangay', user['barangay']);
 
-        // Success snackbar
+        // Success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Login successful'),
@@ -49,14 +57,14 @@ class _LoginPageState extends State<LoginPage> {
 
         await Future.delayed(const Duration(milliseconds: 800));
 
-        // Navigate to HomeNavPage (removes previous pages)
+        // Go to home
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const HomeNavPage()),
           (route) => false,
         );
       } else {
-        // Invalid login snackbar
+        // Invalid login
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Invalid name or password'),
@@ -68,10 +76,20 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       }
+    } catch (e) {
+      // Unexpected error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Something went wrong'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
+
+    setState(() => isLoading = false);
   }
 
-  // ---------------- INPUT DECORATION ----------------
+  // ---------------- INPUT STYLE ----------------
   InputDecoration inputStyle(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
@@ -99,7 +117,11 @@ class _LoginPageState extends State<LoginPage> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
               boxShadow: const [
-                BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 6)),
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 10,
+                  offset: Offset(0, 6),
+                ),
               ],
             ),
             child: Column(
@@ -109,55 +131,90 @@ class _LoginPageState extends State<LoginPage> {
                 Container(
                   height: 55,
                   width: 55,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: avocado),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: avocado,
+                  ),
                   child: const Icon(Icons.people, size: 30, color: Colors.white),
                 ),
+
                 const SizedBox(height: 8),
+
                 const Text(
                   'Login',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+
                 const SizedBox(height: 12),
+
                 Form(
                   key: _formKey,
                   child: Column(
                     children: [
-                      // Name
+                      // NAME
                       TextFormField(
                         controller: nameController,
                         decoration: inputStyle('Name', Icons.person),
-                        validator: (val) => val!.isEmpty ? 'Enter name' : null,
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Enter name';
+                          }
+                          return null;
+                        },
                       ),
+
                       const SizedBox(height: 8),
-                      // Password
+
+                      // PASSWORD
                       TextFormField(
                         controller: passwordController,
                         decoration: inputStyle('Password', Icons.lock),
                         obscureText: true,
-                        validator: (val) => val!.isEmpty ? 'Enter password' : null,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) {
+                            return 'Enter password';
+                          }
+                          return null;
+                        },
                       ),
+
                       const SizedBox(height: 12),
-                      // Login Button
+
+                      // LOGIN BUTTON
                       SizedBox(
                         width: double.infinity,
                         child: TextButton(
-                          onPressed: login,
+                          onPressed: isLoading ? null : login,
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                           ),
-                          child: Text(
-                            'Login',
-                            style: TextStyle(fontSize: 14, color: avocado, fontWeight: FontWeight.bold),
-                          ),
+                          child: isLoading
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: avocado,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
                       ),
+
                       const SizedBox(height: 4),
-                      // Navigate to Register
+
+                      // REGISTER LINK
                       TextButton(
                         onPressed: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => const RegisterPage()),
+                            MaterialPageRoute(
+                              builder: (_) => const RegisterPage(),
+                            ),
                           );
                         },
                         child: const Text(

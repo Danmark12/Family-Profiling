@@ -1,5 +1,8 @@
 // lib/pages/barangay_page.dart
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../db/config.dart';
+import 'barangay_household.dart'; // page to show households per barangay
 
 class BarangayPage extends StatefulWidget {
   const BarangayPage({super.key});
@@ -9,21 +12,34 @@ class BarangayPage extends StatefulWidget {
 }
 
 class _BarangayPageState extends State<BarangayPage> {
-  final TextEditingController controller = TextEditingController();
   List<String> barangays = [];
+  bool isLoading = true;
 
-  void addBarangay() {
-    if (controller.text.isNotEmpty) {
-      setState(() {
-        barangays.add(controller.text);
-        controller.clear();
-      });
-    }
+  @override
+  void initState() {
+    super.initState();
+    _loadBarangays();
   }
 
-  void deleteBarangay(int index) {
+  Future<void> _loadBarangays() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt('userID');
+    if (userId == null) return;
+
+    // Fetch all households for this user
+    final households = await DBHelper.instance.getAllHouseholds(userId);
+
+    // Extract unique barangays that have households
+    final barangaySet = <String>{};
+    for (var h in households) {
+      if (h['barangay'] != null && h['barangay'].toString().isNotEmpty) {
+        barangaySet.add(h['barangay']);
+      }
+    }
+
     setState(() {
-      barangays.removeAt(index);
+      barangays = barangaySet.toList()..sort();
+      isLoading = false;
     });
   }
 
@@ -34,56 +50,35 @@ class _BarangayPageState extends State<BarangayPage> {
         title: const Text("Barangay List"),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            
-            // Input
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    decoration: const InputDecoration(
-                      labelText: "Enter Barangay Name",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: addBarangay,
-                  child: const Text("Add"),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // List
-            Expanded(
-              child: barangays.isEmpty
-                  ? const Center(child: Text("No Barangay Added"))
-                  : ListView.builder(
-                      itemCount: barangays.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          child: ListTile(
-                            leading: const Icon(Icons.location_city),
-                            title: Text(barangays[index]),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => deleteBarangay(index),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : barangays.isEmpty
+              ? const Center(child: Text("No Barangay Data"))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: barangays.length,
+                  itemBuilder: (context, index) {
+                    final barangay = barangays[index];
+                    return Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.location_city),
+                        title: Text(barangay),
+                        trailing: const Icon(Icons.arrow_forward),
+                        onTap: () {
+                          // Go to households in this barangay
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BarangayHouseholdPage(
+                                barangay: barangay,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }

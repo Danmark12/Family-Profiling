@@ -1,4 +1,3 @@
-// lib/pages/logout.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
@@ -14,18 +13,29 @@ class _LogoutPageState extends State<LogoutPage> {
   @override
   void initState() {
     super.initState();
-    logout();
+    _logout();
   }
 
-  Future<void> logout() async {
+  Future<void> _logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear(); // remove all saved session
 
-    // Optional: Show a snackbar
+    // Clear only session-related keys (optional)
+    await prefs.remove('isLoggedIn');
+    await prefs.remove('userId');
+    await prefs.remove('userName');
+    await prefs.remove('userBarangay');
+
+    // Show snackbar for feedback
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Logged out successfully')),
+        const SnackBar(
+          content: Text('Logged out successfully'),
+          duration: Duration(seconds: 1),
+        ),
       );
+
+      // Wait a short moment so the user can see the snackbar
+      await Future.delayed(const Duration(milliseconds: 800));
 
       // Navigate to login page
       Navigator.pushAndRemoveUntil(
