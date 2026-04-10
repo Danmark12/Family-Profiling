@@ -43,7 +43,7 @@ class BarangayPage extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        const BarangayHouseholdPage(barangay: ""),
+                        const BarangayHouseholdPage(),
                   ),
                 );
               },

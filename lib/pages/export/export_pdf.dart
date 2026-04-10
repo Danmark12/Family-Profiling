@@ -170,11 +170,13 @@ class ExportPdfService {
               _row('Pregnant 20 above', '$totalPreg20'),
               _row('Lactating', '$totalLactating'),
 
+              _row('Infant and young child feeding (IYCF):', ''),
               _row('Total number of 0-5 months exclusively breastfed', '$totalExclusive'),
               _row('Total number of 0 - 5 months mixed fed', '$totalMixed'),
               _row('Total number of 0 - 5 bottle fed', '$totalBottleFed'),
               _row('Total number of 6-12 given complementary fed', '$totalComplementary'),
 
+              _row('Age group:', ''),
               _row('Total number of infants 0-5 months old', '$totalInfant0to5'),
               _row('Total number of infants 6-11 months old', '$totalInfant6to11'),
               _row('Total number of children 12-23 months old', '$totalChild12to23'),

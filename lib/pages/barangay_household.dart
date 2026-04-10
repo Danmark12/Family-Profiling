@@ -1,168 +1,320 @@
-// lib/pages/barangay_household.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../db/config.dart';
 import '../models/household.dart';
+import 'export/export_b_pdf.dart';
 
 class BarangayHouseholdPage extends StatefulWidget {
-  final String barangay;
-
-  const BarangayHouseholdPage({super.key, required this.barangay});
+  const BarangayHouseholdPage({super.key});
 
   @override
-  State<BarangayHouseholdPage> createState() => _BarangayHouseholdPageState();
+  State<BarangayHouseholdPage> createState() =>
+      _BarangayHouseholdPageState();
 }
 
-class _BarangayHouseholdPageState extends State<BarangayHouseholdPage> {
+class _BarangayHouseholdPageState
+    extends State<BarangayHouseholdPage> {
+  int? userId;
+  String barangay = "";
+
+  String selectedZone = "All";
+
   List<Household> households = [];
-  bool isLoading = true;
+  List<Household> filtered = [];
+
+  List<String> zones = ["All"];
 
   @override
   void initState() {
     super.initState();
-    _loadHouseholds();
+    _load();
   }
 
-  Future<void> _loadHouseholds() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? userId = prefs.getInt('userID');
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    userId = prefs.getInt('userId');
+
     if (userId == null) return;
 
-    // Fetch households for this barangay AND current user
-    final data = await DBHelper.instance.getHouseholdsByBarangay(widget.barangay, userId);
+    final user = await DBHelper.instance.getUserById(userId!);
+    final data = await DBHelper.instance.getUserHouseholds(userId!);
+
+    final list = data.map((e) => Household.fromMap(e)).toList();
+
+final uniqueZones = list
+    .map((e) => e.zone ?? "")
+    .where((z) => z.isNotEmpty)
+    .toSet()
+    .toList()
+  ..sort((a, b) {
+    final intA = int.tryParse(a) ?? 0;
+    final intB = int.tryParse(b) ?? 0;
+    return intA.compareTo(intB);
+  });
+
     setState(() {
-      households = data.map((e) => Household.fromMap(e)).toList();
-      isLoading = false;
+      barangay = user?['barangay'] ?? "";
+      households = list;
+      filtered = list;
+      zones = ["All", ...uniqueZones];
     });
   }
 
-  // Columns to display
-  List<String> get headers => [
-        "Household No",
-        "Zone",
-        "Barangay",
-        "4Ps",
-        "Indigenous People",
-        "Iodized Salt",
-        "Father Name",
-        "Father Occupation",
-        "Father Education",
-        "Mother Name",
-        "Mother Occupation",
-        "Mother Education",
-        "Male",
-        "Female",
-        "Total",
-        "Families",
-        "Fully Immunized",
-        "Exclusive",
-        "Mixed",
-        "Bottle Fed",
-        "Complementary",
-        "Preg <19",
-        "Preg 20+",
-        "Lactating",
-        "0-5 mo",
-        "6-11 mo",
-        "12-23 mo",
-        "24-59 mo",
-        "5-9",
-        "10-19",
-        "20-59",
-        "60+",
-        "PWD",
-        "Severely Underweight",
-        "Underweight",
-        "Normal",
-        "Severely Wasted",
-        "Wasted",
-        "Overweight",
-        "Obese",
-        "Severely Stunted",
-        "Stunted",
-        "Toilet",
-        "Garbage",
-        "Water",
-        "Food",
-        "Dwelling Type"
-      ];
+  void _filterZone(String zone) {
+    setState(() {
+      selectedZone = zone;
+
+      if (zone == "All") {
+        filtered = households;
+      } else {
+        filtered = households.where((h) => h.zone == zone).toList();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Household Records - ${widget.barangay}")),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : households.isEmpty
-              ? const Center(child: Text("No household records yet"))
-              : SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(10),
-                    child: DataTable(
-                      headingRowColor: MaterialStateProperty.all(Colors.grey[300]),
-                      columns: headers
-                          .map((h) => DataColumn(
-                                label: Text(
-                                  h,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ))
-                          .toList(),
-                      rows: households.map((h) {
-                        return DataRow(cells: [
-                          DataCell(Text(h.householdNo.toString())),
-                          DataCell(Text(h.zone ?? "")),
-                          DataCell(Text(h.barangay ?? "")),
-                          DataCell(Text(h.fourPs.toString())),
-                          DataCell(Text(h.indigenousPeople.toString())),
-                          DataCell(Text(h.iodizedSalt.toString())),
-                          DataCell(Text(h.fatherName ?? "")),
-                          DataCell(Text(h.fatherOccupation ?? "")),
-                          DataCell(Text(h.fatherEducation ?? "")),
-                          DataCell(Text(h.motherName ?? "")),
-                          DataCell(Text(h.motherOccupation ?? "")),
-                          DataCell(Text(h.motherEducation ?? "")),
-                          DataCell(Text(h.male?.toString() ?? "")),
-                          DataCell(Text(h.female?.toString() ?? "")),
-                          DataCell(Text(h.total?.toString() ?? "")),
-                          DataCell(Text(h.families?.toString() ?? "")),
-                          DataCell(Text(h.fullyImmunized?.toString() ?? "")),
-                          DataCell(Text(h.exclusive?.toString() ?? "")),
-                          DataCell(Text(h.mixed?.toString() ?? "")),
-                          DataCell(Text(h.bottleFed?.toString() ?? "")),
-                          DataCell(Text(h.complementary?.toString() ?? "")),
-                          DataCell(Text(h.preg19?.toString() ?? "")),
-                          DataCell(Text(h.preg20?.toString() ?? "")),
-                          DataCell(Text(h.lactating?.toString() ?? "")),
-                          DataCell(Text(h.infant0to5?.toString() ?? "")),
-                          DataCell(Text(h.infant6to11?.toString() ?? "")),
-                          DataCell(Text(h.child12to23?.toString() ?? "")),
-                          DataCell(Text(h.child24to59?.toString() ?? "")),
-                          DataCell(Text(h.age5to9?.toString() ?? "")),
-                          DataCell(Text(h.age10to19?.toString() ?? "")),
-                          DataCell(Text(h.age20to59?.toString() ?? "")),
-                          DataCell(Text(h.age60above?.toString() ?? "")),
-                          DataCell(Text(h.pwd?.toString() ?? "")),
-                          DataCell(Text(h.severelyUnderweight?.toString() ?? "")),
-                          DataCell(Text(h.underweight?.toString() ?? "")),
-                          DataCell(Text(h.normal?.toString() ?? "")),
-                          DataCell(Text(h.severelyWasted?.toString() ?? "")),
-                          DataCell(Text(h.wasted?.toString() ?? "")),
-                          DataCell(Text(h.overweight?.toString() ?? "")),
-                          DataCell(Text(h.obese?.toString() ?? "")),
-                          DataCell(Text(h.severelyStunted?.toString() ?? "")),
-                          DataCell(Text(h.stunted?.toString() ?? "")),
-                          DataCell(Text(h.toilet ?? "")),
-                          DataCell(Text(h.garbage ?? "")),
-                          DataCell(Text(h.water ?? "")),
-                          DataCell(Text(h.food ?? "")),
-                          DataCell(Text(h.dwellingType ?? "")),
-                        ]);
-                      }).toList(),
+      appBar: AppBar(
+        title: const Text("Barangay Household Table"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            tooltip: "Export PDF",
+            onPressed: () {
+              ExportBarangayPDF.generate(
+                data: filtered,
+                barangay: barangay,
+                zone: selectedZone,
+              );
+            },
+          ),
+        ],
+      ),
+
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // HEADER
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                const Center(
+                  child: Text(
+                    "Family Profile",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
+
+                const SizedBox(height: 10),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text("Barangay: $barangay"),
+                    ),
+
+                    // ✅ CLEAN DROPDOWN (NO UI JUMP)
+                    Container(
+                      height: 35,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectedZone,
+                          isDense: true,
+                          isExpanded: false,
+                          icon: const Icon(Icons.arrow_drop_down),
+
+                          onChanged: (value) {
+                            if (value != null) {
+                              _filterZone(value);
+                            }
+                          },
+
+                          items: zones.map((z) {
+                            return DropdownMenuItem(
+                              value: z,
+                              child: Text(
+                                z == "All" ? "All Zones" : "Zone $z",
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const Divider(),
+
+          // TABLE
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                child: Table(
+                  border: TableBorder.all(),
+                  defaultColumnWidth: const IntrinsicColumnWidth(),
+                  children: _buildTable(),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<TableRow> _buildTable() {
+    final headers = [
+      "HH",
+      "Zone",
+      "Father Name",
+      "Father Occupation",
+      "Father Education",
+      "Mother Name",
+      "Mother Occupation",
+      "Mother Education",
+      "Male",
+      "Female",
+      "Total",
+      "Families",
+      "4Ps",
+      "IP",
+      "Preg <19",
+      "Preg 20+",
+      "Lactating",
+      "Exclusive",
+      "Mixed",
+      "Bottle-fed",
+      "Complementary",
+      "0-5",
+      "6-11",
+      "12-23",
+      "24-59",
+      "5-9",
+      "10-19",
+      "20-59",
+      "60+",
+      "PWD",
+      "Sev UW",
+      "UW",
+      "Normal",
+      "Sev W",
+      "W",
+      "OW",
+      "Obese",
+      "Sev St",
+      "St",
+      "Toilet",
+      "Garbage",
+      "Water",
+      "Food",
+      "Dwelling",
+      "Salt",
+    ];
+
+    List<TableRow> rows = [];
+
+    rows.add(
+      TableRow(
+        decoration: const BoxDecoration(color: Colors.grey),
+        children: headers
+            .map((h) => Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Text(
+                    h,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ))
+            .toList(),
+      ),
+    );
+
+    if (filtered.isEmpty) {
+      rows.add(TableRow(
+        children: List.generate(
+          headers.length,
+          (_) => const Padding(
+            padding: EdgeInsets.all(6),
+            child: Text("-"),
+          ),
+        ),
+      ));
+      return rows;
+    }
+
+    for (int i = 0; i < filtered.length; i++) {
+      final h = filtered[i];
+
+      rows.add(TableRow(children: [
+        _cell("${i + 1}"),
+        _cell(h.zone ?? "-"),
+        _cell(h.fatherName ?? "-"),
+        _cell(h.fatherOccupation ?? "-"),
+        _cell(h.fatherEducation ?? "-"),
+        _cell(h.motherName ?? "-"),
+        _cell(h.motherOccupation ?? "-"),
+        _cell(h.motherEducation ?? "-"),
+        _cell("${h.male ?? 0}"),
+        _cell("${h.female ?? 0}"),
+        _cell("${h.total ?? 0}"),
+        _cell("${h.families ?? 0}"),
+        _cell("${h.fourPs ?? 0}"),
+        _cell("${h.indigenousPeople ?? 0}"),
+        _cell("${h.preg19 ?? 0}"),
+        _cell("${h.preg20 ?? 0}"),
+        _cell("${h.lactating ?? 0}"),
+        _cell("${h.exclusive ?? 0}"),
+        _cell("${h.mixed ?? 0}"),
+        _cell("${h.bottleFed ?? 0}"),
+        _cell("${h.complementary ?? 0}"),
+        _cell("${h.infant0to5 ?? 0}"),
+        _cell("${h.infant6to11 ?? 0}"),
+        _cell("${h.child12to23 ?? 0}"),
+        _cell("${h.child24to59 ?? 0}"),
+        _cell("${h.age5to9 ?? 0}"),
+        _cell("${h.age10to19 ?? 0}"),
+        _cell("${h.age20to59 ?? 0}"),
+        _cell("${h.age60above ?? 0}"),
+        _cell("${h.pwd ?? 0}"),
+        _cell("${h.severelyUnderweight ?? 0}"),
+        _cell("${h.underweight ?? 0}"),
+        _cell("${h.normal ?? 0}"),
+        _cell("${h.severelyWasted ?? 0}"),
+        _cell("${h.wasted ?? 0}"),
+        _cell("${h.overweight ?? 0}"),
+        _cell("${h.obese ?? 0}"),
+        _cell("${h.severelyStunted ?? 0}"),
+        _cell("${h.stunted ?? 0}"),
+        _cell(h.toilet ?? "-"),
+        _cell(h.garbage ?? "-"),
+        _cell(h.water ?? "-"),
+        _cell(h.food ?? "-"),
+        _cell(h.dwellingType ?? "-"),
+        _cell("${h.iodizedSalt ?? 0}"),
+      ]));
+    }
+
+    return rows;
+  }
+
+  Widget _cell(String value) {
+    return Padding(
+      padding: const EdgeInsets.all(6),
+      child: Text(value, textAlign: TextAlign.center),
     );
   }
 }
