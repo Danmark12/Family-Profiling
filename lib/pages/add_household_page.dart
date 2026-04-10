@@ -261,7 +261,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
                 ["Vegetable Garden", "Poultry", "Fishpond", "No Garden"],
                 (v) => setState(() => food = v)),
             _drop("Dwelling Type", dwellingType,
-                ["Semi Concrete", "Wooden", "Nipa", "Barong", "Makeshift"],
+                ["Concrete","Semi Concrete", "Wooden", "Nipa", "Barong", "Makeshift"],
                 (v) => setState(() => dwellingType = v)),
 
             CheckboxListTile(

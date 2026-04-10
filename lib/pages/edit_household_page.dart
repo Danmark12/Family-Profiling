@@ -291,7 +291,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
             _drop("Garbage Disposal", garbage, ["Barangay Collector","Compost Pit","Burning","Dumping"], (v)=>setState(()=>garbage=v)),
             _drop("Water Source", water, ["Pipe Water","Deep Well","Purified","Shallow Well","Artesian","Spring"], (v)=>setState(()=>water=v)),
             _drop("Food Production", food, ["Vegetable Garden","Poultry","Fishpond","No Garden"], (v)=>setState(()=>food=v)),
-            _drop("Dwelling Type", dwellingType, ["Semi Concrete","Wooden","Nipa","Barong","Makeshift"], (v)=>setState(()=>dwellingType=v)),
+            _drop("Dwelling Type", dwellingType, ["Concrete","Semi Concrete","Wooden","Nipa","Barong","Makeshift"], (v)=>setState(()=>dwellingType=v)),
 
             CheckboxListTile(
                 value: iodizedSalt,
