@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import '../db/config.dart';
 import '../models/household.dart';
+import 'package:intl/intl.dart';
 
 class EditHouseholdPage extends StatefulWidget {
   final Household household;
@@ -67,7 +68,9 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
 
   // Barangay controller fix
   late final TextEditingController barangayController;
-
+String get formattedDate {
+  return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+}
   @override
   void initState() {
     super.initState();
@@ -298,6 +301,8 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
                 onChanged: (v) => setState(() => iodizedSalt = v!),
                 title: const Text("Uses Iodized Salt")),
 
+                
+
             ElevatedButton(
               onPressed: () async {
                 await DBHelper.instance.updateHousehold(widget.household.id!, {
@@ -347,6 +352,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
                   "water": water,
                   "food": food,
                   "dwellingType": dwellingType,
+                  "updated_at": formattedDate,
                 });
 
                 ScaffoldMessenger.of(context).showSnackBar(

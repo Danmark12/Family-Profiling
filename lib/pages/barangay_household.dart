@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../db/config.dart';
 import '../models/household.dart';
 import 'export/export_b_pdf.dart';
+import 'package:intl/intl.dart';
 
 class BarangayHouseholdPage extends StatefulWidget {
   const BarangayHouseholdPage({super.key});
@@ -16,6 +17,9 @@ class _BarangayHouseholdPageState
     extends State<BarangayHouseholdPage> {
   int? userId;
   String barangay = "";
+
+  String generatedDate = "";
+  String generatedTime = "";
 
   String selectedZone = "All";
 
@@ -41,16 +45,16 @@ class _BarangayHouseholdPageState
 
     final list = data.map((e) => Household.fromMap(e)).toList();
 
-final uniqueZones = list
-    .map((e) => e.zone ?? "")
-    .where((z) => z.isNotEmpty)
-    .toSet()
-    .toList()
-  ..sort((a, b) {
-    final intA = int.tryParse(a) ?? 0;
-    final intB = int.tryParse(b) ?? 0;
-    return intA.compareTo(intB);
-  });
+    final uniqueZones = list
+        .map((e) => e.zone ?? "")
+        .where((z) => z.isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort((a, b) {
+        final intA = int.tryParse(a) ?? 0;
+        final intB = int.tryParse(b) ?? 0;
+        return intA.compareTo(intB);
+      });
 
     setState(() {
       barangay = user?['barangay'] ?? "";
@@ -72,6 +76,32 @@ final uniqueZones = list
     });
   }
 
+  // ✅ GENERATE PH TIME
+  void _generateDateTime() {
+    final now = DateTime.now().toUtc().add(const Duration(hours: 8));
+
+    generatedDate = DateFormat('MMMM dd, yyyy').format(now);
+    generatedTime = DateFormat('hh:mm a').format(now);
+  }
+
+  // ✅ FIXED PDF EXPORT
+  Future<void> _exportPdf() async {
+    if (userId == null) return;
+
+    final data = await DBHelper.instance.getUserHouseholds(userId!);
+    final households = data.map((e) => Household.fromMap(e)).toList();
+
+    _generateDateTime();
+
+    await ExportBarangayPDF.generate(
+      data: households,
+      barangay: barangay,
+      zone: selectedZone,
+      generatedDate: generatedDate,
+      generatedTime: generatedTime,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,13 +111,7 @@ final uniqueZones = list
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),
             tooltip: "Export PDF",
-            onPressed: () {
-              ExportBarangayPDF.generate(
-                data: filtered,
-                barangay: barangay,
-                zone: selectedZone,
-              );
-            },
+            onPressed: _exportPdf,
           ),
         ],
       ),
@@ -95,7 +119,6 @@ final uniqueZones = list
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // HEADER
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -118,7 +141,6 @@ final uniqueZones = list
                       child: Text("Barangay: $barangay"),
                     ),
 
-                    // ✅ CLEAN DROPDOWN (NO UI JUMP)
                     Container(
                       height: 35,
                       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -130,15 +152,10 @@ final uniqueZones = list
                         child: DropdownButton<String>(
                           value: selectedZone,
                           isDense: true,
-                          isExpanded: false,
                           icon: const Icon(Icons.arrow_drop_down),
-
                           onChanged: (value) {
-                            if (value != null) {
-                              _filterZone(value);
-                            }
+                            if (value != null) _filterZone(value);
                           },
-
                           items: zones.map((z) {
                             return DropdownMenuItem(
                               value: z,
@@ -158,7 +175,6 @@ final uniqueZones = list
 
           const Divider(),
 
-          // TABLE
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -260,7 +276,7 @@ final uniqueZones = list
       final h = filtered[i];
 
       rows.add(TableRow(children: [
-        _cell("${i + 1}"),
+        _cell("${h.householdNo}"),
         _cell(h.zone ?? "-"),
         _cell(h.fatherName ?? "-"),
         _cell(h.fatherOccupation ?? "-"),

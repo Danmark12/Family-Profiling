@@ -19,12 +19,11 @@ class DBHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(
-      path,
-      version: 2,
-      onCreate: _createDB,
-      onUpgrade: _upgradeDB,
-    );
+return await openDatabase(
+  path,
+  version: 1,
+  onCreate: _createDB,
+);
   }
 
   // ---------------- ONCREATE ----------------
@@ -91,17 +90,11 @@ CREATE TABLE households(
   food TEXT,
   dwellingType TEXT,
   archived INTEGER DEFAULT 0,
-  userId INTEGER
+  userId INTEGER,
+  created_at TEXT,
+  updated_at TEXT
 )
 ''');
-  }
-
-  // ---------------- ONUPGRADE ----------------
-  Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      // Add userId column to households table for multi-user support
-      await db.execute("ALTER TABLE households ADD COLUMN userId INTEGER");
-    }
   }
 
   // ---------------- USERS FUNCTIONS ----------------

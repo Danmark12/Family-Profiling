@@ -289,6 +289,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
                   }
 
                   _calculateTotal();
+                  String createdAt = DateTime.now().toIso8601String();
 
                   await DBHelper.instance.insertHousehold({
                     "householdNo": householdNo,
@@ -338,6 +339,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
                     "water": water,
                     "food": food,
                     "dwellingType": dwellingType,
+                    "created_at": createdAt,
                   }, userId!);
 
                   ScaffoldMessenger.of(context).showSnackBar(

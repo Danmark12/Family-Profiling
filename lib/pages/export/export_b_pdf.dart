@@ -8,6 +8,10 @@ class ExportBarangayPDF {
     required List<Household> data,
     required String barangay,
     required String zone,
+
+    // ✅ ADDED DATE & TIME
+    required String generatedDate,
+    required String generatedTime,
   }) async {
     final pdf = pw.Document();
 
@@ -15,6 +19,21 @@ class ExportBarangayPDF {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4.landscape,
         margin: const pw.EdgeInsets.all(8),
+
+        // ✅ FOOTER (BOTTOM OF EVERY PAGE)
+        footer: (context) {
+          return pw.Container(
+            alignment: pw.Alignment.centerRight,
+            margin: const pw.EdgeInsets.only(top: 10),
+            child: pw.Text(
+              "Date: $generatedDate | $generatedTime ()",
+              style: pw.TextStyle(
+                fontSize: 8,
+                color: PdfColors.grey,
+              ),
+            ),
+          );
+        },
 
         build: (context) => [
 
@@ -41,7 +60,20 @@ class ExportBarangayPDF {
             ],
           ),
 
-          pw.SizedBox(height: 6),
+          pw.SizedBox(height: 4),
+
+          // // ✅ DATE + TIME (HEADER PART)
+          // pw.Row(
+          //   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     pw.Text("Date: $generatedDate",
+          //         style: const pw.TextStyle(fontSize: 8)),
+          //     pw.Text("Time: $generatedTime",
+          //         style: const pw.TextStyle(fontSize: 8)),
+          //   ],
+          // ),
+
+          // pw.SizedBox(height: 6),
 
           // ========================= TABLE =========================
           pw.Table.fromTextArray(
@@ -71,7 +103,7 @@ class ExportBarangayPDF {
               final h = data[i];
 
               return [
-                "${i + 1}",
+              "${h.householdNo}",
                 h.zone ?? "",
 
                 h.fatherName ?? "",
@@ -257,8 +289,9 @@ class ExportBarangayPDF {
     );
 
     await Printing.layoutPdf(
-      onLayout: (format) async => pdf.save(),
-    );
+  format: PdfPageFormat.a4.landscape,
+  onLayout: (format) async => pdf.save(),
+        );
   }
 
   static pw.Widget _groupText(String title, List<String> items) {

@@ -6,10 +6,16 @@ import '../../models/household.dart';
 class ExportPdfService {
   final List<Household> households;
   final String barangay;
+  
+    final String generatedDate;
+  final String generatedTime;
 
   ExportPdfService({
     required this.households,
     required this.barangay,
+    required this.generatedDate,   // ✅ ADDED
+    required this.generatedTime,   
+    
   });
 
   Future<Uint8List> generate() async {
@@ -113,6 +119,23 @@ class ExportPdfService {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
+
+
+        // ⭐ FOOTER ADDED HERE (EVERY PAGE)
+        footer: (context) {
+          return pw.Container(
+            alignment: pw.Alignment.centerRight,
+            margin: const pw.EdgeInsets.only(top: 10),
+            padding: const pw.EdgeInsets.only(right: 10),
+            child: pw.Text(
+              'Date: $generatedDate | $generatedTime ()',
+              style: pw.TextStyle(fontSize: 9, color: PdfColors.grey),
+            ),
+          );  
+        },
+
+
+
         build: (context) => [
           pw.Center(
             child: pw.Text(
@@ -122,6 +145,8 @@ class ExportPdfService {
           ),
           pw.SizedBox(height: 10),
           pw.Text('Barangay: $barangay'),
+          // pw.Text('Date Generated: $generatedDate'),
+          // pw.Text('Time Generated: $generatedTime (Philippine Time)'),
           pw.SizedBox(height: 15),
 
           // ✅ MANUAL TABLE (NO REPEATED HEADERS)

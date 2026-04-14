@@ -1,4 +1,6 @@
 // lib/models/household.dart
+import 'package:intl/intl.dart';
+
 class Household {
   final int? id;
   final int householdNo;
@@ -59,6 +61,11 @@ class Household {
   final String? food;
   final String? dwellingType;
 
+  // ✅ NEW FIELD
+  final String? createdAt;
+  final String? updatedAt;
+
+
   Household({
     this.id,
     required this.householdNo,
@@ -118,9 +125,13 @@ class Household {
     this.water,
     this.food,
     this.dwellingType,
+
+    // ✅ NEW
+    this.createdAt,
+    this.updatedAt,
   });
 
-  /// Convert object → Map (for DB insert)
+  // ---------------- TO MAP (INSERT) ----------------
   Map<String, dynamic> toMap() {
     return {
       "id": id,
@@ -181,10 +192,14 @@ class Household {
       "water": water,
       "food": food,
       "dwellingType": dwellingType,
+
+      // ✅ NEW
+      "created_at": createdAt,
+      "updated_at": updatedAt,
     };
   }
 
-  /// Convert Map → Object (for reading DB later)
+  // ---------------- FROM MAP (READ) ----------------
   factory Household.fromMap(Map<String, dynamic> map) {
     return Household(
       id: map['id'],
@@ -245,6 +260,22 @@ class Household {
       water: map['water'],
       food: map['food'],
       dwellingType: map['dwellingType'],
+
+      // ✅ NEW
+      createdAt: map['created_at'],
+      updatedAt: map['updated_at'],
     );
+  }
+
+  // ---------------- FORMAT DATE (UI READY) ----------------
+  String get formattedCreatedAt {
+    if (createdAt == null || createdAt!.isEmpty) return "";
+
+    try {
+      final dt = DateTime.parse(createdAt!);
+      return DateFormat("MMM dd, yyyy - hh:mm a").format(dt);
+    } catch (e) {
+      return createdAt!;
+    }
   }
 }

@@ -4,44 +4,58 @@ import '../models/household.dart';
 
 class HouseholdDetailPage extends StatelessWidget {
   final Household hh;
+
   const HouseholdDetailPage({super.key, required this.hh});
 
-  // helper to show a row
   Widget buildRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Text(
-              "$label:",
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
             ),
           ),
           Expanded(
-            flex: 5,
-            child: Text(value),
+            flex: 6,
+            child: Text(
+              value,
+              style: const TextStyle(color: Colors.black54),
+            ),
           ),
         ],
       ),
     );
   }
 
-  // helper to show a card section
   Widget buildSection(String title, List<Widget> children) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const Divider(height: 16),
             ...children
           ],
         ),
@@ -52,6 +66,11 @@ class HouseholdDetailPage extends StatelessWidget {
   String boolToYesNo(int? value) {
     if (value == null) return "-";
     return value == 1 ? "Yes" : "No";
+  }
+
+  String formatDate(String? date) {
+    if (date == null || date.isEmpty) return "-";
+    return date;
   }
 
   @override
@@ -65,6 +84,40 @@ class HouseholdDetailPage extends StatelessWidget {
         child: Column(
           children: [
 
+            // ================= SUMMARY HEADER =================
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF568203).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF568203)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Household #${hh.householdNo}",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text("Zone/Purok: ${hh.zone ?? "-"}"),
+                  Text("Barangay: ${hh.barangay ?? "-"}"),
+
+                  const SizedBox(height: 10),
+
+                  // ✅ DATE & TIME SECTION (NEW)
+                  Text("Created: ${formatDate(hh.createdAt)}"),
+                  Text("Updated: ${formatDate(hh.updatedAt)}"),
+                ],
+              ),
+            ),
+
+            // ================= BASIC INFO =================
             buildSection("Basic Info", [
               buildRow("Zone/Purok", hh.zone ?? "-"),
               buildRow("Barangay", hh.barangay ?? "-"),
