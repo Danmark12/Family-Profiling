@@ -18,9 +18,7 @@ class ExportBarangayPDF {
 
         build: (context) => [
 
-          // =========================
-          // HEADER
-          // =========================
+          // ========================= HEADER =========================
           pw.Center(
             child: pw.Text(
               "FAMILY PROFILING FORM",
@@ -45,9 +43,7 @@ class ExportBarangayPDF {
 
           pw.SizedBox(height: 6),
 
-          // =========================
-          // TABLE
-          // =========================
+          // ========================= TABLE =========================
           pw.Table.fromTextArray(
             border: pw.TableBorder.all(width: 0.4),
             headerStyle: pw.TextStyle(
@@ -60,21 +56,14 @@ class ExportBarangayPDF {
               "HH","Z",
               "Father","FOcc","FEdu",
               "Mother","MOcc","MEdu",
-
               "M","F","T","Fam",
               "4Ps","IP",
-
               "P19","P20","Lac",
-
               "Ex","Mix","Bot","Comp",
-
               "0-5","6-11","12-23","24-59",
               "5-9","10-19","20-59","60+",
-
               "PWD","SUW","UW","Norm","SW","W","OW","Ob","SS","St",
-
               "Toi","Gar","Wat","Food","Dw",
-
               "Salt",
             ],
 
@@ -143,9 +132,7 @@ class ExportBarangayPDF {
 
           pw.SizedBox(height: 10),
 
-          // =========================
-          // ACRONYMS (NO BOXES, LANDSCAPE STYLE)
-          // =========================
+          // ========================= LEGEND =========================
           pw.Text(
             "ACRONYMS / LEGEND",
             style: pw.TextStyle(
@@ -156,107 +143,113 @@ class ExportBarangayPDF {
 
           pw.SizedBox(height: 5),
 
-          pw.Wrap(
-            spacing: 18,
-            runSpacing: 6,
+          // -------- ROW 1 --------
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
 
-              _groupText("HOUSEHOLD", [
-                "HH = Household No",
-                "Z = Zone/Purok",
-                "4Ps = Pantawid Program",
+              pw.Expanded(child: _groupText("HOUSEHOLD INFORMATION", [
+                "HH = Household Number",
+                "Z = Zone / Purok",
+                "4Ps = Pantawid Pamilyang Pilipino Program",
                 "IP = Indigenous People",
-              ]),
+              ])),
 
-              _groupText("MEMBERS", [
+              pw.Expanded(child: _groupText("HOUSEHOLD MEMBERS", [
                 "M = Male",
                 "F = Female",
-                "T = Total",
-                "Fam = Families",
-              ]),
+                "T = Total Members",
+                "Fam = Number of Families",
+              ])),
 
-              _groupText("IYCF", [
-                "Ex = Exclusive BF",
-                "Mix = Mixed Feeding",
-                "Bot = Bottle Feeding",
-                "Comp = Complementary Feeding",
-              ]),
+              pw.Expanded(child: _groupText("IYCF", [
+                "Ex = 0-5 months Exclusively Breastfed",
+                "Mix = 0-5 months Mixed Feeding",
+                "Bot = 0-5 months Bottle Fed",
+                "Comp = 6-12 months Complementary Feeding",
+              ])),
 
-              _groupText("WOMEN", [
-                "P19 = Pregnant <19",
-                "P20 = Pregnant 20+",
+              pw.Expanded(child: _groupText("WOMEN STATUS", [
+                "P19 = Pregnant 19 years old and below",
+                "P20 = Pregnant 20 years old and above",
                 "Lac = Lactating Women",
-              ]),
+              ])),
 
-              _groupText("AGE GROUP", [
-                "0-5 = 0-5 months",
-                "6-11 = 6-11 months",
-                "12-23 = 12-23 months",
-                "24-59 = 24-59 months",
-                "5-9 = 5-9 years",
-                "10-19 = 10-19 years",
-                "20-59 = 20-59 years",
-                "60+ = 60+ years",
-                "PWD = Persons with Disability",
-              ]),
+              pw.Expanded(child: _groupText("AGE GROUP (INFANTS)", [
+                "0-5 months old",
+                "6-11 months old",
+                "12-23 months old",
+                "24-59 months old",
+              ])),
 
-              _groupText("NUTRITION", [
+              pw.Expanded(child: _groupText("AGE GROUP (OTHERS)", [
+                "5-9 years old",
+                "10-19 years old",
+                "20-59 years old",
+                "60 years old and above",
+                "PWD = Person with Disability",
+              ])),
+            ],
+          ),
+
+          pw.SizedBox(height: 6),
+
+          // -------- ROW 2 --------
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+
+              pw.Expanded(child: _groupText("NUTRITION STATUS", [
                 "SUW = Severely Underweight",
                 "UW = Underweight",
-                "Norm = Normal",
+                "Norm = Normal Weight",
                 "SW = Severely Wasted",
                 "W = Wasted",
+              ])),
+
+              pw.Expanded(child: _groupText("", [
                 "OW = Overweight",
                 "Ob = Obese",
                 "SS = Severely Stunted",
                 "St = Stunted",
-              ]),
+              ])),
 
-              _groupText("FACILITIES", [
+              pw.Expanded(child: _groupText("TOILET TYPE", [
+                "Water Sealed",
+                "Antipolo (Unsanitary Toilet)",
+                "Open Pit",
+                "Shared",
+                "No Toilet",
+              ])),
 
-                // Toilet
-                "Toi = Toilet Type",
-                " - Water Sealed",
-                " - Antipolo (Unsanitary)",
-                " - Open Pit",
-                " - Shared",
-                " - No Toilet",
+              pw.Expanded(child: _groupText("GARBAGE DISPOSAL", [
+                "Barangay/City Garbage Collector",
+                "Own Compost Pit",
+                "Burning",
+                "Dumping",
+              ])),
 
-                // Garbage
-                "Gar = Garbage Disposal",
-                " - City Collector",
-                " - Compost Pit",
-                " - Burning",
-                " - Dumping",
+              pw.Expanded(child: _groupText("WATER & FOOD", [
+                "Pipe Water (Faucet)",
+                "Deep Well with other source",
+                "Purified Water",
+                "Open Shallow Dug Well",
+                "Artesian Well",
+                "Spring",
+                "Vegetable Garden",
+                "Poultry/Livestock",
+                "Fishpond",
+                "No Garden",
+              ])),
 
-                // Water
-                "Wat = Water Source",
-                " - Pipe Water",
-                " - Deep Well",
-                " - Purified Water",
-                " - Open Well",
-                " - Artesian Well",
-                " - Spring",
-
-                // Food
-                "Food = Food Production",
-                " - Vegetable Garden",
-                " - Poultry/Livestock",
-                " - Fishpond",
-                " - No Garden",
-
-                // Dwelling
-                "Dw = Dwelling Type",
-                " - Semi Concrete",
-                " - Wooden House",
-                " - Nipa Bamboo",
-                " - Barong-Barong",
-                " - Makeshift",
-              ]),
-
-              _groupText("OTHER", [
-                "Salt = Iodized Salt",
-              ]),
+              pw.Expanded(child: _groupText("DWELLING & OTHER", [
+                "Semi Concrete",
+                "Wooden House",
+                "Nipa Bamboo House",
+                "Barong-Barong",
+                "Makeshift",
+                "Salt = Households using Iodized Salt",
+              ])),
             ],
           ),
         ],
@@ -268,19 +261,16 @@ class ExportBarangayPDF {
     );
   }
 
-  // =========================
-  // SIMPLE TEXT GROUP (NO BOX)
-  // =========================
   static pw.Widget _groupText(String title, List<String> items) {
-    return pw.Container(
-      width: 190,
+    return pw.Padding(
+      padding: const pw.EdgeInsets.only(right: 4),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(
             title,
             style: pw.TextStyle(
-              fontSize: 7,
+              fontSize: 6.5,
               fontWeight: pw.FontWeight.bold,
             ),
           ),
@@ -288,7 +278,7 @@ class ExportBarangayPDF {
           ...items.map(
             (e) => pw.Text(
               e,
-              style: const pw.TextStyle(fontSize: 5.3),
+              style: const pw.TextStyle(fontSize: 5),
             ),
           ),
         ],

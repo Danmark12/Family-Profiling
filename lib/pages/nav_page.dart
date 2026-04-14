@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'household_page.dart';
-import 'barangay_page.dart';
 
 class HomeNavPage extends StatefulWidget {
   const HomeNavPage({super.key});
@@ -16,7 +15,6 @@ class _HomeNavPageState extends State<HomeNavPage> {
   final pages = [
     const HomePage(),
     const HouseholdPage(),
-    const BarangayPage(),
   ];
 
   @override
@@ -31,7 +29,6 @@ class _HomeNavPageState extends State<HomeNavPage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: "Household"),
-          BottomNavigationBarItem(icon: Icon(Icons.location_city), label: "Barangay"),
         ],
       ),
     );
