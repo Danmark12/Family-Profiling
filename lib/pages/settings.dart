@@ -1,144 +1,156 @@
 // lib/pages/settings_page.dart
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'archive.dart'; // Updated page
+import 'archive.dart';
 import 'logout.dart';
+import 'profile.dart';
 
 class SettingsPage extends StatelessWidget {
-  final int currentUserId; // Logged-in user ID
+  final int currentUserId;
 
   const SettingsPage({super.key, required this.currentUserId});
+
+  final Color avocado = const Color(0xFF568203);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Settings"),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
+      backgroundColor: Colors.white, // ✅ FULL WHITE BG
 
-            // Archive Button Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ArchivedHouseholdPage(
-                        currentUserId: currentUserId, // pass the user ID
-                      ),
-                    ),
-                  );
-                },
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20),
-                  child: Row(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.all(12),
-                        child: const Icon(
-                          Icons.archive,
-                          size: 40,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            "Archive",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            "View all archived households",
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      const Icon(Icons.arrow_forward_ios,
-                          size: 18, color: Colors.grey),
-                    ],
+      // HEADER
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          "Settings",
+          style: TextStyle(color: Colors.black),
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+
+      body: ListView(
+        children: [
+
+          const SizedBox(height: 10),
+
+          // ================= ACCOUNT =================
+          _sectionTitle("Account"),
+          _item(
+            context,
+            icon: Icons.person,
+            title: "Profile",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ProfilePage(),
+                ),
+              );
+            },
+          ),
+
+          const Divider(height: 1),
+
+          // ================= DATA =================
+          const SizedBox(height: 10),
+          _sectionTitle("Data"),
+          _item(
+            context,
+            icon: Icons.archive,
+            title: "Archive",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ArchivedHouseholdPage(
+                    currentUserId: currentUserId,
                   ),
+                ),
+              );
+            },
+          ),
+
+          const Divider(height: 1),
+
+          // ================= SYSTEM =================
+          const SizedBox(height: 10),
+          _sectionTitle("System"),
+          _item(
+            context,
+            icon: Icons.logout,
+            title: "Logout",
+            isDestructive: true, // 🔴 logout style
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const LogoutPage(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================= ITEM =================
+  Widget _item(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12, // ✅ NOT TOO BIG
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: isDestructive ? Colors.red : avocado,
+            ),
+
+            const SizedBox(width: 14),
+
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDestructive ? Colors.red : Colors.black,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
 
-            const SizedBox(height: 20),
-
-            // Logout Button Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const LogoutPage()),
-                  );
-                },
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20),
-                  child: Row(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.red.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.all(12),
-                        child: const Icon(
-                          Icons.logout,
-                          size: 40,
-                          color: Colors.red,
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            "Logout",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            "Sign out of your account",
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      const Icon(Icons.arrow_forward_ios,
-                          size: 18, color: Colors.grey),
-                    ],
-                  ),
-                ),
-              ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 14,
+              color: Colors.grey,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ================= SECTION TITLE =================
+  Widget _sectionTitle(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 12,
+          color: Colors.grey,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

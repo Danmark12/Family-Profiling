@@ -1,4 +1,3 @@
-// lib/pages/household_detail_page.dart
 import 'package:flutter/material.dart';
 import '../models/household.dart';
 
@@ -7,9 +6,15 @@ class HouseholdDetailPage extends StatelessWidget {
 
   const HouseholdDetailPage({super.key, required this.hh});
 
+  // ================= ROW BUILDER =================
   Widget buildRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade200),
+        ),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -19,6 +24,7 @@ class HouseholdDetailPage extends StatelessWidget {
               label,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
+                fontSize: 13,
                 color: Colors.black87,
               ),
             ),
@@ -27,7 +33,10 @@ class HouseholdDetailPage extends StatelessWidget {
             flex: 6,
             child: Text(
               value,
-              style: const TextStyle(color: Colors.black54),
+              style: const TextStyle(
+                fontSize: 13,
+                color: Colors.black54,
+              ),
             ),
           ),
         ],
@@ -35,165 +44,102 @@ class HouseholdDetailPage extends StatelessWidget {
     );
   }
 
-  Widget buildSection(String title, List<Widget> children) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const Divider(height: 16),
-            ...children
-          ],
-        ),
-      ),
-    );
-  }
-
-  String boolToYesNo(int? value) {
+  String boolText(int? value) {
     if (value == null) return "-";
     return value == 1 ? "Yes" : "No";
-  }
-
-  String formatDate(String? date) {
-    if (date == null || date.isEmpty) return "-";
-    return date;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+
+      // ================= APP BAR (KEEP HOUSEHOLD # HERE ONLY) =================
       appBar: AppBar(
-        title: Text("Household ${hh.householdNo}"),
-        backgroundColor: const Color(0xFF568203),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black),
+        title: Text(
+          "Household #${hh.householdNo}",
+          style: const TextStyle(color: Colors.black),
+        ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
 
-            // ================= SUMMARY HEADER =================
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.all(12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF568203).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF568203)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Household #${hh.householdNo}",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text("Zone/Purok: ${hh.zone ?? "-"}"),
-                  Text("Barangay: ${hh.barangay ?? "-"}"),
+      body: Column(
+        children: [
 
-                  const SizedBox(height: 10),
-
-                  // ✅ DATE & TIME SECTION (NEW)
-                  Text("Created: ${formatDate(hh.createdAt)}"),
-                  Text("Updated: ${formatDate(hh.updatedAt)}"),
-                ],
+          // ================= CLEAN HEADER (NO PROFILE TEXT, NO DUPLICATE ID) =================
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              border: Border(
+                bottom: BorderSide(color: Colors.grey.shade300),
               ),
             ),
+            child: Column(
+              children: [
+                Text(
+                  "Zone/Purok: ${hh.zone ?? "-"}",
+                  style: const TextStyle(fontSize: 13),
+                ),
+                Text(
+                  "Barangay: ${hh.barangay ?? "-"}",
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ],
+            ),
+          ),
 
-            // ================= BASIC INFO =================
-            buildSection("Basic Info", [
-              buildRow("Zone/Purok", hh.zone ?? "-"),
-              buildRow("Barangay", hh.barangay ?? "-"),
-              buildRow("4Ps", boolToYesNo(hh.fourPs)),
-              buildRow("Indigenous People", boolToYesNo(hh.indigenousPeople)),
-              buildRow("Iodized Salt", boolToYesNo(hh.iodizedSalt)),
-            ]),
+          // ================= TABLE =================
+          Expanded(
+            child: ListView(
+              children: [
 
-            buildSection("Father", [
-              buildRow("Name", hh.fatherName ?? "-"),
-              buildRow("Occupation", hh.fatherOccupation ?? "-"),
-              buildRow("Education", hh.fatherEducation ?? "-"),
-            ]),
+                // PROGRAMS
+                buildRow("4Ps", boolText(hh.fourPs)),
+                buildRow("Indigenous People", boolText(hh.indigenousPeople)),
 
-            buildSection("Mother", [
-              buildRow("Name", hh.motherName ?? "-"),
-              buildRow("Occupation", hh.motherOccupation ?? "-"),
-              buildRow("Education", hh.motherEducation ?? "-"),
-            ]),
+                // FATHER
+                buildRow("Father Name", hh.fatherName ?? "-"),
+                buildRow("Father Occupation", hh.fatherOccupation ?? "None"),
+                buildRow("Father Education", hh.fatherEducation ?? "None"),
 
-            buildSection("Household Members", [
-              buildRow("Male", hh.male?.toString() ?? "-"),
-              buildRow("Female", hh.female?.toString() ?? "-"),
-              buildRow("Total", hh.total?.toString() ?? "-"),
-              buildRow("Families", hh.families?.toString() ?? "-"),
-              buildRow("Fully Immunized Children", hh.fullyImmunized?.toString() ?? "-"),
-            ]),
+                // MOTHER
+                buildRow("Mother Name", hh.motherName ?? "-"),
+                buildRow("Mother Occupation", hh.motherOccupation ?? "None"),
+                buildRow("Mother Education", hh.motherEducation ?? "None"),
 
-            buildSection("IYCF", [
-              buildRow("Exclusive", hh.exclusive?.toString() ?? "-"),
-              buildRow("Mixed", hh.mixed?.toString() ?? "-"),
-              buildRow("Bottle Fed", hh.bottleFed?.toString() ?? "-"),
-              buildRow("Complementary Feeding", hh.complementary?.toString() ?? "-"),
-            ]),
+                // HOUSEHOLD
+                buildRow("Male", "${hh.male ?? 0}"),
+                buildRow("Female", "${hh.female ?? 0}"),
+                buildRow("No. of Families", "${hh.families ?? 0}"),
+                buildRow("Fully Immunized Child", "${hh.fullyImmunized ?? 0}"),
 
-            buildSection("Women Status", [
-              buildRow("Pregnant <19", hh.preg19?.toString() ?? "-"),
-              buildRow("Pregnant 20+", hh.preg20?.toString() ?? "-"),
-              buildRow("Lactating", hh.lactating?.toString() ?? "-"),
-            ]),
+                // AGE GROUP
+                buildRow("0–5 months", "${hh.infant0to5 ?? 0}"),
+                buildRow("6–11 months", "${hh.infant6to11 ?? 0}"),
+                buildRow("12–23 months", "${hh.child12to23 ?? 0}"),
+                buildRow("24–59 months", "${hh.child24to59 ?? 0}"),
+                buildRow("5–9 years", "${hh.age5to9 ?? 0}"),
+                buildRow("10–19 years", "${hh.age10to19 ?? 0}"),
+                buildRow("20–59 years", "${hh.age20to59 ?? 0}"),
+                buildRow("60+ years", "${hh.age60above ?? 0}"),
+                buildRow("PWD", "${hh.pwd ?? 0}"),
 
-            buildSection("Age Groups", [
-              buildRow("0-5 months", hh.infant0to5?.toString() ?? "-"),
-              buildRow("6-11 months", hh.infant6to11?.toString() ?? "-"),
-              buildRow("12-23 months", hh.child12to23?.toString() ?? "-"),
-              buildRow("24-59 months", hh.child24to59?.toString() ?? "-"),
-              buildRow("5-9 years", hh.age5to9?.toString() ?? "-"),
-              buildRow("10-19 years", hh.age10to19?.toString() ?? "-"),
-              buildRow("20-59 years", hh.age20to59?.toString() ?? "-"),
-              buildRow("60+ years", hh.age60above?.toString() ?? "-"),
-              buildRow("PWD", hh.pwd?.toString() ?? "-"),
-            ]),
-
-            buildSection("Nutritional Status", [
-              buildRow("Severely Underweight", hh.severelyUnderweight?.toString() ?? "-"),
-              buildRow("Underweight", hh.underweight?.toString() ?? "-"),
-              buildRow("Normal", hh.normal?.toString() ?? "-"),
-              buildRow("Severely Wasted", hh.severelyWasted?.toString() ?? "-"),
-              buildRow("Wasted", hh.wasted?.toString() ?? "-"),
-              buildRow("Overweight", hh.overweight?.toString() ?? "-"),
-              buildRow("Obese", hh.obese?.toString() ?? "-"),
-              buildRow("Severely Stunted", hh.severelyStunted?.toString() ?? "-"),
-              buildRow("Stunted", hh.stunted?.toString() ?? "-"),
-            ]),
-
-            buildSection("Facilities", [
-              buildRow("Toilet Type", hh.toilet ?? "-"),
-              buildRow("Garbage Disposal", hh.garbage ?? "-"),
-              buildRow("Water Source", hh.water ?? "-"),
-              buildRow("Food Production", hh.food ?? "-"),
-              buildRow("Dwelling Type", hh.dwellingType ?? "-"),
-            ]),
-
-            const SizedBox(height: 20),
-          ],
-        ),
+                // FACILITIES
+                buildRow("Toilet Type", hh.toilet ?? "-"),
+                buildRow("Garbage Disposal", hh.garbage ?? "-"),
+                buildRow("Water Source", hh.water ?? "-"),
+                buildRow("Food Production", hh.food ?? "-"),
+                buildRow("Dwelling Type", hh.dwellingType ?? "-"),
+                buildRow("Iodized Salt", boolText(hh.iodizedSalt)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

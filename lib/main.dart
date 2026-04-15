@@ -4,22 +4,22 @@ import 'pages/login.dart';
 import 'pages/nav_page.dart';
 
 void main() {
-  runApp(const CensusApp());
+  runApp(const FamilyProfile ());
 }
 
-class CensusApp extends StatelessWidget {
-  const CensusApp({super.key});
+class FamilyProfile extends StatelessWidget {
+  const FamilyProfile ({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Census App',
+      title: 'Family Profile',
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
       home: const SplashScreen(),
-    );
+    );s
   }
 }
 

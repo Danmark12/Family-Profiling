@@ -17,14 +17,21 @@ class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic>? user;
 
   final _formKey = GlobalKey<FormState>();
+  final _passwordFormKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _barangayController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  String? selectedBarangay;
 
-  final Color avocado = const Color(0xFF568203);
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   bool isLoading = true;
+
+  final List<String> barangays = [
+    'Amoros','Bolisong','Cogon','Himaya','Hinigdaan','Kalabaylabay','Molugan',
+    'Pedro S. Baculio','Poblacion','Quibonbon','Sambulawan',
+    'San Francisco de Asis','Sinaloc','Taytay','Ulaliman'
+  ];
 
   @override
   void initState() {
@@ -34,8 +41,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // ---------------- LOAD USER ----------------
   Future<void> _loadUser() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    userId = prefs.getInt('userId'); // ✅ FIXED
+    final prefs = await SharedPreferences.getInstance();
+    userId = prefs.getInt('userId');
 
     if (userId != null) {
       final fetchedUser = await db.getUserById(userId!);
@@ -44,8 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
         setState(() {
           user = fetchedUser;
           _nameController.text = user!['name'] ?? '';
-          _barangayController.text = user!['barangay'] ?? '';
-          _passwordController.text = user!['password'] ?? '';
+          selectedBarangay = user!['barangay'];
           isLoading = false;
         });
       }
@@ -58,29 +64,38 @@ class _ProfilePageState extends State<ProfilePage> {
 
     await db.updateUser(userId!, {
       'name': _nameController.text.trim(),
-      'barangay': _barangayController.text.trim(),
-      'password': _passwordController.text.trim(),
+      'barangay': selectedBarangay,
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text("Profile updated successfully"),
-        backgroundColor: avocado,
-      ),
+      const SnackBar(content: Text("Profile updated")),
     );
-
-    _loadUser();
   }
 
-  // ---------------- INPUT STYLE ----------------
-  InputDecoration inputStyle(String label, IconData icon) {
+  // ---------------- CHANGE PASSWORD ----------------
+  Future<void> _changePassword() async {
+    if (!_passwordFormKey.currentState!.validate() || userId == null) return;
+
+    await db.updateUser(userId!, {
+      'password': _newPasswordController.text.trim(),
+    });
+
+    _newPasswordController.clear();
+    _confirmPasswordController.clear();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Password updated")),
+    );
+  }
+
+  // ---------------- MINIMAL INPUT STYLE ----------------
+  InputDecoration inputStyle(String label) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, size: 18),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: avocado, width: 1.5),
+      labelStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+      border: const UnderlineInputBorder(),
+      focusedBorder: const UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.black),
       ),
     );
   }
@@ -88,110 +103,200 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green.shade50,
+      backgroundColor: Colors.white,
+
+      // HEADER
       appBar: AppBar(
-        title: const Text("Profile"),
+        backgroundColor: Colors.white,
+        elevation: 0,
         centerTitle: true,
-        backgroundColor: avocado,
+        title: const Text(
+          "Profile",
+          style: TextStyle(color: Colors.black),
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
+
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Center(
-              child: SingleChildScrollView(
-                child: Container(
-                  width: 320,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 10,
-                        offset: Offset(0, 6),
+          : ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              children: [
+
+                const SizedBox(height: 30),
+
+                // ================= CENTERED NAME =================
+                Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        user?['name'] ?? '',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        selectedBarangay ?? '',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        // Avatar
-                        CircleAvatar(
-                          radius: 30,
-                          backgroundColor: avocado,
-                          child: const Icon(Icons.person, color: Colors.white, size: 30),
-                        ),
+                ),
 
-                        const SizedBox(height: 10),
+                const SizedBox(height: 40),
 
-                        Text(
-                          user?['name'] ?? '',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // NAME
-                        TextFormField(
-                          controller: _nameController,
-                          decoration: inputStyle('Name', Icons.person),
-                          validator: (val) =>
-                              val == null || val.trim().isEmpty ? 'Enter name' : null,
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        // BARANGAY
-                        TextFormField(
-                          controller: _barangayController,
-                          decoration: inputStyle('Barangay', Icons.location_city),
-                          validator: (val) =>
-                              val == null || val.trim().isEmpty ? 'Enter barangay' : null,
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        // PASSWORD
-                        TextFormField(
-                          controller: _passwordController,
-                          decoration: inputStyle('Password', Icons.lock),
-                          obscureText: true,
-                          validator: (val) {
-                            if (val == null || val.isEmpty) return 'Enter password';
-                            if (val.length < 4) return 'Minimum 4 characters';
-                            return null;
-                          },
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // UPDATE BUTTON
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _updateProfile,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: avocado,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            child: const Text(
-                              "Update Profile",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                // ================= EDIT PROFILE =================
+                const Text(
+                  "Edit Profile",
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
+
+                const SizedBox(height: 10),
+
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: inputStyle('Name'),
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Enter name' : null,
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      DropdownButtonFormField<String>(
+                        value: selectedBarangay,
+                        decoration: inputStyle('Barangay'),
+                        items: barangays.map((b) {
+                          return DropdownMenuItem(
+                            value: b,
+                            child: Text(b),
+                          );
+                        }).toList(),
+                        onChanged: (val) =>
+                            setState(() => selectedBarangay = val),
+                        validator: (val) =>
+                            val == null ? 'Select barangay' : null,
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      // ================= FULL SAVE BUTTON =================
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton(
+                          onPressed: _updateProfile,
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: const BorderSide(color: Colors.black12),
+                            ),
+                          ),
+                          child: const Text(
+                            "Save Changes",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+
+                const Divider(),
+
+                const SizedBox(height: 20),
+
+                // ================= PASSWORD =================
+                const Text(
+                  "Change Password",
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Form(
+                  key: _passwordFormKey,
+                  child: Column(
+                    children: [
+
+                      TextFormField(
+                        controller: _newPasswordController,
+                        obscureText: true,
+                        decoration: inputStyle('New Password'),
+                        validator: (val) {
+                          if (val == null || val.isEmpty) return 'Enter password';
+                          if (val.length < 4) return 'Minimum 4 characters';
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        obscureText: true,
+                        decoration: inputStyle('Confirm Password'),
+                        validator: (val) {
+                          if (val != _newPasswordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 25),
+
+                      // ================= FULL UPDATE BUTTON =================
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton(
+                          onPressed: _changePassword,
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: const BorderSide(color: Colors.black12),
+                            ),
+                          ),
+                          child: const Text(
+                            "Update Password",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+              ],
             ),
     );
   }
