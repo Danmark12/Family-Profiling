@@ -1,4 +1,3 @@
-// lib/pages/household_page.dart
 import 'package:flutter/material.dart';
 import '../db/config.dart';
 import '../models/household.dart';
@@ -6,7 +5,6 @@ import 'household_detail_page.dart';
 import 'add_household_page.dart';
 import 'edit_household_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intl/intl.dart';
 
 class HouseholdPage extends StatefulWidget {
   final String? barangayFilter;
@@ -23,9 +21,18 @@ class _HouseholdPageState extends State<HouseholdPage> {
 
   String searchText = "";
   String? selectedPurok;
+  String sortOption = "A-Z";
+
   int? userId;
 
   final Color avocado = const Color(0xFF568203);
+
+  // =========================
+  // CUSTOM DROPDOWN STATE
+  // =========================
+  OverlayEntry? _dropdownOverlay;
+  final GlobalKey _sortKey = GlobalKey();
+  final GlobalKey _purokKey = GlobalKey();
 
   @override
   void initState() {
@@ -56,14 +63,28 @@ class _HouseholdPageState extends State<HouseholdPage> {
   void filterHouseholds() {
     displayedHouseholds = households.where((hh) {
       final matchesSearch =
-          (hh.fatherName ?? "").toLowerCase().contains(searchText.toLowerCase()) ||
-          (hh.motherName ?? "").toLowerCase().contains(searchText.toLowerCase());
+          (hh.fatherName ?? "")
+                  .toLowerCase()
+                  .contains(searchText.toLowerCase()) ||
+              (hh.motherName ?? "")
+                  .toLowerCase()
+                  .contains(searchText.toLowerCase());
 
       final matchesPurok =
           selectedPurok == null || hh.zone == selectedPurok;
 
       return matchesSearch && matchesPurok;
     }).toList();
+
+    if (sortOption == "A-Z") {
+      displayedHouseholds.sort((a, b) =>
+          getHouseholdName(a)
+              .toLowerCase()
+              .compareTo(getHouseholdName(b).toLowerCase()));
+    } else {
+      displayedHouseholds.sort((a, b) =>
+          (b.id ?? 0).compareTo(a.id ?? 0));
+    }
 
     setState(() {});
   }
@@ -78,46 +99,6 @@ class _HouseholdPageState extends State<HouseholdPage> {
     return list;
   }
 
-  void showBottomSheet(Household hh) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (_) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text("Edit"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => EditHouseholdPage(household: hh),
-                  ),
-                ).then((_) => fetchHouseholds(barangay: widget.barangayFilter));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.archive, color: Colors.orange),
-              title: const Text("Archive"),
-              onTap: () async {
-                Navigator.pop(context);
-                await DBHelper.instance.archiveHousehold(hh.id!);
-                fetchHouseholds(barangay: widget.barangayFilter);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // ✅ CLEAN NAME FORMAT (ONLY NAME)
   String getHouseholdName(Household hh) {
     final father = hh.fatherName ?? "";
     final mother = hh.motherName ?? "";
@@ -127,6 +108,147 @@ class _HouseholdPageState extends State<HouseholdPage> {
     if (mother.isEmpty) return father;
 
     return "$father & $mother";
+  }
+
+  // =========================
+  // CUSTOM DROPDOWN (SORT + PUROK)
+  // =========================
+  void _showDropdown({
+    required String type,
+    required List<String> items,
+  }) {
+    _hideDropdown();
+
+    final key = type == "sort" ? _sortKey : _purokKey;
+    final renderBox = key.currentContext!.findRenderObject() as RenderBox;
+    final position = renderBox.localToGlobal(Offset.zero);
+
+    _dropdownOverlay = OverlayEntry(
+      builder: (context) {
+        return Stack(
+          children: [
+            GestureDetector(
+              onTap: _hideDropdown,
+              child: Container(color: Colors.transparent),
+            ),
+
+            Positioned(
+              left: position.dx,
+              top: position.dy + renderBox.size.height + 5,
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  width: 140,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: items.map((e) {
+                      return InkWell(
+                        onTap: () {
+                          if (type == "sort") {
+                            sortOption = e;
+                          } else {
+                            selectedPurok = e == "All" ? null : e;
+                          }
+
+                          filterHouseholds();
+                          _hideDropdown();
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                          child: Text(
+                            e,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    Overlay.of(context).insert(_dropdownOverlay!);
+  }
+
+  void _hideDropdown() {
+    _dropdownOverlay?.remove();
+    _dropdownOverlay = null;
+  }
+
+  // =========================
+  // LONG PRESS (RESTORED)
+  // =========================
+  void showBottomSheet(Household hh) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).padding.bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text("Edit"),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          EditHouseholdPage(household: hh),
+                    ),
+                  ).then((_) =>
+                      fetchHouseholds(barangay: widget.barangayFilter));
+                },
+              ),
+
+              ListTile(
+                leading: const Icon(Icons.archive),
+                title: const Text("Archive"),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await DBHelper.instance.archiveHousehold(hh.id!);
+                  fetchHouseholds(barangay: widget.barangayFilter);
+                },
+              ),
+
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -140,27 +262,28 @@ class _HouseholdPageState extends State<HouseholdPage> {
         centerTitle: true,
         title: const Text(
           "Households",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+          style: TextStyle(color: Colors.black),
         ),
         iconTheme: const IconThemeData(color: Colors.black),
       ),
 
       body: Column(
         children: [
-          // SEARCH + FILTER
+          // SEARCH + FILTER + SORT
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
+                // SEARCH
                 Expanded(
                   child: SizedBox(
-                    height: 38,
+                    height: 45,
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: "Search name...",
-                        prefixIcon: const Icon(Icons.search, size: 18),
+                        prefixIcon: const Icon(Icons.search),
                         filled: true,
-                        fillColor: Colors.grey.shade100,
+                        fillColor: Colors.white,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
@@ -173,29 +296,29 @@ class _HouseholdPageState extends State<HouseholdPage> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
 
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(10),
+                const SizedBox(width: 8),
+
+                // PUROK
+                GestureDetector(
+                  key: _purokKey,
+                  onTap: () => _showDropdown(
+                    type: "purok",
+                    items: ["All", ...getPuroks()],
                   ),
-                  child: DropdownButton<String?>(
-                    value: selectedPurok,
-                    underline: const SizedBox(),
-                    hint: const Text("Purok"),
-                    items: [
-                      const DropdownMenuItem(value: null, child: Text("All")),
-                      ...getPuroks().map(
-                        (e) => DropdownMenuItem(value: e, child: Text(e)),
-                      ),
-                    ],
-                    onChanged: (val) {
-                      selectedPurok = val;
-                      filterHouseholds();
-                    },
+                  child: _buildButton(selectedPurok ?? "Purok"),
+                ),
+
+                const SizedBox(width: 8),
+
+                // SORT
+                GestureDetector(
+                  key: _sortKey,
+                  onTap: () => _showDropdown(
+                    type: "sort",
+                    items: ["A-Z", "New-Old"],
                   ),
+                  child: _buildButton(sortOption),
                 ),
               ],
             ),
@@ -203,59 +326,32 @@ class _HouseholdPageState extends State<HouseholdPage> {
 
           const Divider(height: 1),
 
-          // LIST (NAME ONLY)
+          // LIST
           Expanded(
-            child: displayedHouseholds.isEmpty
-                ? const Center(child: Text("No households found"))
-                : ListView.separated(
-                    itemCount: displayedHouseholds.length,
-                    separatorBuilder: (_, __) =>
-                        Divider(height: 1, color: Colors.grey.shade200),
-                    itemBuilder: (context, index) {
-                      final hh = displayedHouseholds[index];
+            child: ListView.builder(
+              itemCount: displayedHouseholds.length,
+              itemBuilder: (context, index) {
+                final hh = displayedHouseholds[index];
 
-                      return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 6),
+                return ListTile(
+                  leading: const Icon(Icons.home_outlined),
+                  title: Text(getHouseholdName(hh)),
 
-                        leading: const Icon(
-                          Icons.home_outlined,
-                          color: Colors.grey,
-                        ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            HouseholdDetailPage(hh: hh),
+                      ),
+                    );
+                  },
 
-                        // ✅ ONLY NAME (NO HOUSEHOLD #)
-                        title: Text(
-                          getHouseholdName(hh),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 15,
-                          ),
-                        ),
-
-                        // subtitle: Text(
-                        //   hh.zone ?? '-',
-                        //   style: const TextStyle(fontSize: 12),
-                        // ),
-
-                        trailing: const Icon(
-                          Icons.arrow_forward_ios,
-                          size: 14,
-                          color: Colors.grey,
-                        ),
-
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => HouseholdDetailPage(hh: hh),
-                            ),
-                          );
-                        },
-
-                        onLongPress: () => showBottomSheet(hh),
-                      );
-                    },
-                  ),
+                  // ✅ RESTORED LONG PRESS
+                  onLongPress: () => showBottomSheet(hh),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -269,8 +365,31 @@ class _HouseholdPageState extends State<HouseholdPage> {
             MaterialPageRoute(
               builder: (_) => const AddHouseholdPage(),
             ),
-          ).then((_) => fetchHouseholds(barangay: widget.barangayFilter));
+          ).then((_) =>
+              fetchHouseholds(barangay: widget.barangayFilter));
         },
+      ),
+    );
+  }
+
+  // =========================
+  // REUSABLE BUTTON STYLE
+  // =========================
+  Widget _buildButton(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(text, style: const TextStyle(fontSize: 12)),
+          const SizedBox(width: 4),
+          const Icon(Icons.arrow_drop_down, size: 18),
+        ],
       ),
     );
   }

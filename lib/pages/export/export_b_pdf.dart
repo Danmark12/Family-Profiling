@@ -4,6 +4,11 @@ import 'package:printing/printing.dart';
 import '../../models/household.dart';
 
 class ExportBarangayPDF {
+
+    static String _yesNo(dynamic value) {
+    return (value == 1) ? "Y" : "N";
+  }
+
   static Future<void> generate({
     required List<Household> data,
     required String barangay,
@@ -119,8 +124,8 @@ class ExportBarangayPDF {
                 "${h.total ?? 0}",
                 "${h.families ?? 0}",
 
-                "${h.fourPs ?? 0}",
-                "${h.indigenousPeople ?? 0}",
+                _yesNo(h.fourPs),
+                _yesNo(h.indigenousPeople),
 
                 "${h.preg19 ?? 0}",
                 "${h.preg20 ?? 0}",
@@ -157,7 +162,7 @@ class ExportBarangayPDF {
                 h.food ?? "",
                 h.dwellingType ?? "",
 
-                "${h.iodizedSalt ?? 0}",
+                _yesNo(h.iodizedSalt),
               ];
             }),
           ),

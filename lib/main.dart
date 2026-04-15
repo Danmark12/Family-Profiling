@@ -17,9 +17,10 @@ class FamilyProfile extends StatelessWidget {
       title: 'Family Profile',
       theme: ThemeData(
         primarySwatch: Colors.green,
+          
       ),
       home: const SplashScreen(),
-    );s
+    );
   }
 }
 

@@ -9,7 +9,7 @@ class SettingsPage extends StatelessWidget {
 
   const SettingsPage({super.key, required this.currentUserId});
 
-  final Color avocado = const Color(0xFF568203);
+  final Color avocado = const Color.fromARGB(255, 6, 9, 1);
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +114,7 @@ class SettingsPage extends StatelessWidget {
             Icon(
               icon,
               size: 20,
-              color: isDestructive ? Colors.red : avocado,
+              color: isDestructive ? Colors.black : avocado,
             ),
 
             const SizedBox(width: 14),
@@ -124,7 +124,7 @@ class SettingsPage extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontSize: 14,
-                  color: isDestructive ? Colors.red : Colors.black,
+                  color: isDestructive ? Colors.black : Colors.black,
                   fontWeight: FontWeight.w500,
                 ),
               ),

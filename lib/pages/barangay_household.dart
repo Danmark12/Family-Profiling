@@ -102,6 +102,11 @@ class _BarangayHouseholdPageState
     );
   }
 
+  // ✅ ADDED: convert 1/0 to Y/N
+  String _yesNo(dynamic value) {
+    return (value == 1) ? "Y" : "N";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -288,8 +293,11 @@ class _BarangayHouseholdPageState
         _cell("${h.female ?? 0}"),
         _cell("${h.total ?? 0}"),
         _cell("${h.families ?? 0}"),
-        _cell("${h.fourPs ?? 0}"),
-        _cell("${h.indigenousPeople ?? 0}"),
+
+        // ✅ CHANGED HERE ONLY
+        _cell(_yesNo(h.fourPs)),
+        _cell(_yesNo(h.indigenousPeople)),
+
         _cell("${h.preg19 ?? 0}"),
         _cell("${h.preg20 ?? 0}"),
         _cell("${h.lactating ?? 0}"),
@@ -320,7 +328,9 @@ class _BarangayHouseholdPageState
         _cell(h.water ?? "-"),
         _cell(h.food ?? "-"),
         _cell(h.dwellingType ?? "-"),
-        _cell("${h.iodizedSalt ?? 0}"),
+
+        // ✅ CHANGED HERE ONLY
+        _cell(_yesNo(h.iodizedSalt)),
       ]));
     }
 

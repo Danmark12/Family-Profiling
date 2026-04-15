@@ -144,7 +144,18 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Household No.: $householdNo"),
+Center(
+  child: Text(
+    "Household No.: $householdNo",
+    style: const TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+    ),
+    textAlign: TextAlign.center,
+  ),
+),
+const SizedBox(height: 12),
+
             _field("Zone / Purok", zone),
             _field("Barangay", barangayController, readOnly: true),
 
@@ -159,8 +170,13 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
               title: const Text("Indigenous People"),
             ),
 
-            const Text("Father"),
-            CheckboxListTile(
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Father",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            CheckboxListTile(
               value: noFather,
               onChanged: (v) {
                 setState(() {
@@ -183,8 +199,13 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
                 noFather ? null : (v) => setState(() => fatherEducation = v),
                 disabled: noFather),
 
-            const Text("Mother"),
-            CheckboxListTile(
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Mother",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            CheckboxListTile(
               value: noMother,
               onChanged: (v) {
                 setState(() {
@@ -207,26 +228,46 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
                 noMother ? null : (v) => setState(() => motherEducation = v),
                 disabled: noMother),
 
-            const Text("Household Members"),
-            _field("Male", male),
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Household Members",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("Male", male),
             _field("Female", female),
             _field("Total", total, readOnly: true),
             _field("Families", families),
             _field("Fully Immunized Children", immunized),
 
-            const Text("IYCF"),
-            _field("Exclusive", exclusive),
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "IYCF",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("Exclusive", exclusive),
             _field("Mixed", mixed),
             _field("Bottle Fed", bottle),
             _field("Complementary Feeding", complementary),
 
-            const Text("Women Status"),
-            _field("Pregnant Below 19", preg19),
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Women Status",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("Pregnant Below 19", preg19),
             _field("Pregnant 20+", preg20),
             _field("Lactating", lactating),
 
-            const Text("Age Group"),
-            _field("0-5 months", i0_5),
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Age Group",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("0-5 months", i0_5),
             _field("6-11 months", i6_11),
             _field("12-23 months", c12_23),
             _field("24-59 months", c24_59),
@@ -236,8 +277,13 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
             _field("60+", a60),
             _field("PWD", pwd),
 
-            const Text("Nutritional Status"),
-            _field("Severely Underweight", su),
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Nutritional Status",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("Severely Underweight", su),
             _field("Underweight", uw),
             _field("Normal", nw),
             _field("Severely Wasted", sw),
@@ -247,8 +293,13 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
             _field("Severely Stunted", ss),
             _field("Stunted", st),
 
-            const Text("Facilities"),
-            _drop("Toilet Type", toilet,
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Facilities",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _drop("Toilet Type", toilet,
                 ["Water Sealed", "Antipolo", "Open Pit", "Shared", "No Toilet"],
                 (v) => setState(() => toilet = v)),
             _drop("Garbage Disposal", garbage,
@@ -273,12 +324,24 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
             const SizedBox(height: 20),
 
             // Full-width Save button
-            SizedBox(
-              width: double.infinity,
+Center(
+  child: SizedBox(
+              width: 220,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent, // ✅ transparent
+                      foregroundColor: Colors.black,       // text color
+        elevation: 6, // ✅ black shadow strength
+        shadowColor: Colors.black,            
+                      side: const BorderSide(color: Colors.black),   
+                      
+                      shape: RoundedRectangleBorder(
+  borderRadius: BorderRadius.circular(5), // 👈 THIS controls curve
+),
+                               // remove shadow
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(fontSize: 16),
+                  textStyle: const TextStyle(fontSize: 16, ),
+
                 ),
                 onPressed: () async {
                   if (userId == null) {
@@ -350,6 +413,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
                 child: const Text("Save"),
               ),
             ),
+),
 
             const SizedBox(height: 30), // extra padding at the bottom for scroll safety
           ],

@@ -66,11 +66,12 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
   late final ss = TextEditingController();
   late final st = TextEditingController();
 
-  // Barangay controller fix
   late final TextEditingController barangayController;
-String get formattedDate {
-  return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-}
+
+  String get formattedDate {
+    return DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+  }
+
   @override
   void initState() {
     super.initState();
@@ -89,7 +90,6 @@ String get formattedDate {
   void _loadHouseholdData() {
     final hh = widget.household;
 
-    // Text fields
     zone.text = hh.zone ?? "";
     father.text = hh.fatherName ?? "";
     mother.text = hh.motherName ?? "";
@@ -128,7 +128,6 @@ String get formattedDate {
     ss.text = hh.severelyStunted?.toString() ?? "";
     st.text = hh.stunted?.toString() ?? "";
 
-    // Dropdowns
     barangay = hh.barangay;
     toilet = hh.toilet;
     garbage = hh.garbage;
@@ -141,18 +140,17 @@ String get formattedDate {
     motherOccupation = hh.motherOccupation;
     motherEducation = hh.motherEducation;
 
-    // Checkboxes
     fourPs = hh.fourPs == 1;
     indigenousPeople = hh.indigenousPeople == 1;
     iodizedSalt = hh.iodizedSalt == 1;
     noFather = hh.fatherOccupation == null || hh.fatherOccupation == "None";
     noMother = hh.motherOccupation == null || hh.motherOccupation == "None";
 
-    // Initialize barangay controller
     barangayController = TextEditingController(text: barangay ?? "");
   }
 
-  int? _num(TextEditingController c) => c.text.isEmpty ? null : int.tryParse(c.text);
+  int? _num(TextEditingController c) =>
+      c.text.isEmpty ? null : int.tryParse(c.text);
 
   @override
   Widget build(BuildContext context) {
@@ -187,12 +185,19 @@ String get formattedDate {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Household No.: ${widget.household.householdNo}"),
+Center(
+  child: Text(
+    "Household No.: ${widget.household.householdNo}",
+    style: const TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+    ),
+  ),
+),
+const SizedBox(height: 12),
 
             _field("Zone / Purok", zone),
-
-            // Barangay readonly
-            _field("Barangay", barangayController, readOnly: true, type: TextInputType.text),
+            _field("Barangay", barangayController, readOnly: true),
 
             CheckboxListTile(
                 value: fourPs,
@@ -203,8 +208,13 @@ String get formattedDate {
                 onChanged: (v) => setState(() => indigenousPeople = v!),
                 title: const Text("Indigenous People")),
 
-            const Text("Father"),
-            CheckboxListTile(
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Father",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            CheckboxListTile(
               value: noFather,
               onChanged: (v) {
                 setState(() {
@@ -218,7 +228,8 @@ String get formattedDate {
               },
               title: const Text("None"),
             ),
-            _field("Name of Father", father, type: TextInputType.text, readOnly: noFather),
+            _field("Name of Father", father,
+                type: TextInputType.text, readOnly: noFather),
             _drop("Occupation", fatherOccupation, occupations,
                 noFather ? null : (v) => setState(() => fatherOccupation = v),
                 disabled: noFather),
@@ -226,8 +237,13 @@ String get formattedDate {
                 noFather ? null : (v) => setState(() => fatherEducation = v),
                 disabled: noFather),
 
-            const Text("Mother"),
-            CheckboxListTile(
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Mother",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            CheckboxListTile(
               value: noMother,
               onChanged: (v) {
                 setState(() {
@@ -241,7 +257,8 @@ String get formattedDate {
               },
               title: const Text("None"),
             ),
-            _field("Name of Mother", mother, type: TextInputType.text, readOnly: noMother),
+            _field("Name of Mother", mother,
+                type: TextInputType.text, readOnly: noMother),
             _drop("Occupation", motherOccupation, occupations,
                 noMother ? null : (v) => setState(() => motherOccupation = v),
                 disabled: noMother),
@@ -249,26 +266,46 @@ String get formattedDate {
                 noMother ? null : (v) => setState(() => motherEducation = v),
                 disabled: noMother),
 
-            const Text("Household Members"),
-            _field("Male", male),
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Household Members",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("Male", male),
             _field("Female", female),
             _field("Total", total, readOnly: true),
             _field("Families", families),
             _field("Fully Immunized Children", immunized),
 
-            const Text("IYCF"),
-            _field("Exclusive", exclusive),
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "IYCF",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("Exclusive", exclusive),
             _field("Mixed", mixed),
             _field("Bottle Fed", bottle),
             _field("Complementary Feeding", complementary),
 
-            const Text("Women Status"),
-            _field("Pregnant Below 19", preg19),
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Women Status",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("Pregnant Below 19", preg19),
             _field("Pregnant 20+", preg20),
             _field("Lactating", lactating),
 
-            const Text("Age Group"),
-            _field("0-5 months", i0_5),
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Age Group",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("0-5 months", i0_5),
             _field("6-11 months", i6_11),
             _field("12-23 months", c12_23),
             _field("24-59 months", c24_59),
@@ -278,8 +315,13 @@ String get formattedDate {
             _field("60+", a60),
             _field("PWD", pwd),
 
-            const Text("Nutritional Status"),
-            _field("Severely Underweight", su),
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Nutritional Status",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("Severely Underweight", su),
             _field("Underweight", uw),
             _field("Normal", nw),
             _field("Severely Wasted", sw),
@@ -289,80 +331,120 @@ String get formattedDate {
             _field("Severely Stunted", ss),
             _field("Stunted", st),
 
-            const Text("Facilities"),
-            _drop("Toilet Type", toilet, ["Water Sealed","Antipolo","Open Pit","Shared","No Toilet"], (v)=>setState(()=>toilet=v)),
-            _drop("Garbage Disposal", garbage, ["Barangay Collector","Compost Pit","Burning","Dumping"], (v)=>setState(()=>garbage=v)),
-            _drop("Water Source", water, ["Pipe Water","Deep Well","Purified","Shallow Well","Artesian","Spring"], (v)=>setState(()=>water=v)),
-            _drop("Food Production", food, ["Vegetable Garden","Poultry","Fishpond","No Garden"], (v)=>setState(()=>food=v)),
-            _drop("Dwelling Type", dwellingType, ["Concrete","Semi Concrete","Wooden","Nipa","Barong","Makeshift"], (v)=>setState(()=>dwellingType=v)),
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Facilities",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _drop("Toilet Type", toilet,
+                ["Water Sealed","Antipolo","Open Pit","Shared","No Toilet"],
+                (v) => setState(() => toilet = v)),
+            _drop("Garbage Disposal", garbage,
+                ["Barangay Collector","Compost Pit","Burning","Dumping"],
+                (v) => setState(() => garbage = v)),
+            _drop("Water Source", water,
+                ["Pipe Water","Deep Well","Purified","Shallow Well","Artesian","Spring"],
+                (v) => setState(() => water = v)),
+            _drop("Food Production", food,
+                ["Vegetable Garden","Poultry","Fishpond","No Garden"],
+                (v) => setState(() => food = v)),
+            _drop("Dwelling Type", dwellingType,
+                ["Concrete","Semi Concrete","Wooden","Nipa","Barong","Makeshift"],
+                (v) => setState(() => dwellingType = v)),
 
             CheckboxListTile(
                 value: iodizedSalt,
                 onChanged: (v) => setState(() => iodizedSalt = v!),
                 title: const Text("Uses Iodized Salt")),
 
-                
+            const SizedBox(height: 20),
 
-            ElevatedButton(
-              onPressed: () async {
-                await DBHelper.instance.updateHousehold(widget.household.id!, {
-                  "zone": zone.text,
-                  "barangay": barangay,
-                  "fourPs": fourPs ? 1 : 0,
-                  "indigenousPeople": indigenousPeople ? 1 : 0,
-                  "iodizedSalt": iodizedSalt ? 1 : 0,
-                  "fatherName": father.text,
-                  "fatherOccupation": fatherOccupation,
-                  "fatherEducation": fatherEducation,
-                  "motherName": mother.text,
-                  "motherOccupation": motherOccupation,
-                  "motherEducation": motherEducation,
-                  "male": _num(male),
-                  "female": _num(female),
-                  "total": _num(total),
-                  "families": _num(families),
-                  "fullyImmunized": _num(immunized),
-                  "exclusive": _num(exclusive),
-                  "mixed": _num(mixed),
-                  "bottleFed": _num(bottle),
-                  "complementary": _num(complementary),
-                  "preg19": _num(preg19),
-                  "preg20": _num(preg20),
-                  "lactating": _num(lactating),
-                  "infant0to5": _num(i0_5),
-                  "infant6to11": _num(i6_11),
-                  "child12to23": _num(c12_23),
-                  "child24to59": _num(c24_59),
-                  "age5to9": _num(a5_9),
-                  "age10to19": _num(a10_19),
-                  "age20to59": _num(a20_59),
-                  "age60above": _num(a60),
-                  "pwd": _num(pwd),
-                  "severelyUnderweight": _num(su),
-                  "underweight": _num(uw),
-                  "normal": _num(nw),
-                  "severelyWasted": _num(sw),
-                  "wasted": _num(w),
-                  "overweight": _num(ow),
-                  "obese": _num(ob),
-                  "severelyStunted": _num(ss),
-                  "stunted": _num(st),
-                  "toilet": toilet,
-                  "garbage": garbage,
-                  "water": water,
-                  "food": food,
-                  "dwellingType": dwellingType,
-                  "updated_at": formattedDate,
-                });
+            // ✅ UPDATED BUTTON
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 30),
+                child: SizedBox(
+                  width: 220,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.05),
+                      elevation: 10,
+                      // shadowColor: Colors.green.withOpacity(0.4),
+                      side: const BorderSide(color: Colors.black),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () async {
+                      await DBHelper.instance.updateHousehold(
+                        widget.household.id!,
+                        {
+                          "zone": zone.text,
+                          "barangay": barangay,
+                          "fourPs": fourPs ? 1 : 0,
+                          "indigenousPeople": indigenousPeople ? 1 : 0,
+                          "iodizedSalt": iodizedSalt ? 1 : 0,
+                          "fatherName": father.text,
+                          "fatherOccupation": fatherOccupation,
+                          "fatherEducation": fatherEducation,
+                          "motherName": mother.text,
+                          "motherOccupation": motherOccupation,
+                          "motherEducation": motherEducation,
+                          "male": _num(male),
+                          "female": _num(female),
+                          "total": _num(total),
+                          "families": _num(families),
+                          "fullyImmunized": _num(immunized),
+                          "exclusive": _num(exclusive),
+                          "mixed": _num(mixed),
+                          "bottleFed": _num(bottle),
+                          "complementary": _num(complementary),
+                          "preg19": _num(preg19),
+                          "preg20": _num(preg20),
+                          "lactating": _num(lactating),
+                          "infant0to5": _num(i0_5),
+                          "infant6to11": _num(i6_11),
+                          "child12to23": _num(c12_23),
+                          "child24to59": _num(c24_59),
+                          "age5to9": _num(a5_9),
+                          "age10to19": _num(a10_19),
+                          "age20to59": _num(a20_59),
+                          "age60above": _num(a60),
+                          "pwd": _num(pwd),
+                          "severelyUnderweight": _num(su),
+                          "underweight": _num(uw),
+                          "normal": _num(nw),
+                          "severelyWasted": _num(sw),
+                          "wasted": _num(w),
+                          "overweight": _num(ow),
+                          "obese": _num(ob),
+                          "severelyStunted": _num(ss),
+                          "stunted": _num(st),
+                          "toilet": toilet,
+                          "garbage": garbage,
+                          "water": water,
+                          "food": food,
+                          "dwellingType": dwellingType,
+                          "updated_at": formattedDate,
+                        },
+                      );
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Updated Successfully")),
-                );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Updated Successfully")),
+                      );
 
-                Navigator.pop(context);
-              },
-              child: const Text("Update"),
-            )
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      "UPDATE",
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

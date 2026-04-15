@@ -61,7 +61,7 @@ class HouseholdDetailPage extends StatelessWidget {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.black),
         title: Text(
-          "Household #${hh.householdNo}",
+          "Household${hh.householdNo}",
           style: const TextStyle(color: Colors.black),
         ),
       ),
