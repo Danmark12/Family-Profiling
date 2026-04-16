@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../db/config.dart';
 import 'settings.dart';
-import 'profile.dart';
 import 'barangay_household.dart';
 import 'consolidated.dart';
 
@@ -20,6 +19,7 @@ class _HomePageState extends State<HomePage> {
   int male = 0;
   int female = 0;
 
+  Map<String, int> zoneCount = {};
   int? userId;
 
   @override
@@ -41,12 +41,18 @@ class _HomePageState extends State<HomePage> {
     int totalMale = 0;
     int totalFemale = 0;
 
+    Map<String, int> tempZoneCount = {};
+
     for (var h in households) {
       int m = h['male'] ?? 0;
       int f = h['female'] ?? 0;
+
       totalRes += m + f;
       totalMale += m;
       totalFemale += f;
+
+      String zone = h['zone']?.toString() ?? 'Unknown';
+      tempZoneCount[zone] = (tempZoneCount[zone] ?? 0) + 1;
     }
 
     setState(() {
@@ -54,40 +60,36 @@ class _HomePageState extends State<HomePage> {
       totalResidents = totalRes;
       male = totalMale;
       female = totalFemale;
+
+      zoneCount = Map.fromEntries(
+        tempZoneCount.entries.toList()
+          ..sort((a, b) => a.key.compareTo(b.key)),
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff5f6fa),
+      backgroundColor: Colors.white,
 
-      // ✅ CLEAN WHITE HEADER
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        toolbarHeight: 52,
         title: const Text(
           "Dashboard",
           style: TextStyle(
             color: Colors.black,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.normal,
+            fontSize: 22,
           ),
         ),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.black),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const ProfilePage()),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
+            icon: const Icon(Icons.settings_outlined, size: 22),
             onPressed: () {
               if (userId == null) return;
 
@@ -103,29 +105,28 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // ✅ TITLE TEXT
+            // ================= OVERVIEW =================
             const Text(
               "Overview",
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontSize: 17,
+                fontWeight: FontWeight.normal,
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 12),
 
-            // ✅ GLASS STATS CARDS
             Row(
               children: [
-                _glassCard("Households", totalHouseholds),
+                _card("Households", totalHouseholds),
                 const SizedBox(width: 10),
-                _glassCard("Residents", totalResidents),
+                _card("Residents", totalResidents),
               ],
             ),
 
@@ -133,29 +134,44 @@ class _HomePageState extends State<HomePage> {
 
             Row(
               children: [
-                _glassCard("Male", male),
+                _card("Male", male),
                 const SizedBox(width: 10),
-                _glassCard("Female", female),
+                _card("Female", female),
               ],
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 22),
 
+            // ================= ZONE CHART =================
             const Text(
-              "Reports",
+              "Households per Zone",
               style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 12),
 
-            // ✅ MODERN BUTTON LIST
-            _modernButton(
+            _zoneChart(),
+
+            const SizedBox(height: 22),
+
+            // ================= REPORTS =================
+            const Text(
+              "Reports",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            _reportItem(
+              icon: Icons.table_chart_outlined,
               title: "Barangay Household Table",
               subtitle: "View detailed household records",
-              icon: Icons.table_chart_outlined,
               onTap: () {
                 Navigator.push(
                   context,
@@ -166,18 +182,15 @@ class _HomePageState extends State<HomePage> {
               },
             ),
 
-            const SizedBox(height: 12),
-
-            _modernButton(
+            _reportItem(
+              icon: Icons.analytics_outlined,
               title: "Consolidated Report",
               subtitle: "Summary and analytics",
-              icon: Icons.analytics_outlined,
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        const ConsolidatedReportPage(),
+                    builder: (_) => const ConsolidatedReportPage(),
                   ),
                 );
               },
@@ -188,39 +201,99 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ✅ GLASS / TRANSPARENT CARD
-  Widget _glassCard(String title, int value) {
+  // ================= ZONE CHART =================
+  Widget _zoneChart() {
+    if (zoneCount.isEmpty) {
+      return const Text(
+        "No data available",
+        style: TextStyle(color: Colors.black54),
+      );
+    }
+
+    int maxValue = zoneCount.values.reduce((a, b) => a > b ? a : b);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black12),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: zoneCount.entries.map((e) {
+          double ratio = e.value / maxValue;
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 70,
+                  child: Text(
+                    e.key,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ),
+
+                Expanded(
+                  child: Container(
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: ratio,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 4, 93, 7),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 10),
+
+                Text(
+                  "${e.value}",
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // ================= CARD (ZOOMED IN) =================
+  Widget _card(String title, int value) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.6),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.4)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.black12),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.black54,
-              ),
+              style: const TextStyle(fontSize: 12),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               value.toString(),
               style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -229,58 +302,36 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ✅ MODERN LIST BUTTON
-  Widget _modernButton({
+  // ================= REPORT ITEM =================
+  Widget _reportItem({
+    required IconData icon,
     required String title,
     required String subtitle,
-    required IconData icon,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.7),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade200),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            )
-          ],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 4,
         ),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.black87),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios, size: 16),
-          ],
+        leading: Icon(icon, color: const Color.fromARGB(255, 14, 27, 15), size: 22),
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 14),
         ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(fontSize: 12),
+        ),
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          size: 15,
+          color: Color.fromARGB(255, 7, 19, 7),
+        ),
+        onTap: onTap,
       ),
     );
   }

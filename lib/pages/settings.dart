@@ -1,22 +1,45 @@
-// lib/pages/settings_page.dart
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'archive.dart';
-import 'logout.dart';
 import 'profile.dart';
+import 'login.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   final int currentUserId;
 
   const SettingsPage({super.key, required this.currentUserId});
 
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
   final Color avocado = const Color.fromARGB(255, 6, 9, 1);
+
+  bool _showLogoutCard = false;
+
+  Future<void> _logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove('isLoggedIn');
+    await prefs.remove('userId');
+    await prefs.remove('userName');
+    await prefs.remove('userBarangay');
+
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+        (route) => false,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // ✅ FULL WHITE BG
+      backgroundColor: Colors.white,
 
-      // HEADER
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -28,67 +51,142 @@ class SettingsPage extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.black),
       ),
 
-      body: ListView(
+      body: Stack(
         children: [
+          ListView(
+            children: [
 
-          const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-          // ================= ACCOUNT =================
-          _sectionTitle("Account"),
-          _item(
-            context,
-            icon: Icons.person,
-            title: "Profile",
-            onTap: () {
-              Navigator.push(
+              _sectionTitle("Account"),
+              _item(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const ProfilePage(),
-                ),
-              );
-            },
+                icon: Icons.person,
+                title: "Profile",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ProfilePage(),
+                    ),
+                  );
+                },
+              ),
+
+              const Divider(height: 1),
+
+              const SizedBox(height: 10),
+              _sectionTitle("Data"),
+              _item(
+                context,
+                icon: Icons.archive,
+                title: "Archive",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ArchivedHouseholdPage(
+                        currentUserId: widget.currentUserId,
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              const Divider(height: 1),
+
+              const SizedBox(height: 10),
+              _sectionTitle("System"),
+
+              // 🔥 LOGOUT BUTTON (NO NAVIGATION)
+              _item(
+                context,
+                icon: Icons.logout,
+                title: "Logout",
+                isDestructive: true,
+                onTap: () {
+                  setState(() {
+                    _showLogoutCard = true;
+                  });
+                },
+              ),
+            ],
           ),
 
-          const Divider(height: 1),
+          // ================= FLOATING BLACK CONFIRMATION =================
+          if (_showLogoutCard)
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() => _showLogoutCard = false);
+                },
+                child: Container(
+                  color: Colors.black54,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {}, // prevent close when tapping card
+                      child: Container(
+                        width: 260,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Confirm Logout",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              "Are you sure you want to logout?",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
 
-          // ================= DATA =================
-          const SizedBox(height: 10),
-          _sectionTitle("Data"),
-          _item(
-            context,
-            icon: Icons.archive,
-            title: "Archive",
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ArchivedHouseholdPage(
-                    currentUserId: currentUserId,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _showLogoutCard = false;
+                                    });
+                                  },
+                                  child: const Text(
+                                    "Cancel",
+                                    style: TextStyle(color: Colors.black),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: _logout,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text("Logout"),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              );
-            },
-          ),
-
-          const Divider(height: 1),
-
-          // ================= SYSTEM =================
-          const SizedBox(height: 10),
-          _sectionTitle("System"),
-          _item(
-            context,
-            icon: Icons.logout,
-            title: "Logout",
-            isDestructive: true, // 🔴 logout style
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const LogoutPage(),
-                ),
-              );
-            },
-          ),
+              ),
+            ),
         ],
       ),
     );
@@ -107,7 +205,7 @@ class SettingsPage extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 12, // ✅ NOT TOO BIG
+          vertical: 12,
         ),
         child: Row(
           children: [
@@ -116,20 +214,16 @@ class SettingsPage extends StatelessWidget {
               size: 20,
               color: isDestructive ? Colors.black : avocado,
             ),
-
             const SizedBox(width: 14),
-
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
-                  color: isDestructive ? Colors.black : Colors.black,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-
             const Icon(
               Icons.arrow_forward_ios,
               size: 14,
@@ -141,7 +235,6 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  // ================= SECTION TITLE =================
   Widget _sectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),

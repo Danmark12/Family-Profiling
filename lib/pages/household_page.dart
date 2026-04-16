@@ -280,7 +280,7 @@ class _HouseholdPageState extends State<HouseholdPage> {
                     height: 45,
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: "Search name...",
+                        hintText: "Search",
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
                         fillColor: Colors.white,

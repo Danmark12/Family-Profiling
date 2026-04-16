@@ -6,6 +6,8 @@
   import 'package:printing/printing.dart';
   import 'export/export_pdf.dart';
   import 'package:intl/intl.dart';
+  import 'export/export_csv.dart';
+   import 'export/export_excel.dart';
 
   class ConsolidatedReportPage extends StatefulWidget {
     const ConsolidatedReportPage({super.key});
@@ -148,14 +150,71 @@
     Widget build(BuildContext context) {
       return Scaffold(
         backgroundColor: Colors.white,
-  appBar: AppBar(
-    title: const Text("FAMILY PROFILE"),
-    actions: [
-      IconButton(
-        icon: const Icon(Icons.picture_as_pdf),
-        tooltip: 'Export PDF',
+appBar: AppBar(
+  title: const Text("FAMILY PROFILE"),
+  actions: [
 
-        
+    // 📄 PDF EXPORT BUTTON
+    IconButton(
+      icon: const Icon(Icons.picture_as_pdf),
+      tooltip: 'Export PDF',
+      onPressed: () async {
+        if (userId == null) return;
+
+        final data =
+            await DBHelper.instance.getUserHouseholds(userId!);
+
+        final households =
+            data.map((e) => Household.fromMap(e)).toList();
+
+        // 🇵🇭 Philippines Time (UTC+8)
+        final now = DateTime.now().toUtc().add(const Duration(hours: 8));
+
+        final generatedDate = DateFormat('MMMM dd, yyyy').format(now);
+        final generatedTime = DateFormat('hh:mm a').format(now);
+
+        await Printing.layoutPdf(
+          onLayout: (format) async {
+            final pdfService = ExportPdfService(
+              households: households,
+              barangay: barangay,
+              generatedDate: generatedDate,
+              generatedTime: generatedTime,
+            );
+
+            return pdfService.generate();
+          },
+        );
+      },
+    ),
+
+    // 📊 CSV EXPORT BUTTON (NEW)
+    IconButton(
+      icon: const Icon(Icons.grid_on),
+      tooltip: 'Export CSV',
+      onPressed: () async {
+        if (userId == null) return;
+
+        final data =
+            await DBHelper.instance.getUserHouseholds(userId!);
+
+        final households =
+            data.map((e) => Household.fromMap(e)).toList();
+
+        final path = await ExportCsvService.generate(households);
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("CSV saved successfully"),
+          ),
+        );
+      },
+    ),
+IconButton(
+  icon: const Icon(Icons.table_chart),
+  tooltip: 'Export Excel',
   onPressed: () async {
     if (userId == null) return;
 
@@ -165,29 +224,23 @@
     final households =
         data.map((e) => Household.fromMap(e)).toList();
 
-    // 🇵🇭 Philippines Time (UTC+8)
-    final now = DateTime.now().toUtc().add(const Duration(hours: 8));
+    final path = await ExportExcelService.generate(households);
 
-    final generatedDate = DateFormat('MMMM dd, yyyy').format(now);
-    final generatedTime = DateFormat('hh:mm a').format(now);
+    if (!mounted) return;
 
-    await Printing.layoutPdf(
-      onLayout: (format) async {
-        final pdfService = ExportPdfService(
-          households: households,
-          barangay: barangay,
-          generatedDate: generatedDate,
-          generatedTime: generatedTime,
-        );
-
-        return pdfService.generate();
-      },
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Excel file generated successfully")),
     );
   },
+),
 
-      ),
-    ],
-  ),
+
+  ],
+),
+
+
+
+
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Center(

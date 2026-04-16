@@ -8,6 +8,7 @@ class AddHouseholdPage extends StatefulWidget {
 
   @override
   State<AddHouseholdPage> createState() => _AddHouseholdPageState();
+  
 }
 
 class _AddHouseholdPageState extends State<AddHouseholdPage> {
@@ -78,6 +79,29 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
     female.addListener(_calculateTotal);
   }
 
+bool get _isFormValid {
+  // REQUIRED TEXT FIELDS
+  if (zone.text.trim().isEmpty) return false;
+  if (male.text.trim().isEmpty) return false;
+  if (female.text.trim().isEmpty) return false;
+  if (families.text.trim().isEmpty) return false;
+  if (immunized.text.trim().isEmpty) return false;
+
+  // Father / Mother conditional validation
+  if (!noFather && father.text.trim().isEmpty) return false;
+  if (!noMother && mother.text.trim().isEmpty) return false;
+
+  // DROPDOWNS (IMPORTANT)
+  if (toilet == null) return false;
+  if (garbage == null) return false;
+  if (water == null) return false;
+  if (food == null) return false;
+  if (dwellingType == null) return false;
+
+  return true;
+}
+
+
   void _calculateTotal() {
     total.text =
         ((int.tryParse(male.text) ?? 0) + (int.tryParse(female.text) ?? 0))
@@ -132,7 +156,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
       "High School Level",
       "High School Graduate",
       "College Level",
-      "Graduate",
+      "College Graduate",
       "Vocational",
       "Others"
     ];
@@ -146,7 +170,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
           children: [
 Center(
   child: Text(
-    "Household No.: $householdNo",
+    "Household No.  $householdNo",
     style: const TextStyle(
       fontWeight: FontWeight.bold,
       fontSize: 16,
@@ -167,7 +191,7 @@ const SizedBox(height: 12),
             CheckboxListTile(
               value: indigenousPeople,
               onChanged: (v) => setState(() => indigenousPeople = v!),
-              title: const Text("Indigenous People"),
+              title: const Text("IPs"),
             ),
 
 const Padding(
@@ -190,7 +214,7 @@ const Padding(
               },
               title: const Text("None"),
             ),
-            _field("Name of Father", father,
+            _field("Name of father", father,
                 type: TextInputType.text, readOnly: noFather),
             _drop("Occupation", fatherOccupation, occupations,
                 noFather ? null : (v) => setState(() => fatherOccupation = v),
@@ -219,7 +243,7 @@ const Padding(
               },
               title: const Text("None"),
             ),
-            _field("Name of Mother", mother,
+            _field("Name of mother", mother,
                 type: TextInputType.text, readOnly: noMother),
             _drop("Occupation", motherOccupation, occupations,
                 noMother ? null : (v) => setState(() => motherOccupation = v),
@@ -236,9 +260,9 @@ const Padding(
   ),
 ),            _field("Male", male),
             _field("Female", female),
-            _field("Total", total, readOnly: true),
-            _field("Families", families),
-            _field("Fully Immunized Children", immunized),
+            _field("Total members", total, readOnly: true),
+            _field("No. of families", families),
+            _field("No. of fully immunized children", immunized),
 
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
@@ -246,10 +270,10 @@ const Padding(
     "IYCF",
     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
   ),
-),            _field("Exclusive", exclusive),
-            _field("Mixed", mixed),
-            _field("Bottle Fed", bottle),
-            _field("Complementary Feeding", complementary),
+),            _field("0-5 months exclusive breastfeeding", exclusive),
+            _field("0-5 months mixed feeding", mixed),
+            _field("0-5 months bottle feeding", bottle),
+            _field("6-12 complementary feeding", complementary),
 
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
@@ -257,8 +281,8 @@ const Padding(
     "Women Status",
     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
   ),
-),            _field("Pregnant Below 19", preg19),
-            _field("Pregnant 20+", preg20),
+),            _field("Pregnant 19 bellow", preg19),
+            _field("Pregnant 20 above", preg20),
             _field("Lactating", lactating),
 
 const Padding(
@@ -267,20 +291,21 @@ const Padding(
     "Age Group",
     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
   ),
-),            _field("0-5 months", i0_5),
-            _field("6-11 months", i6_11),
-            _field("12-23 months", c12_23),
-            _field("24-59 months", c24_59),
-            _field("5-9", a5_9),
-            _field("10-19", a10_19),
-            _field("20-59", a20_59),
-            _field("60+", a60),
+),           
+            _field("Infants 0-5 months old", i0_5),
+            _field("Infants 6-11 months old", i6_11),
+            _field("Preschool 12-23 months old", c12_23),
+            _field("Preschool 24-59 months old", c24_59),
+            _field("5-9 years old", a5_9),
+            _field("10-19 years old", a10_19),
+            _field("20-59 years old", a20_59),
+            _field("60 above", a60),
             _field("PWD", pwd),
 
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
   child: Text(
-    "Nutritional Status",
+    "Preschool children nutritional Status",
     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
   ),
 ),            _field("Severely Underweight", su),
@@ -312,7 +337,7 @@ const Padding(
                 ["Vegetable Garden", "Poultry", "Fishpond", "No Garden"],
                 (v) => setState(() => food = v)),
             _drop("Dwelling Type", dwellingType,
-                ["Concrete","Semi Concrete", "Wooden", "Nipa", "Barong", "Makeshift"],
+                ["Concrete","Semi Concrete", "Wooden", "Nipa Bamboo House", "Barong-Barong", "Makeshift"],
                 (v) => setState(() => dwellingType = v)),
 
             CheckboxListTile(
@@ -329,11 +354,17 @@ Center(
               width: 220,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent, // ✅ transparent
-                      foregroundColor: Colors.black,       // text color
+backgroundColor: _isFormValid
+    ? Colors.transparent
+    : Colors.grey.shade300,
+    
+
+                          foregroundColor: Colors.black,       // text color
         elevation: 6, // ✅ black shadow strength
         shadowColor: Colors.black,            
-                      side: const BorderSide(color: Colors.black),   
+side: BorderSide(
+  color: _isFormValid ? Colors.black : Colors.grey,
+), 
                       
                       shape: RoundedRectangleBorder(
   borderRadius: BorderRadius.circular(5), // 👈 THIS controls curve
@@ -343,7 +374,8 @@ Center(
                   textStyle: const TextStyle(fontSize: 16, ),
 
                 ),
-                onPressed: () async {
+onPressed: _isFormValid
+    ? () async {
                   if (userId == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("User not loaded.")),
@@ -409,7 +441,9 @@ Center(
                     const SnackBar(content: Text("Saved Successfully")),
                   );
                   Navigator.pop(context);
-                },
+                }
+                    : null,    
+  
                 child: const Text("Save"),
               ),
             ),
@@ -427,6 +461,7 @@ Center(
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: TextField(
+        onChanged: (_) => setState(() {}),
         controller: controller,
         readOnly: readOnly,
         keyboardType: type ?? TextInputType.number,
