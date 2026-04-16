@@ -1,60 +1,222 @@
 import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import '../../models/household.dart';
 
 class ExportCsvService {
-  static Future<String> generate(List<Household> households) async {
-    List<List<dynamic>> rows = [];
+  static Future<void> generate(List<Household> households) async {
 
-    // ✅ HEADER
-    rows.add([
-      "Barangay",
-      "Male",
-      "Female",
-      "Families",
-      "4Ps",
-      "Indigenous",
-      "Iodized Salt",
-      "PWD",
-      "Toilet",
-      "Garbage",
-      "Water",
-      "Food",
-      "Dwelling Type",
-    ]);
+    // =========================
+    // TOTAL COMPUTATION (same logic as PDF)
+    // =========================
+    int totalHouseholds = households.length;
+    int totalMembers = 0;
+    int totalMale = 0;
+    int totalFemale = 0;
+    int totalFamilies = 0;
+    int totalFullyImmunized = 0;
+    int totalHHLess5 = 0;
+    int totalHHMore5 = 0;
+    int totalFourPs = 0;
+    int totalIndigenous = 0;
+    int totalIodizedSalt = 0;
+    int totalPreg19 = 0;
+    int totalPreg20 = 0;
+    int totalLactating = 0;
 
-    // ✅ DATA
-    for (var h in households) {
-      rows.add([
-        h.barangay ?? '',
-        h.male ?? 0,
-        h.female ?? 0,
-        h.families ?? 0,
-        h.fourPs,
-        h.indigenousPeople,
-        h.iodizedSalt,
-        h.pwd ?? 0,
-        h.toilet ?? '',
-        h.garbage ?? '',
-        h.water ?? '',
-        h.food ?? '',
-        h.dwellingType ?? '',
-      ]);
+    int totalExclusive = 0;
+    int totalMixed = 0;
+    int totalBottleFed = 0;
+    int totalComplementary = 0;
+
+    int totalInfant0to5 = 0;
+    int totalInfant6to11 = 0;
+    int totalChild12to23 = 0;
+    int totalChild24to59 = 0;
+    int totalAge5to9 = 0;
+    int totalAge10to19 = 0;
+    int totalAge20to59 = 0;
+    int totalAge60above = 0;
+    int totalPWD = 0;
+
+    int totalSU = 0, totalUW = 0, totalNW = 0;
+    int totalSW = 0, totalW = 0, totalOW = 0, totalOB = 0;
+    int totalSS = 0, totalST = 0;
+
+    Map<String, int> toiletCounts = {};
+    Map<String, int> garbageCounts = {};
+    Map<String, int> waterCounts = {};
+    Map<String, int> foodCounts = {};
+    Map<String, int> dwellingCounts = {};
+
+    void count(Map<String, int> map, String? key) {
+      if (key == null) return;
+      map[key] = (map[key] ?? 0) + 1;
     }
 
-    // ✅ CONVERT TO CSV STRING
+    for (var h in households) {
+      int members = (h.male ?? 0) + (h.female ?? 0);
+
+      totalMale += h.male ?? 0;
+      totalFemale += h.female ?? 0;
+      totalMembers += members;
+      totalFamilies += h.families ?? 0;
+      totalFullyImmunized += h.fullyImmunized ?? 0;
+
+      if (members <= 5) totalHHLess5++;
+      else totalHHMore5++;
+
+      totalFourPs += h.fourPs;
+      totalIndigenous += h.indigenousPeople;
+      totalIodizedSalt += h.iodizedSalt;
+
+      totalPreg19 += h.preg19 ?? 0;
+      totalPreg20 += h.preg20 ?? 0;
+      totalLactating += h.lactating ?? 0;
+
+      totalExclusive += h.exclusive ?? 0;
+      totalMixed += h.mixed ?? 0;
+      totalBottleFed += h.bottleFed ?? 0;
+      totalComplementary += h.complementary ?? 0;
+
+      totalInfant0to5 += h.infant0to5 ?? 0;
+      totalInfant6to11 += h.infant6to11 ?? 0;
+      totalChild12to23 += h.child12to23 ?? 0;
+      totalChild24to59 += h.child24to59 ?? 0;
+
+      totalAge5to9 += h.age5to9 ?? 0;
+      totalAge10to19 += h.age10to19 ?? 0;
+      totalAge20to59 += h.age20to59 ?? 0;
+      totalAge60above += h.age60above ?? 0;
+
+      totalPWD += h.pwd ?? 0;
+
+      totalSU += h.severelyUnderweight ?? 0;
+      totalUW += h.underweight ?? 0;
+      totalNW += h.normal ?? 0;
+      totalSW += h.severelyWasted ?? 0;
+      totalW += h.wasted ?? 0;
+      totalOW += h.overweight ?? 0;
+      totalOB += h.obese ?? 0;
+      totalSS += h.severelyStunted ?? 0;
+      totalST += h.stunted ?? 0;
+
+      count(toiletCounts, h.toilet);
+      count(garbageCounts, h.garbage);
+      count(waterCounts, h.water);
+      count(foodCounts, h.food);
+      count(dwellingCounts, h.dwellingType);
+    }
+
+    // =========================
+    // 2-COLUMN CSV FORMAT
+    // =========================
+    List<List<dynamic>> rows = [];
+
+    rows.add(["Family Profile", ""]);
+    rows.add(["Indicator", "Value"]);
+    rows.add(["Barangay", households.isNotEmpty ? households.first.barangay ?? '' : '']);
+
+    rows.add(["Total households", totalHouseholds]);
+    rows.add(["Total number of members", totalMembers]);
+    rows.add(["Male", totalMale]);
+    rows.add(["Female", totalFemale]);
+    rows.add(["Total number of family", totalFamilies]);
+    rows.add(["Fully immunized children", totalFullyImmunized]);    
+
+    rows.add(["HH less than 5 members", totalHHLess5]);
+    rows.add(["HH more than 5 members", totalHHMore5]);
+    rows.add(["4Ps", totalFourPs]);
+    rows.add(["Indigenous", totalIndigenous]);
+    rows.add(["Iodized Salt", totalIodizedSalt]);
+
+    rows.add(["Women", ""]);
+    rows.add(["Pregnant 19 below", totalPreg19]);
+    rows.add(["Pregnant 20 above", totalPreg20]);
+    rows.add(["Lactating", totalLactating]);
+
+    rows.add(["IYCF", ""]);
+    rows.add(["0-5 months exclusive breastfed", totalExclusive]);
+    rows.add(["0-5 months mixed fed", totalMixed]);
+    rows.add(["0-5 bottle fed", totalBottleFed]);
+    rows.add(["6-12 complementary fed", totalComplementary]);
+
+    rows.add(["Age Group", ""]);
+    rows.add(["Infants 0-5 months", totalInfant0to5]);
+    rows.add(["Infants 6-11 months", totalInfant6to11]);
+    rows.add(["Children 12-23 months", totalChild12to23]);
+    rows.add(["Children 24-59 months", totalChild24to59]);
+    rows.add(["Age 5-9", totalAge5to9]);
+    rows.add(["Age 10-19", totalAge10to19]);
+    rows.add(["Age 20-59", totalAge20to59]);
+    rows.add(["Age 60 above", totalAge60above]);
+    rows.add(["PWD", totalPWD]);
+
+    rows.add(["Nutrition Status", ""]);
+    rows.add(["Severely underweight", totalSU]);
+    rows.add(["Underweight", totalUW]);
+    rows.add(["Normal", totalNW]);
+    rows.add(["Severely wasted", totalSW]);
+    rows.add(["Wasted", totalW]);
+    rows.add(["Overweight", totalOW]);
+    rows.add(["Obese", totalOB]);
+    rows.add(["Severely stunted", totalSS]);
+    rows.add(["Stunted", totalST]);
+
+    rows.add(["Toilet", ""]);
+    rows.add(["Water sealed", toiletCounts['Water Sealed'] ?? 0]);
+    rows.add(["Antipolo", toiletCounts['Antipolo'] ?? 0]);
+    rows.add(["Open pit", toiletCounts['Open Pit'] ?? 0]);
+    rows.add(["Shared", toiletCounts['Shared'] ?? 0]);
+    rows.add(["No toilet", toiletCounts['No Toilet'] ?? 0]);
+
+    rows.add(["Garbage", ""]);
+    rows.add(["Barangay collector", garbageCounts['Barangay Collector'] ?? 0]);
+    rows.add(["Compost pit", garbageCounts['Compost Pit'] ?? 0]);
+    rows.add(["Burning", garbageCounts['Burning'] ?? 0]);
+    rows.add(["Dumping", garbageCounts['Dumping'] ?? 0]);
+
+    rows.add(["Water Source", ""]);
+    rows.add(["Pipe water", waterCounts['Pipe Water'] ?? 0]);
+    rows.add(["Deep well", waterCounts['Deep Well'] ?? 0]);
+    rows.add(["Purified", waterCounts['Purified'] ?? 0]);
+    rows.add(["Shallow well", waterCounts['Shallow Well'] ?? 0]);
+    rows.add(["Artesian", waterCounts['Artesian'] ?? 0]);
+    rows.add(["Spring", waterCounts['Spring'] ?? 0]);
+
+    rows.add(["Food Production", ""]);
+    rows.add(["Vegetable garden", foodCounts['Vegetable Garden'] ?? 0]);
+    rows.add(["Poultry", foodCounts['Poultry'] ?? 0]);
+    rows.add(["Fishpond", foodCounts['Fishpond'] ?? 0]);
+    rows.add(["No garden", foodCounts['No Garden'] ?? 0]);
+
+    rows.add(["Dwelling Type", ""]);
+    rows.add(["Concrete", dwellingCounts['Concrete'] ?? 0]);
+    rows.add(["Semi concrete", dwellingCounts['Semi Concrete'] ?? 0]);
+    rows.add(["Wooden", dwellingCounts['Wooden'] ?? 0]);
+    rows.add(["Nipa", dwellingCounts['Nipa'] ?? 0]);
+    rows.add(["Barong-barong", dwellingCounts['Barong'] ?? 0]);
+    rows.add(["Makeshift", dwellingCounts['Makeshift'] ?? 0]);
+
+    // =========================
+    // EXPORT FILE
+    // =========================
     final csvData = const ListToCsvConverter().convert(rows);
 
-    // ✅ SAVE FILE
-    final directory = await getApplicationDocumentsDirectory();
+    final dir = await getTemporaryDirectory();
 
     final file = File(
-      "${directory.path}/family_profile_export.csv",
+      "${dir.path}/Family_Profile_${DateTime.now().millisecondsSinceEpoch}.csv",
     );
 
     await file.writeAsString(csvData);
 
-    return file.path;
+    await FlutterFileDialog.saveFile(
+      params: SaveFileDialogParams(
+        sourceFilePath: file.path,
+        fileName: "Family_Profile.csv",
+      ),
+    );
   }
 }

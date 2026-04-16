@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../db/config.dart';
 import '../models/household.dart';
 import 'export/export_b_pdf.dart';
+import 'export/export_b_csv.dart';
 import 'package:intl/intl.dart';
 
 class BarangayHouseholdPage extends StatefulWidget {
@@ -108,18 +109,52 @@ class _BarangayHouseholdPageState
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Barangay Household Table"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf),
-            tooltip: "Export PDF",
-            onPressed: _exportPdf,
-          ),
-        ],
-      ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text("Barangay Household Table"),
+      actions: [
+
+        // 📄 PDF EXPORT
+        IconButton(
+          icon: const Icon(Icons.picture_as_pdf),
+          tooltip: "Export PDF",
+          onPressed: _exportPdf,
+        ),
+
+        // 📊 CSV EXPORT
+        IconButton(
+          icon: const Icon(Icons.grid_on),
+          tooltip: "Export CSV",
+          onPressed: () async {
+            if (userId == null) return;
+
+            final data =
+                await DBHelper.instance.getUserHouseholds(userId!);
+
+            final households =
+                data.map((e) => Household.fromMap(e)).toList();
+
+            _generateDateTime();
+
+await ExportBarangayCSV.generate(
+  data: households,
+  barangay: barangay,
+  zone: selectedZone,
+);
+
+            if (!mounted) return;
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("CSV file saved successfully"),
+              ),
+            );
+          },
+        ),
+
+      ],
+    ),
 
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,6 +246,7 @@ class _BarangayHouseholdPageState
       "Female",
       "Total",
       "Families",
+      "Fully Immunized",
       "4Ps",
       "IP",
       "Preg <19",
@@ -293,6 +329,7 @@ class _BarangayHouseholdPageState
         _cell("${h.female ?? 0}"),
         _cell("${h.total ?? 0}"),
         _cell("${h.families ?? 0}"),
+        _cell("${h.fullyImmunized ?? 0}"),
 
         // ✅ CHANGED HERE ONLY
         _cell(_yesNo(h.fourPs)),

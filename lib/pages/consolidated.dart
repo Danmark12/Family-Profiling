@@ -7,7 +7,6 @@
   import 'export/export_pdf.dart';
   import 'package:intl/intl.dart';
   import 'export/export_csv.dart';
-   import 'export/export_excel.dart';
 
   class ConsolidatedReportPage extends StatefulWidget {
     const ConsolidatedReportPage({super.key});
@@ -25,6 +24,7 @@
     int totalMale = 0;
     int totalFemale = 0;
     int totalFamilies = 0;
+    int totalFullyImmunized = 0;
 
     int totalHHLess5 = 0;
     int totalHHMore5 = 0;
@@ -93,6 +93,7 @@
         totalFemale += h.female ?? 0;
         totalMembers += members;
         totalFamilies += h.families ?? 0;
+        totalFullyImmunized += h.fullyImmunized ?? 0;
 
         if (members <= 5) {
           totalHHLess5++;
@@ -189,32 +190,9 @@ appBar: AppBar(
     ),
 
     // 📊 CSV EXPORT BUTTON (NEW)
-    IconButton(
-      icon: const Icon(Icons.grid_on),
-      tooltip: 'Export CSV',
-      onPressed: () async {
-        if (userId == null) return;
-
-        final data =
-            await DBHelper.instance.getUserHouseholds(userId!);
-
-        final households =
-            data.map((e) => Household.fromMap(e)).toList();
-
-        final path = await ExportCsvService.generate(households);
-
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("CSV saved successfully"),
-          ),
-        );
-      },
-    ),
 IconButton(
-  icon: const Icon(Icons.table_chart),
-  tooltip: 'Export Excel',
+  icon: const Icon(Icons.grid_on),
+  tooltip: 'Export CSV',
   onPressed: () async {
     if (userId == null) return;
 
@@ -224,12 +202,14 @@ IconButton(
     final households =
         data.map((e) => Household.fromMap(e)).toList();
 
-    final path = await ExportExcelService.generate(households);
+    final path = await ExportCsvService.generate(households);
 
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Excel file generated successfully")),
+      SnackBar(
+        content: Text("CSV exported successfully"),
+      ),
     );
   },
 ),
@@ -237,8 +217,6 @@ IconButton(
 
   ],
 ),
-
-
 
 
         body: SingleChildScrollView(
@@ -279,8 +257,10 @@ IconButton(
                         _row("Male", "$totalMale"),
                         _row("Female", "$totalFemale"),
                         _row("Total number of family", "$totalFamilies"),
+                        
                         _row("Total number of HHs less than 5 members", "$totalHHLess5"),
                         _row("Total number of HHs more than 5 members", "$totalHHMore5"),
+                        _row("Total number of fully immunized children", "$totalFullyImmunized"),
                         _row("Total number of 4Ps", "$totalFourPs"),
                         _row("Total number of IPs", "$totalIndigenous"),
 
