@@ -28,6 +28,8 @@ class ExportPdfService {
     int totalFamilies = 0;
     int totalHHLess5 = 0;
     int totalHHMore5 = 0;
+    int totalFullyImmunized = 0;
+
     int totalFourPs = 0;
     int totalIndigenous = 0;
     int totalIodizedSalt = 0;
@@ -70,6 +72,7 @@ class ExportPdfService {
       totalFemale += h.female ?? 0;
       totalMembers += members;
       totalFamilies += h.families ?? 0;
+      totalFullyImmunized += h.fullyImmunized ?? 0;
 
       if (members <= 5) totalHHLess5++;
       else totalHHMore5++;
@@ -128,7 +131,7 @@ class ExportPdfService {
             margin: const pw.EdgeInsets.only(top: 10),
             padding: const pw.EdgeInsets.only(right: 10),
             child: pw.Text(
-              'Date: $generatedDate | $generatedTime ()',
+              'Date: $generatedDate | $generatedTime',
               style: pw.TextStyle(fontSize: 9, color: PdfColors.grey),
             ),
           );  
@@ -187,6 +190,7 @@ class ExportPdfService {
               _row('Total number of family', '$totalFamilies'),
               _row('Total number of HHs less than 5 members', '$totalHHLess5'),
               _row('Total number of HHs more than 5 members', '$totalHHMore5'),
+              _row("Total number of fully immunized children", "$totalFullyImmunized"),
               _row('Total number of 4Ps', '$totalFourPs'),
               _row('Total number of IPs', '$totalIndigenous'),
 

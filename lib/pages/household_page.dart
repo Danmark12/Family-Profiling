@@ -139,7 +139,7 @@ class _HouseholdPageState extends State<HouseholdPage> {
                 elevation: 8,
                 borderRadius: BorderRadius.circular(10),
                 child: Container(
-                  width: 140,
+                  width: 80,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),
