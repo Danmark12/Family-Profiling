@@ -27,6 +27,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   bool isLoading = true;
 
+  // ✅ ADDED: password visibility toggles
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+
   final List<String> barangays = [
     'Amoros','Bolisong','Cogon','Himaya','Hinigdaan','Kalabaylabay','Molugan',
     'Pedro S. Baculio','Poblacion','Quibonbon','Sambulawan',
@@ -195,7 +199,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 25),
 
-                      // ================= FULL SAVE BUTTON =================
                       SizedBox(
                         width: double.infinity,
                         child: TextButton(
@@ -221,9 +224,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 const SizedBox(height: 40),
-
                 const Divider(),
-
                 const SizedBox(height: 20),
 
                 // ================= PASSWORD =================
@@ -243,10 +244,25 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     children: [
 
+                      // NEW PASSWORD
                       TextFormField(
                         controller: _newPasswordController,
-                        obscureText: true,
-                        decoration: inputStyle('New Password'),
+                        obscureText: _obscureNewPassword,
+                        decoration: inputStyle('New Password').copyWith(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureNewPassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureNewPassword = !_obscureNewPassword;
+                              });
+                            },
+                          ),
+                        ),
                         validator: (val) {
                           if (val == null || val.isEmpty) return 'Enter password';
                           if (val.length < 4) return 'Minimum 4 characters';
@@ -256,10 +272,26 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 15),
 
+                      // CONFIRM PASSWORD
                       TextFormField(
                         controller: _confirmPasswordController,
-                        obscureText: true,
-                        decoration: inputStyle('Confirm Password'),
+                        obscureText: _obscureConfirmPassword,
+                        decoration: inputStyle('Confirm Password').copyWith(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureConfirmPassword =
+                                    !_obscureConfirmPassword;
+                              });
+                            },
+                          ),
+                        ),
                         validator: (val) {
                           if (val != _newPasswordController.text) {
                             return 'Passwords do not match';
@@ -270,7 +302,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                       const SizedBox(height: 25),
 
-                      // ================= FULL UPDATE BUTTON =================
                       SizedBox(
                         width: double.infinity,
                         child: TextButton(

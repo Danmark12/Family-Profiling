@@ -108,6 +108,36 @@ bool get _isFormValid {
             .toString();
   }
 
+  int _getAgeGroupTotal() {
+  return (int.tryParse(i0_5.text) ?? 0) +
+      (int.tryParse(i6_11.text) ?? 0) +
+      (int.tryParse(c12_23.text) ?? 0) +
+      (int.tryParse(c24_59.text) ?? 0) +
+      (int.tryParse(a5_9.text) ?? 0) +
+      (int.tryParse(a10_19.text) ?? 0) +
+      (int.tryParse(a20_59.text) ?? 0) +
+      (int.tryParse(a60.text) ?? 0);
+}
+
+bool _shouldDisableField(TextEditingController controller) {
+  int totalMembers = int.tryParse(total.text) ?? 0;
+  int currentTotal = _getAgeGroupTotal();
+
+  // If total already reached AND this field is empty → disable
+  if (currentTotal >= totalMembers && (int.tryParse(controller.text) ?? 0) == 0) {
+    return true;
+  }
+
+  return false;
+}
+
+bool _isAgeGroupValid() {
+  int totalMembers = int.tryParse(total.text) ?? 0;
+  int ageTotal = _getAgeGroupTotal();
+
+  return totalMembers == ageTotal;
+}
+
   Future<void> _loadUserBarangay() async {
     final prefs = await SharedPreferences.getInstance();
     final int? storedUserId = prefs.getInt('userId');
@@ -292,20 +322,35 @@ const Padding(
     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
   ),
 ),           
-            _field("Infants 0-5 months old", i0_5),
-            _field("Infants 6-11 months old", i6_11),
-            _field("Preschool 12-23 months old", c12_23),
-            _field("Preschool 24-59 months old", c24_59),
-            _field("5-9 years old", a5_9),
-            _field("10-19 years old", a10_19),
-            _field("20-59 years old", a20_59),
-            _field("60 above", a60),
+_field("Infants 0-5 months old", i0_5,
+    disabled: _shouldDisableField(i0_5)),
+
+_field("Infants 6-11 months old", i6_11,
+    disabled: _shouldDisableField(i6_11)),
+
+_field("Preschool 12-23 months old", c12_23,
+    disabled: _shouldDisableField(c12_23)),
+
+_field("Preschool 24-59 months old", c24_59,
+    disabled: _shouldDisableField(c24_59)),
+
+_field("5-9 years old", a5_9,
+    disabled: _shouldDisableField(a5_9)),
+
+_field("10-19 years old", a10_19,
+    disabled: _shouldDisableField(a10_19)),
+
+_field("20-59 years old", a20_59,
+    disabled: _shouldDisableField(a20_59)),
+
+_field("60 years old and above", a60,
+    disabled: _shouldDisableField(a60)),
             _field("PWD", pwd),
 
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
   child: Text(
-    "Preschool children nutritional Status",
+    "Preschool children nutritional status",
     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
   ),
 ),            _field("Severely Underweight", su),
@@ -376,6 +421,17 @@ side: BorderSide(
                 ),
 onPressed: _isFormValid
     ? () async {
+if (!_isFormValid) return;
+
+if (!_isAgeGroupValid()) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text("Age group total must equal total members"),
+    ),
+  );
+  return;
+}
+
                   if (userId == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("User not loaded.")),
@@ -456,22 +512,22 @@ onPressed: _isFormValid
     );
   }
 
-  Widget _field(String label, TextEditingController controller,
-      {bool readOnly = false, TextInputType? type}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: TextField(
-        onChanged: (_) => setState(() {}),
-        controller: controller,
-        readOnly: readOnly,
-        keyboardType: type ?? TextInputType.number,
-        decoration: InputDecoration(
-          labelText: label,
-          border: const OutlineInputBorder(),
-        ),
+Widget _field(String label, TextEditingController controller,
+    {bool readOnly = false, TextInputType? type, bool disabled = false}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: TextField(
+      onChanged: (_) => setState(() {}),
+      controller: controller,
+      readOnly: readOnly || disabled, // ✅ APPLY DISABLE HERE
+      keyboardType: type ?? TextInputType.number,
+      decoration: InputDecoration(
+        labelText: label,
+        border: const OutlineInputBorder(),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _drop(String label, String? value, List<String> items,
       void Function(String?)? onChanged,

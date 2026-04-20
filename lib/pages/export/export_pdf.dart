@@ -260,10 +260,10 @@ class ExportPdfService {
               _row('Semi Concrete', '${dwellingCounts['Semi Concrete'] ?? 0}'),
               _row('Wooden House', '${dwellingCounts['Wooden'] ?? 0}'),
               _row('Nipa Bamboo House', '${dwellingCounts['Nipa'] ?? 0}'),
-              _row('Barong - Barong', '${dwellingCounts['Barong'] ?? 0}'),
+              _row('Barong-Barong', '${dwellingCounts['Barong-Barong'] ?? 0}'),
               _row('Makeshift', '${dwellingCounts['Makeshift'] ?? 0}'),
 
-              _row('Total number of households using iodized salt', '$totalIodizedSalt'),
+              _row('Total number of households usinsg iodized salt', '$totalIodizedSalt'),
             ],
           ),
         ],

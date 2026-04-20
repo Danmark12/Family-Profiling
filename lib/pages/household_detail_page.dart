@@ -118,15 +118,21 @@ class HouseholdDetailPage extends StatelessWidget {
                 buildRow("No. of Families", "${hh.families ?? 0}"),
                 buildRow("Fully Immunized Child", "${hh.fullyImmunized ?? 0}"),
 
+                // IYCF
+buildRow("0-5 Months Exclusive Breastfeeding", "${hh.exclusive ?? 0}"),
+buildRow("0-5 Months Mixed Feeding", "${hh.mixed ?? 0}"),
+buildRow("0-5 Months Bottle Feeding", "${hh.bottleFed ?? 0}"),
+buildRow("6-12 Months Complementary Feeding", "${hh.complementary ?? 0}"),
+
                 // AGE GROUP
-                buildRow("0–5 months", "${hh.infant0to5 ?? 0}"),
-                buildRow("6–11 months", "${hh.infant6to11 ?? 0}"),
-                buildRow("12–23 months", "${hh.child12to23 ?? 0}"),
-                buildRow("24–59 months", "${hh.child24to59 ?? 0}"),
-                buildRow("5–9 years", "${hh.age5to9 ?? 0}"),
-                buildRow("10–19 years", "${hh.age10to19 ?? 0}"),
-                buildRow("20–59 years", "${hh.age20to59 ?? 0}"),
-                buildRow("60+ years", "${hh.age60above ?? 0}"),
+                buildRow("0–5 months old", "${hh.infant0to5 ?? 0}"),
+                buildRow("6–11 months old", "${hh.infant6to11 ?? 0}"),
+                buildRow("12–23 months old", "${hh.child12to23 ?? 0}"),
+                buildRow("24–59 months old", "${hh.child24to59 ?? 0}"),
+                buildRow("5–9 years old", "${hh.age5to9 ?? 0}"),
+                buildRow("10–19 years old", "${hh.age10to19 ?? 0}"),
+                buildRow("20–59 years old", "${hh.age20to59 ?? 0}"),
+                buildRow("60+ years old", "${hh.age60above ?? 0}"),
                 buildRow("PWD", "${hh.pwd ?? 0}"),
 
                 // FACILITIES

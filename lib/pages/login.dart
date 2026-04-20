@@ -22,6 +22,9 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isLoading = false;
 
+  // ✅ ADDED: password visibility toggle
+  bool _obscurePassword = true;
+
   // ---------------- LOGIN FUNCTION ----------------
   Future<void> login() async {
     if (!_formKey.currentState!.validate()) return;
@@ -79,8 +82,8 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       // Unexpected error
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Something went wrong'),
+        const SnackBar(
+          content: Text('Something went wrong'),
           backgroundColor: Colors.red,
         ),
       );
@@ -165,11 +168,25 @@ class _LoginPageState extends State<LoginPage> {
 
                       const SizedBox(height: 8),
 
-                      // PASSWORD
+                      // PASSWORD (✅ UPDATED WITH EYE ICON)
                       TextFormField(
                         controller: passwordController,
-                        decoration: inputStyle('Password', Icons.lock),
-                        obscureText: true,
+                        obscureText: _obscurePassword,
+                        decoration: inputStyle('Password', Icons.lock).copyWith(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                        ),
                         validator: (val) {
                           if (val == null || val.isEmpty) {
                             return 'Enter password';

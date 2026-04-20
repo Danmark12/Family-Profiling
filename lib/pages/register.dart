@@ -27,6 +27,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
   final Color avocado = const Color(0xFF568203);
 
+  // ✅ ADDED: visibility toggles
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
+
   // ---------------- INPUT STYLE ----------------
   InputDecoration inputStyle(String label, IconData icon) {
     return InputDecoration(
@@ -52,7 +56,6 @@ class _RegisterPageState extends State<RegisterPage> {
           passwordController.text.trim(),
         );
 
-        // Success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Account registered successfully'),
@@ -65,13 +68,11 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         );
 
-        // Clear fields
         nameController.clear();
         passwordController.clear();
         confirmController.clear();
         setState(() => selectedBarangay = null);
 
-        // Delay then go to login
         await Future.delayed(const Duration(seconds: 2));
 
         Navigator.pushReplacement(
@@ -79,7 +80,6 @@ class _RegisterPageState extends State<RegisterPage> {
           MaterialPageRoute(builder: (_) => const LoginPage()),
         );
       } catch (e) {
-        // Clean error handling (duplicate username)
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Username already exists'),
@@ -181,8 +181,22 @@ class _RegisterPageState extends State<RegisterPage> {
                       // PASSWORD
                       TextFormField(
                         controller: passwordController,
-                        decoration: inputStyle('Password', Icons.lock),
-                        obscureText: true,
+                        obscureText: _obscurePassword,
+                        decoration: inputStyle('Password', Icons.lock).copyWith(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                        ),
                         validator: (val) {
                           if (val == null || val.isEmpty) {
                             return 'Enter password';
@@ -199,9 +213,25 @@ class _RegisterPageState extends State<RegisterPage> {
                       // CONFIRM PASSWORD
                       TextFormField(
                         controller: confirmController,
-                        decoration:
-                            inputStyle('Confirm Password', Icons.lock_outline),
-                        obscureText: true,
+                        obscureText: _obscureConfirm,
+                        decoration: inputStyle(
+                          'Confirm Password',
+                          Icons.lock_outline,
+                        ).copyWith(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirm
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureConfirm = !_obscureConfirm;
+                              });
+                            },
+                          ),
+                        ),
                         validator: (val) {
                           if (val != passwordController.text) {
                             return 'Passwords do not match';

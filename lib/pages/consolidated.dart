@@ -305,7 +305,6 @@ IconButton(
                         _row("No toilet", get(toiletCounts, "No Toilet")),
 
                         _title("Households, by type of garbage disposal:"),
-                        _row("Barangay/City", get(garbageCounts, "Barangay Collector")),
                         _row("Garbage Collector", get(garbageCounts, "Barangay Collector")),
                         _row("Own Compost Pit", get(garbageCounts, "Compost Pit")),
                         _row("Burning", get(garbageCounts, "Burning")),
@@ -329,9 +328,9 @@ IconButton(
                         _row("Concrete", get(dwellingCounts, "Concrete")),
                         _row("Semi Concrete", get(dwellingCounts, "Semi Concrete")),
                         _row("Wooden House", get(dwellingCounts, "Wooden")),
-                        _row("Nipa Bamboo House", get(dwellingCounts, "Nipa")),
-                        _row("Barong - Barong", get(dwellingCounts, "Barong")),
-                        _row("Makeshift", get(dwellingCounts, "Makeshift")),
+                        _row("Nipa Bamboo House", get(dwellingCounts, "Nipa Bamboo House")),
+                        _row("Barong-Barong", get(dwellingCounts, "Barong-Barong")),
+                        _row("Makeshift", get(dwellingCounts, "Makeshift")), 
 
                         _row("Total number of households using iodized salt", "$totalIodizedSalt"),
                       ],

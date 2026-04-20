@@ -12,9 +12,12 @@ class ExportBarangayPDF {
   static Future<void> generate({
     required List<Household> data,
     required String barangay,
-    required String zone,
+required String zone,
+required bool sortAsc,
+
     required String generatedDate,
     required String generatedTime,
+    
   }) async {
 
     final pdf = pw.Document();
@@ -55,8 +58,16 @@ class ExportBarangayPDF {
             children: [
               pw.Text("Barangay: $barangay",
                   style: const pw.TextStyle(fontSize: 9)),
-              pw.Text("Zone: $zone",
-                  style: const pw.TextStyle(fontSize: 9)),
+              // pw.Text("Zone: $zone",
+              //     style: const pw.TextStyle(fontSize: 9)),
+
+    //               pw.Text(
+    //   sortAsc
+    //       ? "Sort: Ascending (1 → 10)"
+    //       : "Sort: Descending (10 → 1)",
+    //   style: const pw.TextStyle(fontSize: 9),
+    // ),
+
             ],
           ),
 

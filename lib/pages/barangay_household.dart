@@ -23,6 +23,9 @@ class _BarangayHouseholdPageState
   String generatedTime = "";
 
   String selectedZone = "All";
+bool sortAsc = true;
+
+
 
   List<Household> households = [];
   List<Household> filtered = [];
@@ -65,17 +68,40 @@ class _BarangayHouseholdPageState
     });
   }
 
-  void _filterZone(String zone) {
-    setState(() {
-      selectedZone = zone;
+void _sortHousehold() {
+  setState(() {
+    sortAsc = !sortAsc;
 
-      if (zone == "All") {
-        filtered = households;
-      } else {
-        filtered = households.where((h) => h.zone == zone).toList();
-      }
+    filtered.sort((a, b) {
+      final zoneA = int.tryParse(a.zone ?? "0") ?? 0;
+      final zoneB = int.tryParse(b.zone ?? "0") ?? 0;
+
+      return sortAsc
+          ? zoneA.compareTo(zoneB)
+          : zoneB.compareTo(zoneA);
     });
-  }
+  });
+}
+
+void _filterZone(String zone) {
+  setState(() {
+    selectedZone = zone;
+
+    if (zone == "All") {
+      filtered = List.from(households);
+    } else {
+      filtered = households.where((h) => h.zone == zone).toList();
+    }
+
+    // ALWAYS apply current sort after filtering
+    filtered.sort((a, b) {
+      final aNo = int.tryParse(a.householdNo.toString()) ?? 0;
+      final bNo = int.tryParse(b.householdNo.toString()) ?? 0;
+
+      return sortAsc ? aNo.compareTo(bNo) : bNo.compareTo(aNo);
+    });
+  });
+}
 
   // ✅ GENERATE PH TIME
   void _generateDateTime() {
@@ -86,22 +112,23 @@ class _BarangayHouseholdPageState
   }
 
   // ✅ FIXED PDF EXPORT
-  Future<void> _exportPdf() async {
-    if (userId == null) return;
+Future<void> _exportPdf() async {
+  if (userId == null) return;
 
-    final data = await DBHelper.instance.getUserHouseholds(userId!);
-    final households = data.map((e) => Household.fromMap(e)).toList();
+  _generateDateTime();
 
-    _generateDateTime();
+  // 🔥 USE EXACT SAME DATA AS TABLE (ALREADY SORTED + FILTERED)
+  final dataToExport = List<Household>.from(filtered);
 
-    await ExportBarangayPDF.generate(
-      data: households,
-      barangay: barangay,
-      zone: selectedZone,
-      generatedDate: generatedDate,
-      generatedTime: generatedTime,
-    );
-  }
+  await ExportBarangayPDF.generate(
+    data: dataToExport,
+    barangay: barangay,
+    zone: selectedZone,
+    generatedDate: generatedDate,
+    generatedTime: generatedTime,
+    sortAsc: sortAsc,
+  );
+}
 
   // ✅ ADDED: convert 1/0 to Y/N
   String _yesNo(dynamic value) {
@@ -128,14 +155,15 @@ Widget build(BuildContext context) {
           tooltip: "Export CSV",
           onPressed: () async {
             if (userId == null) return;
-
-            final data =
-                await DBHelper.instance.getUserHouseholds(userId!);
-
-            final households =
-                data.map((e) => Household.fromMap(e)).toList();
-
             _generateDateTime();
+            // final data =
+            //     await DBHelper.instance.getUserHouseholds(userId!);
+
+            // final households =
+            //     data.map((e) => Household.fromMap(e)).toList();
+            final households = List<Household>.from(filtered);
+
+
 
 await ExportBarangayCSV.generate(
   data: households,
@@ -175,40 +203,54 @@ await ExportBarangayCSV.generate(
 
                 const SizedBox(height: 10),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text("Barangay: $barangay"),
-                    ),
+               Row(
+  children: [
+    Expanded(
+      child: Text("Barangay: $barangay"),
+    ),
 
-                    Container(
-                      height: 35,
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: selectedZone,
-                          isDense: true,
-                          icon: const Icon(Icons.arrow_drop_down),
-                          onChanged: (value) {
-                            if (value != null) _filterZone(value);
-                          },
-                          items: zones.map((z) {
-                            return DropdownMenuItem(
-                              value: z,
-                              child: Text(
-                                z == "All" ? "All Zones" : "Zone $z",
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+    // SMALL SORT BUTTON (ONLY IF ALL)
+    if (selectedZone == "All")
+      IconButton(
+        tooltip: sortAsc
+            ? "Sort Descending"
+            : "Sort Ascending",
+        icon: Icon(
+          sortAsc ? Icons.arrow_upward : Icons.arrow_downward,
+          size: 20,
+        ),
+        onPressed: _sortHousehold,
+      ),
+
+    // ZONE DROPDOWN (unchanged, just compact spacing)
+    Container(
+      height: 35,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selectedZone,
+          isDense: true,
+          icon: const Icon(Icons.arrow_drop_down),
+          onChanged: (value) {
+            if (value != null) _filterZone(value);
+          },
+          items: zones.map((z) {
+            return DropdownMenuItem(
+              value: z,
+              child: Text(
+                z == "All" ? "All Zones" : "Zone $z",
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    ),
+  ],
+),
               ],
             ),
           ),
@@ -380,4 +422,4 @@ await ExportBarangayCSV.generate(
       child: Text(value, textAlign: TextAlign.center),
     );
   }
-}
+} 
