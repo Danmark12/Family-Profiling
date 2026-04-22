@@ -119,6 +119,25 @@ bool get _isFormValid {
       (int.tryParse(a60.text) ?? 0);
 }
 
+void _limitAgeInput(TextEditingController currentController) {
+  int totalMembers = int.tryParse(total.text) ?? 0;
+
+  // Get total EXCEPT current field
+  int othersTotal =
+      _getAgeGroupTotal() - (int.tryParse(currentController.text) ?? 0);
+
+  int allowed = totalMembers - othersTotal;
+
+  int currentValue = int.tryParse(currentController.text) ?? 0;
+
+  if (currentValue > allowed) {
+    currentController.text = allowed < 0 ? "0" : allowed.toString();
+    currentController.selection = TextSelection.fromPosition(
+      TextPosition(offset: currentController.text.length),
+    );
+  }
+}
+
 bool _shouldDisableField(TextEditingController controller) {
   int totalMembers = int.tryParse(total.text) ?? 0;
   int currentTotal = _getAgeGroupTotal();
@@ -294,28 +313,7 @@ const Padding(
             _field("No. of families", families),
             _field("No. of fully immunized children", immunized),
 
-const Padding(
-  padding: EdgeInsets.only(bottom: 8),
-  child: Text(
-    "IYCF",
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-  ),
-),            _field("0-5 months exclusive breastfeeding", exclusive),
-            _field("0-5 months mixed feeding", mixed),
-            _field("0-5 months bottle feeding", bottle),
-            _field("6-12 complementary feeding", complementary),
-
-const Padding(
-  padding: EdgeInsets.only(bottom: 8),
-  child: Text(
-    "Women Status",
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-  ),
-),            _field("Pregnant 19 bellow", preg19),
-            _field("Pregnant 20 above", preg20),
-            _field("Lactating", lactating),
-
-const Padding(
+            const Padding(
   padding: EdgeInsets.only(bottom: 8),
   child: Text(
     "Age Group",
@@ -346,6 +344,27 @@ _field("20-59 years old", a20_59,
 _field("60 years old and above", a60,
     disabled: _shouldDisableField(a60)),
             _field("PWD", pwd),
+
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "Women Status",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("Pregnant 19 bellow", preg19),
+            _field("Pregnant 20 above", preg20),
+            _field("Lactating", lactating),
+
+const Padding(
+  padding: EdgeInsets.only(bottom: 8),
+  child: Text(
+    "IYCF",
+    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+  ),
+),            _field("0-5 months exclusive breastfeeding", exclusive),
+            _field("0-5 months mixed feeding", mixed),
+            _field("0-5 months bottle feeding", bottle),
+            _field("6-12 complementary feeding", complementary),
 
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
@@ -517,10 +536,13 @@ Widget _field(String label, TextEditingController controller,
   return Padding(
     padding: const EdgeInsets.only(bottom: 10),
     child: TextField(
-      onChanged: (_) => setState(() {}),
       controller: controller,
-      readOnly: readOnly || disabled, // ✅ APPLY DISABLE HERE
+      readOnly: readOnly || disabled,
       keyboardType: type ?? TextInputType.number,
+      onChanged: (_) {
+        _limitAgeInput(controller); // ✅ ADD THIS LINE
+        setState(() {});
+      },
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),

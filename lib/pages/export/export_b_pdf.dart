@@ -93,16 +93,17 @@ required bool sortAsc,
 
                   _groupCell(""), pw.SizedBox(),
 
+                  _groupCell("Age Group"),
+                  pw.SizedBox(), pw.SizedBox(), pw.SizedBox(),
+ 
+                  _groupCell(""),
+                  pw.SizedBox(), pw.SizedBox(), pw.SizedBox(), pw.SizedBox(),
+
                   _groupCell("Women"), pw.SizedBox(), pw.SizedBox(),
 
                   _groupCell("IYCF"),
                   pw.SizedBox(), pw.SizedBox(), pw.SizedBox(),
 
-                  _groupCell("Infants"),
-                  pw.SizedBox(), pw.SizedBox(), pw.SizedBox(),
-
-                  _groupCell("Age"),
-                  pw.SizedBox(), pw.SizedBox(), pw.SizedBox(), pw.SizedBox(),
 
                   _groupCell("Nutrition"),
                   pw.SizedBox(), pw.SizedBox(), pw.SizedBox(), pw.SizedBox(),
@@ -122,13 +123,22 @@ required bool sortAsc,
                   "F","FO","FE",
                   "M","MO","ME",
                   "M","F","T","Fa","FI",
+
                   "4Ps","IP",
-                  "P19","P20","L",
-                  "E","M","B","C",
+
                   "0-5","6-11","12-23","24-59",
+
                   "5-9","10-19","20-59","60+",
+
+                  "P19","P20","L",
+
+                  "E","M","B","C",
+
+
                   "PWD","SUW","UW","N","SW","W","OW","O","SS","S",
+
                   "T","G","W","F","D",
+
                   "St",
                 ].map((text) => _headerCell(text)).toList(),
               ),
@@ -158,15 +168,6 @@ required bool sortAsc,
                     _yesNo(h.fourPs),
                     _yesNo(h.indigenousPeople),
 
-                    "${h.preg19 ?? 0}",
-                    "${h.preg20 ?? 0}",
-                    "${h.lactating ?? 0}",
-
-                    "${h.exclusive ?? 0}",
-                    "${h.mixed ?? 0}",
-                    "${h.bottleFed ?? 0}",
-                    "${h.complementary ?? 0}",
-
                     "${h.infant0to5 ?? 0}",
                     "${h.infant6to11 ?? 0}",
                     "${h.child12to23 ?? 0}",
@@ -176,6 +177,15 @@ required bool sortAsc,
                     "${h.age10to19 ?? 0}",
                     "${h.age20to59 ?? 0}",
                     "${h.age60above ?? 0}",
+
+                    "${h.preg19 ?? 0}",
+                    "${h.preg20 ?? 0}",
+                    "${h.lactating ?? 0}",
+
+                    "${h.exclusive ?? 0}",
+                    "${h.mixed ?? 0}",
+                    "${h.bottleFed ?? 0}",
+                    "${h.complementary ?? 0}",
 
                     "${h.pwd ?? 0}",
                     "${h.severelyUnderweight ?? 0}",
@@ -248,14 +258,14 @@ required bool sortAsc,
                 "L = Lactating Women",
               ])),
 
-              pw.Expanded(child: _groupText("AGE GROUP (INFANTS)", [
-                "0-5 months old",
-                "6-11 months old",
-                "12-23 months old",
-                "24-59 months old",
+              pw.Expanded(child: _groupText("AGE GROUP", [
+                "0-5 Infants months old ",
+                "6-11 Infants months old",
+                "12-23 Preschool months old",
+                "24-59 Preschool months old",
               ])),
 
-              pw.Expanded(child: _groupText("AGE GROUP (OTHERS)", [
+              pw.Expanded(child: _groupText("", [
                 "5-9 years old",
                 "10-19 years old",
                 "20-59 years old",

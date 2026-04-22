@@ -289,15 +289,10 @@ await ExportBarangayCSV.generate(
       "Total",
       "Families",
       "Fully Immunized",
+
       "4Ps",
       "IP",
-      "Preg <19",
-      "Preg 20+",
-      "Lactating",
-      "Exclusive",
-      "Mixed",
-      "Bottle-fed",
-      "Complementary",
+
       "0-5",
       "6-11",
       "12-23",
@@ -307,6 +302,17 @@ await ExportBarangayCSV.generate(
       "20-59",
       "60+",
       "PWD",
+
+      "Preg <19",
+      "Preg 20+",
+      "Lactating",
+
+      "0-5 Exclusive",
+      "0-5 Mixed",
+      "0-5 Bottle-fed",
+      "6-12 Complementary",
+
+
       "Sev UW",
       "UW",
       "Normal",
@@ -316,11 +322,13 @@ await ExportBarangayCSV.generate(
       "Obese",
       "Sev St",
       "St",
+
       "Toilet",
       "Garbage",
       "Water",
       "Food",
       "Dwelling",
+
       "Salt",
     ];
 
@@ -377,13 +385,6 @@ await ExportBarangayCSV.generate(
         _cell(_yesNo(h.fourPs)),
         _cell(_yesNo(h.indigenousPeople)),
 
-        _cell("${h.preg19 ?? 0}"),
-        _cell("${h.preg20 ?? 0}"),
-        _cell("${h.lactating ?? 0}"),
-        _cell("${h.exclusive ?? 0}"),
-        _cell("${h.mixed ?? 0}"),
-        _cell("${h.bottleFed ?? 0}"),
-        _cell("${h.complementary ?? 0}"),
         _cell("${h.infant0to5 ?? 0}"),
         _cell("${h.infant6to11 ?? 0}"),
         _cell("${h.child12to23 ?? 0}"),
@@ -393,6 +394,18 @@ await ExportBarangayCSV.generate(
         _cell("${h.age20to59 ?? 0}"),
         _cell("${h.age60above ?? 0}"),
         _cell("${h.pwd ?? 0}"),
+
+        _cell("${h.preg19 ?? 0}"),
+        _cell("${h.preg20 ?? 0}"),
+        _cell("${h.lactating ?? 0}"),
+
+
+        _cell("${h.exclusive ?? 0}"),
+        _cell("${h.mixed ?? 0}"),
+        _cell("${h.bottleFed ?? 0}"),
+        _cell("${h.complementary ?? 0}"),
+
+
         _cell("${h.severelyUnderweight ?? 0}"),
         _cell("${h.underweight ?? 0}"),
         _cell("${h.normal ?? 0}"),
@@ -402,6 +415,8 @@ await ExportBarangayCSV.generate(
         _cell("${h.obese ?? 0}"),
         _cell("${h.severelyStunted ?? 0}"),
         _cell("${h.stunted ?? 0}"),
+
+
         _cell(h.toilet ?? "-"),
         _cell(h.garbage ?? "-"),
         _cell(h.water ?? "-"),

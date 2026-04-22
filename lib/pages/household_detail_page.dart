@@ -113,19 +113,15 @@ class HouseholdDetailPage extends StatelessWidget {
                 buildRow("Mother Education", hh.motherEducation ?? "None"),
 
                 // HOUSEHOLD
+ buildRow("Household Members:", ""),               
                 buildRow("Male", "${hh.male ?? 0}"),
                 buildRow("Female", "${hh.female ?? 0}"),
                 buildRow("No. of Families", "${hh.families ?? 0}"),
                 buildRow("Fully Immunized Child", "${hh.fullyImmunized ?? 0}"),
 
-                // IYCF
-buildRow("0-5 Months Exclusive Breastfeeding", "${hh.exclusive ?? 0}"),
-buildRow("0-5 Months Mixed Feeding", "${hh.mixed ?? 0}"),
-buildRow("0-5 Months Bottle Feeding", "${hh.bottleFed ?? 0}"),
-buildRow("6-12 Months Complementary Feeding", "${hh.complementary ?? 0}"),
-
-                // AGE GROUP
-                buildRow("0–5 months old", "${hh.infant0to5 ?? 0}"),
+                                // AGE GROUP
+                buildRow("Age Group:", ""),
+                buildRow("0-5 months old", "${hh.infant0to5 ?? 0}"),
                 buildRow("6–11 months old", "${hh.infant6to11 ?? 0}"),
                 buildRow("12–23 months old", "${hh.child12to23 ?? 0}"),
                 buildRow("24–59 months old", "${hh.child24to59 ?? 0}"),
@@ -135,12 +131,38 @@ buildRow("6-12 Months Complementary Feeding", "${hh.complementary ?? 0}"),
                 buildRow("60+ years old", "${hh.age60above ?? 0}"),
                 buildRow("PWD", "${hh.pwd ?? 0}"),
 
+buildRow("Women Status:", ""),
+                buildRow("Pregnant 19 below", "${hh.preg19 ?? 0}"),
+buildRow("Pregnant 20 above", "${hh.preg20 ?? 0}"),
+buildRow("Lactating", "${hh.lactating ?? 0}"),
+
+                // IYCF
+                buildRow("IYCF:", ""),
+buildRow("0-5 Months Exclusive Breastfeeding", "${hh.exclusive ?? 0}"),
+buildRow("0-5 Months Mixed Feeding", "${hh.mixed ?? 0}"),
+buildRow("0-5 Months Bottle Feeding", "${hh.bottleFed ?? 0}"),
+buildRow("6-12 Months Complementary Feeding", "${hh.complementary ?? 0}"),
+
+
+                buildRow("Preschool Children Nutritional Status:", ""),
+                buildRow("Severely Underweight", "${hh.severelyUnderweight ?? 0}"),
+buildRow("Underweight", "${hh.underweight ?? 0}"),
+buildRow("Normal", "${hh.normal ?? 0}"),
+buildRow("Severely Wasted", "${hh.severelyWasted ?? 0}"),
+buildRow("Wasted", "${hh.wasted ?? 0}"),
+buildRow("Overweight", "${hh.overweight ?? 0}"),
+buildRow("Obese", "${hh.obese ?? 0}"),
+buildRow("Severely Stunted", "${hh.severelyStunted ?? 0}"),
+buildRow("Stunted", "${hh.stunted ?? 0}"),
+
                 // FACILITIES
+                buildRow("Facilities:", ""),
                 buildRow("Toilet Type", hh.toilet ?? "-"),
                 buildRow("Garbage Disposal", hh.garbage ?? "-"),
                 buildRow("Water Source", hh.water ?? "-"),
                 buildRow("Food Production", hh.food ?? "-"),
                 buildRow("Dwelling Type", hh.dwellingType ?? "-"),
+
                 buildRow("Iodized Salt", boolText(hh.iodizedSalt)),
               ],
             ),

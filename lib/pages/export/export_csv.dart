@@ -115,45 +115,42 @@ class ExportCsvService {
     List<List<dynamic>> rows = [];
 
     rows.add(["Family Profile", ""]);
-    rows.add(["Indicator", "Value"]);
     rows.add(["Barangay", households.isNotEmpty ? households.first.barangay ?? '' : '']);
+    rows.add(["Indicator", "Number"]);
 
     rows.add(["Total households", totalHouseholds]);
     rows.add(["Total number of members", totalMembers]);
     rows.add(["Male", totalMale]);
     rows.add(["Female", totalFemale]);
     rows.add(["Total number of family", totalFamilies]);
-    rows.add(["Fully immunized children", totalFullyImmunized]);    
+    rows.add(["Total number of HHs less than 5 members", totalHHMore5]);
+    rows.add(["Total number of immunized children", totalFullyImmunized]);
+    rows.add(["Total number of 4Ps", totalFourPs]);
+    rows.add(["Total number of IPs", totalIndigenous]);
 
-    rows.add(["HH less than 5 members", totalHHLess5]);
-    rows.add(["HH more than 5 members", totalHHMore5]);
-    rows.add(["4Ps", totalFourPs]);
-    rows.add(["Indigenous", totalIndigenous]);
-    rows.add(["Iodized Salt", totalIodizedSalt]);
+    rows.add(["Age Group", ""]);
+    rows.add(["Total number of infants 0-5 months old", totalInfant0to5]);
+    rows.add(["Total number of infants 6-11 months old", totalInfant6to11]);
+    rows.add(["Total number of children 12-23 months old", totalChild12to23]);
+    rows.add(["Total number of children 24-59 months old", totalChild24to59]);
+    rows.add(["Total number of age 5-9 years old", totalAge5to9]);
+    rows.add(["Total number of age 10-19 years old", totalAge10to19]);
+    rows.add(["Total number of age 20-59 years old", totalAge20to59]);
+    rows.add(["Total number of age 60 and above", totalAge60above]);
+    rows.add(["Total number of PWD", totalPWD]);
 
-    rows.add(["Women", ""]);
-    rows.add(["Pregnant 19 below", totalPreg19]);
+    rows.add(["Total number of women who are:", ""]);
+    rows.add(["Pregnant 19 bellow", totalPreg19]);
     rows.add(["Pregnant 20 above", totalPreg20]);
     rows.add(["Lactating", totalLactating]);
 
     rows.add(["IYCF", ""]);
-    rows.add(["0-5 months exclusive breastfed", totalExclusive]);
-    rows.add(["0-5 months mixed fed", totalMixed]);
-    rows.add(["0-5 bottle fed", totalBottleFed]);
-    rows.add(["6-12 complementary fed", totalComplementary]);
+    rows.add(["Total number of 0-5 months exclusively breastfed", totalExclusive]);
+    rows.add(["Total number of 0 - 5 months mixed fed", totalMixed]);
+    rows.add(["Total number of 0 - 5 bottle fed", totalBottleFed]);
+    rows.add(["Total number of 6-12 given complementary fed", totalComplementary]);
 
-    rows.add(["Age Group", ""]);
-    rows.add(["Infants 0-5 months", totalInfant0to5]);
-    rows.add(["Infants 6-11 months", totalInfant6to11]);
-    rows.add(["Children 12-23 months", totalChild12to23]);
-    rows.add(["Children 24-59 months", totalChild24to59]);
-    rows.add(["Age 5-9", totalAge5to9]);
-    rows.add(["Age 10-19", totalAge10to19]);
-    rows.add(["Age 20-59", totalAge20to59]);
-    rows.add(["Age 60 above", totalAge60above]);
-    rows.add(["PWD", totalPWD]);
-
-    rows.add(["Nutrition Status", ""]);
+    rows.add(["Total number of children who are:", ""]);
     rows.add(["Severely underweight", totalSU]);
     rows.add(["Underweight", totalUW]);
     rows.add(["Normal", totalNW]);
@@ -164,20 +161,20 @@ class ExportCsvService {
     rows.add(["Severely stunted", totalSS]);
     rows.add(["Stunted", totalST]);
 
-    rows.add(["Toilet", ""]);
+    rows.add(["Households, by type of toilet disposal:", ""]);
     rows.add(["Water sealed", toiletCounts['Water Sealed'] ?? 0]);
     rows.add(["Antipolo", toiletCounts['Antipolo'] ?? 0]);
     rows.add(["Open pit", toiletCounts['Open Pit'] ?? 0]);
     rows.add(["Shared", toiletCounts['Shared'] ?? 0]);
     rows.add(["No toilet", toiletCounts['No Toilet'] ?? 0]);
 
-    rows.add(["Garbage", ""]);
+    rows.add(["Households, by type of garbage disposal:", ""]);
     rows.add(["Barangay collector", garbageCounts['Barangay Collector'] ?? 0]);
     rows.add(["Compost pit", garbageCounts['Compost Pit'] ?? 0]);
     rows.add(["Burning", garbageCounts['Burning'] ?? 0]);
     rows.add(["Dumping", garbageCounts['Dumping'] ?? 0]);
 
-    rows.add(["Water Source", ""]);
+    rows.add(["Households, by source of drinking water:", ""]);
     rows.add(["Pipe water", waterCounts['Pipe Water'] ?? 0]);
     rows.add(["Deep well", waterCounts['Deep Well'] ?? 0]);
     rows.add(["Purified", waterCounts['Purified'] ?? 0]);
@@ -185,19 +182,21 @@ class ExportCsvService {
     rows.add(["Artesian", waterCounts['Artesian'] ?? 0]);
     rows.add(["Spring", waterCounts['Spring'] ?? 0]);
 
-    rows.add(["Food Production", ""]);
+    rows.add(["Households, by type of food production activity:", ""]);
     rows.add(["Vegetable garden", foodCounts['Vegetable Garden'] ?? 0]);
     rows.add(["Poultry", foodCounts['Poultry'] ?? 0]);
     rows.add(["Fishpond", foodCounts['Fishpond'] ?? 0]);
     rows.add(["No garden", foodCounts['No Garden'] ?? 0]);
 
-    rows.add(["Dwelling Type", ""]);
+    rows.add(["Households, according to type of dwelling unit:", ""]);
     rows.add(["Concrete", dwellingCounts['Concrete'] ?? 0]);
     rows.add(["Semi concrete", dwellingCounts['Semi Concrete'] ?? 0]);
     rows.add(["Wooden", dwellingCounts['Wooden'] ?? 0]);
     rows.add(["Nipa", dwellingCounts['Nipa'] ?? 0]);
     rows.add(["Barong-barong", dwellingCounts['Barong'] ?? 0]);
     rows.add(["Makeshift", dwellingCounts['Makeshift'] ?? 0]);
+
+    rows.add(["Total number of households usinsg iodized salt", totalIodizedSalt]);
 
     // =========================
     // EXPORT FILE

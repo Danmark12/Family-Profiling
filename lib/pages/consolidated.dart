@@ -264,17 +264,6 @@ IconButton(
                         _row("Total number of 4Ps", "$totalFourPs"),
                         _row("Total number of IPs", "$totalIndigenous"),
 
-                        _title("Total number of women who are:"),
-                        _row("Pregnant 19 bellow", "$totalPreg19"),
-                        _row("Pregnant 20 above", "$totalPreg20"),
-                        _row("Lactating", "$totalLactating"),
-
-                        _title("Infant and young child feeding (IYCF):"),
-                        _row("Total number of 0-5 months exclusively breastfed", "$totalExclusive"),
-                        _row("Total number of 0 - 5 months mixed fed", "$totalMixed"),
-                        _row("Total number of 0 - 5 bottle fed", "$totalBottleFed"),
-                        _row("Total number of 6-12 given complementary fed", "$totalComplementary"),
-
                         _title("Age group:"),
                         _row("Total number of infants 0-5 months old", "$totalInfant0to5"),
                         _row("Total number of infants 6-11 months old", "$totalInfant6to11"),
@@ -286,7 +275,18 @@ IconButton(
                         _row("Total number of age 60 and above", "$totalAge60above"),
                         _row("Total number of PWD", "$totalPWD"),
 
-                        _title("Total number of children who are:"),
+                        _title("Total number of women who are:"),
+                        _row("Pregnant 19 bellow", "$totalPreg19"),
+                        _row("Pregnant 20 above", "$totalPreg20"),
+                        _row("Lactating", "$totalLactating"),
+
+                        _title("Infant and young child feeding (IYCF):"),
+                        _row("Total number of 0-5 months exclusively breastfed", "$totalExclusive"),
+                        _row("Total number of 0 - 5 months mixed fed", "$totalMixed"),
+                        _row("Total number of 0 - 5 bottle fed", "$totalBottleFed"),
+                        _row("Total number of 6-12 given complementary fed", "$totalComplementary"),
+
+                        _title("Total number of preschool children who are:"),
                         _row("Severely underweight", "$totalSU"),
                         _row("Underweight", "$totalUW"),
                         _row("Normal weight", "$totalNW"),

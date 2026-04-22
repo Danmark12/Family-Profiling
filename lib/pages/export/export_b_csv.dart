@@ -27,7 +27,7 @@ class ExportBarangayCSV {
     // =========================
     // ROW 2 → BARANGAY + ZONE
     // =========================
-    rows.add(["","","","","","","","","","","","","","","","Women Status","","","IYCF", "","","","Age Group","","","","","","","","",
+    rows.add(["","","","","","","","","","","","","","","","Age Group","","","","","","","","","Women Status","","","IYCF", "","","",
     "Preschool Children Nutritional Status","","","","","","","","","Facilities"]);
 
     // =========================
@@ -53,6 +53,15 @@ class ExportBarangayCSV {
       "4Ps",
       "IPs",
 
+      "0-5 months infants",
+      "6-11 months infants",
+      "12-23 preschool children ",
+      "24-59 preschool children",
+      "5-9 years old",
+      "10-19 years old",
+      "20-59 years old",
+      "60+",
+      "PWD",
 
       "Preg <19",
       "Preg 20+",
@@ -63,15 +72,6 @@ class ExportBarangayCSV {
       "0-5 months bottle fed",
       "6-12 given complementary fed",
 
-      "0-5 months infants",
-      "6-11 months infants",
-      "12-23 preschool children ",
-      "24-59 preschool children",
-      "5-9 years old",
-      "10-19 years old",
-      "20-59 years old",
-      "60+",
-      "PWD",
 
       "Sev Underweight",
       "Underweight",
@@ -112,13 +112,7 @@ class ExportBarangayCSV {
         h.fullyImmunized ?? 0,
         yesNo(h.fourPs),
         yesNo(h.indigenousPeople),
-        h.preg19 ?? 0,
-        h.preg20 ?? 0,
-        h.lactating ?? 0,
-        h.exclusive ?? 0,
-        h.mixed ?? 0,
-        h.bottleFed ?? 0,
-        h.complementary ?? 0,
+
         h.infant0to5 ?? 0,
         h.infant6to11 ?? 0,
         h.child12to23 ?? 0,
@@ -128,6 +122,18 @@ class ExportBarangayCSV {
         h.age20to59 ?? 0,
         h.age60above ?? 0,
         h.pwd ?? 0,
+
+        h.preg19 ?? 0,
+        h.preg20 ?? 0,
+        h.lactating ?? 0,
+
+
+        h.exclusive ?? 0,
+        h.mixed ?? 0,
+        h.bottleFed ?? 0,
+        h.complementary ?? 0,
+
+
         h.severelyUnderweight ?? 0,
         h.underweight ?? 0,
         h.normal ?? 0,
@@ -137,11 +143,14 @@ class ExportBarangayCSV {
         h.obese ?? 0,
         h.severelyStunted ?? 0,
         h.stunted ?? 0,
+
+
         h.toilet ?? "-",
         h.garbage ?? "-",
         h.water ?? "-",
         h.food ?? "-",
         h.dwellingType ?? "-",
+
         yesNo(h.iodizedSalt),
       ]);
     }
