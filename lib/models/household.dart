@@ -60,6 +60,7 @@ class Household {
   final String? water;
   final String? food;
   final String? dwellingType;
+  
 
   // ✅ NEW FIELD
   final String? createdAt;

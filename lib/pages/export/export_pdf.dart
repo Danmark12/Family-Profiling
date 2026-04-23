@@ -65,6 +65,18 @@ class ExportPdfService {
       map[key] = (map[key] ?? 0) + 1;
     }
 
+
+    void countMulti(Map<String, int> map, String? raw) {
+  if (raw == null || raw.isEmpty) return;
+
+  final items = raw.split(",").map((e) => e.trim());
+
+  for (final item in items) {
+    if (item.isEmpty) continue;
+    map[item] = (map[item] ?? 0) + 1;
+  }
+}
+
     for (var h in households) {
       int members = (h.male ?? 0) + (h.female ?? 0);
 
@@ -113,9 +125,9 @@ class ExportPdfService {
       totalST += h.stunted ?? 0;
 
       count(toiletCounts, h.toilet);
-      count(garbageCounts, h.garbage);
+countMulti(garbageCounts, h.garbage);
       count(waterCounts, h.water);
-      count(foodCounts, h.food);
+countMulti(foodCounts, h.food);
       count(dwellingCounts, h.dwellingType);
     }
 
@@ -235,8 +247,8 @@ class ExportPdfService {
               _row('No toilet', '${toiletCounts['No Toilet'] ?? 0}'),
 
               _row('Households, by type of garbage disposal:', ''),
-              _row('Barangay/City', '${garbageCounts['Barangay Collector'] ?? 0}'),
-              _row('Garbage Collector', '${garbageCounts['Barangay Collector'] ?? 0}'),
+              _row('City Garbage Collector', '${garbageCounts['City Garbage Collector'] ?? 0}'),
+              _row('Garbage Garbage Collector', '${garbageCounts['Barangay Garbage Collector'] ?? 0}'),
               _row('Own Compost Pit', '${garbageCounts['Compost Pit'] ?? 0}'),
               _row('Burning', '${garbageCounts['Burning'] ?? 0}'),
               _row('Dumping', '${garbageCounts['Dumping'] ?? 0}'),
@@ -252,6 +264,7 @@ class ExportPdfService {
               _row('Households, by type of food production activity:', ''),
               _row('Vegetable Garden', '${foodCounts['Vegetable Garden'] ?? 0}'),
               _row('Poultry/Livestock', '${foodCounts['Poultry'] ?? 0}'),
+              _row('Livestock', '${foodCounts['Livestock'] ?? 0}'),
               _row('Fishpond', '${foodCounts['Fishpond'] ?? 0}'),
               _row('No Garden', '${foodCounts['No Garden'] ?? 0}'),
 

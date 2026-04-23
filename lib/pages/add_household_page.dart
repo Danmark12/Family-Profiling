@@ -15,7 +15,9 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
   int householdNo = 1;
 
   // Dropdowns / Selections
-  String? barangay, toilet, garbage, water, food, dwellingType;
+  String? barangay, toilet, water, dwellingType;
+  List<String> garbage = [];
+List<String> food = [];
   String? fatherOccupation, fatherEducation;
   String? motherOccupation, motherEducation;
 
@@ -93,9 +95,9 @@ bool get _isFormValid {
 
   // DROPDOWNS (IMPORTANT)
   if (toilet == null) return false;
-  if (garbage == null) return false;
+if (garbage.isEmpty) return false;
   if (water == null) return false;
-  if (food == null) return false;
+if (food.isEmpty) return false;
   if (dwellingType == null) return false;
 
   return true;
@@ -391,18 +393,39 @@ const Padding(
 ),            _drop("Toilet Type", toilet,
                 ["Water Sealed", "Antipolo", "Open Pit", "Shared", "No Toilet"],
                 (v) => setState(() => toilet = v)),
-            _drop("Garbage Disposal", garbage,
-                ["Barangay Collector", "Compost Pit", "Burning", "Dumping"],
-                (v) => setState(() => garbage = v)),
+
             _drop("Water Source", water,
                 ["Pipe Water", "Deep Well", "Purified", "Shallow Well", "Artesian", "Spring"],
                 (v) => setState(() => water = v)),
-            _drop("Food Production", food,
-                ["Vegetable Garden", "Poultry", "Fishpond", "No Garden"],
-                (v) => setState(() => food = v)),
+
             _drop("Dwelling Type", dwellingType,
                 ["Concrete","Semi Concrete", "Wooden", "Nipa Bamboo House", "Barong-Barong", "Makeshift"],
                 (v) => setState(() => dwellingType = v)),
+                _multiSelectDrop(
+  "Garbage Disposal",
+  garbage,
+  [
+    "City Garbage Collector",
+    "Barangay Garbage Collector",
+    "Compost Pit",
+    "Burning",
+    "Dumping"
+  ],
+  (v) => setState(() => garbage = v),
+),
+
+_multiSelectDrop(
+  "Food Production",
+  food,
+  [
+    "Vegetable Garden",
+    "Poultry",
+    "Livestock",
+    "Fishpond",
+    "No Garden"
+  ],
+  (v) => setState(() => food = v),
+),
 
             CheckboxListTile(
                 value: iodizedSalt,
@@ -440,6 +463,7 @@ side: BorderSide(
                 ),
 onPressed: _isFormValid
     ? () async {
+      
 if (!_isFormValid) return;
 
 if (!_isAgeGroupValid()) {
@@ -505,9 +529,9 @@ if (!_isAgeGroupValid()) {
                     "severelyStunted": _parseInt(ss),
                     "stunted": _parseInt(st),
                     "toilet": toilet,
-                    "garbage": garbage,
+                    "garbage": garbage.join(", "),
                     "water": water,
-                    "food": food,
+                    "food": food.join(", "),
                     "dwellingType": dwellingType,
                     "created_at": createdAt,
                   }, userId!);
@@ -573,4 +597,76 @@ Widget _field(String label, TextEditingController controller,
       ),
     );
   }
+
+  Widget _multiSelectDrop(
+  String label,
+  List<String> selected,
+  List<String> items,
+  void Function(List<String>) onChanged,
+) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: InkWell(
+      onTap: () async {
+        final result = await showDialog<List<String>>(
+          context: context,
+          builder: (context) {
+            List<String> tempSelected = List.from(selected);
+
+            return StatefulBuilder(
+              builder: (context, setStateDialog) {
+                return AlertDialog(
+                  title: Text(label),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      children: items.map((item) {
+                        return CheckboxListTile(
+                          value: tempSelected.contains(item),
+                          title: Text(item),
+                          onChanged: (val) {
+                            setStateDialog(() {
+                              if (val == true) {
+                                tempSelected.add(item);
+                              } else {
+                                tempSelected.remove(item);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Cancel"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, tempSelected),
+                      child: const Text("OK"),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+
+        if (result != null) {
+          onChanged(result);
+          setState(() {});
+        }
+      },
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          labelText: "",
+          border: OutlineInputBorder(),
+        ),
+        child: Text(
+          selected.isEmpty ? "Select $label" : selected.join(", "),
+        ),
+      ),
+    ),
+  );
+}
 }

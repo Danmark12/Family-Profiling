@@ -55,6 +55,16 @@ class ExportCsvService {
       map[key] = (map[key] ?? 0) + 1;
     }
 
+void countMulti(Map<String, int> map, String? raw) {
+  if (raw == null || raw.isEmpty) return;
+
+  final items = raw.split(",").map((e) => e.trim());
+
+  for (final item in items) {
+    if (item.isEmpty) continue;
+    map[item] = (map[item] ?? 0) + 1;
+  }
+}
     for (var h in households) {
       int members = (h.male ?? 0) + (h.female ?? 0);
 
@@ -103,9 +113,9 @@ class ExportCsvService {
       totalST += h.stunted ?? 0;
 
       count(toiletCounts, h.toilet);
-      count(garbageCounts, h.garbage);
+countMulti(garbageCounts, h.garbage);
       count(waterCounts, h.water);
-      count(foodCounts, h.food);
+countMulti(foodCounts, h.food);
       count(dwellingCounts, h.dwellingType);
     }
 
@@ -169,7 +179,8 @@ class ExportCsvService {
     rows.add(["No toilet", toiletCounts['No Toilet'] ?? 0]);
 
     rows.add(["Households, by type of garbage disposal:", ""]);
-    rows.add(["Barangay collector", garbageCounts['Barangay Collector'] ?? 0]);
+    rows.add(["City Garbage collector", garbageCounts['City Garbage Collector'] ?? 0]);
+    rows.add(["Barangay Garbage collector", garbageCounts['Barangay Grabage Collector'] ?? 0]);
     rows.add(["Compost pit", garbageCounts['Compost Pit'] ?? 0]);
     rows.add(["Burning", garbageCounts['Burning'] ?? 0]);
     rows.add(["Dumping", garbageCounts['Dumping'] ?? 0]);
@@ -185,6 +196,7 @@ class ExportCsvService {
     rows.add(["Households, by type of food production activity:", ""]);
     rows.add(["Vegetable garden", foodCounts['Vegetable Garden'] ?? 0]);
     rows.add(["Poultry", foodCounts['Poultry'] ?? 0]);
+    rows.add(["Livestock", foodCounts['Livestock'] ?? 0]);
     rows.add(["Fishpond", foodCounts['Fishpond'] ?? 0]);
     rows.add(["No garden", foodCounts['No Garden'] ?? 0]);
 

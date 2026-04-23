@@ -67,11 +67,23 @@
       super.initState();
       _loadData();
     }
+    
 
     void _count(Map<String, int> map, String? key) {
       if (key == null) return;
       map[key] = (map[key] ?? 0) + 1;
     }
+void _countMulti(Map<String, int> map, String? raw) {
+  if (raw == null || raw.isEmpty) return;
+
+  final items = raw.split(",").map((e) => e.trim()).toList();
+
+  for (var item in items) {
+    if (item.isEmpty) continue;
+    map[item] = (map[item] ?? 0) + 1;
+  }
+}
+
 
     Future<void> _loadData() async {
       final prefs = await SharedPreferences.getInstance();
@@ -135,10 +147,11 @@
         totalST += h.stunted ?? 0;
 
         _count(toiletCounts, h.toilet);
-        _count(garbageCounts, h.garbage);
+        _countMulti(garbageCounts, h.garbage);
         _count(waterCounts, h.water);
-        _count(foodCounts, h.food);
+        _countMulti(foodCounts, h.food);
         _count(dwellingCounts, h.dwellingType);
+        
       }
 
       setState(() {});
@@ -146,6 +159,9 @@
 
     String get(Map<String, int> map, String key) =>
         (map[key] ?? 0).toString();
+
+
+        
 
     @override
     Widget build(BuildContext context) {
@@ -305,7 +321,8 @@ IconButton(
                         _row("No toilet", get(toiletCounts, "No Toilet")),
 
                         _title("Households, by type of garbage disposal:"),
-                        _row("Garbage Collector", get(garbageCounts, "Barangay Collector")),
+                        _row("City Garbage Collector", get(garbageCounts, "City Garbage Collector")),
+                        _row("Barangay Garbage Collector", get(garbageCounts, "Barangay Garbage Collector")),
                         _row("Own Compost Pit", get(garbageCounts, "Compost Pit")),
                         _row("Burning", get(garbageCounts, "Burning")),
                         _row("Dumping", get(garbageCounts, "Dumping")),
@@ -320,7 +337,8 @@ IconButton(
 
                         _title("Households, by type of food production activity:"),
                         _row("Vegetable Garden", get(foodCounts, "Vegetable Garden")),
-                        _row("Poultry/Livestock", get(foodCounts, "Poultry")),
+                        _row("Poultry", get(foodCounts, "Poultry")),
+                        _row("Livestock", get(foodCounts, "Livestock")),
                         _row("Fishpond", get(foodCounts, "Fishpond")),
                         _row("No Garden", get(foodCounts, "No Garden")),
 

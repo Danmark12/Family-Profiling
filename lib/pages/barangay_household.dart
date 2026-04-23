@@ -422,6 +422,7 @@ await ExportBarangayCSV.generate(
         _cell(h.water ?? "-"),
         _cell(h.food ?? "-"),
         _cell(h.dwellingType ?? "-"),
+        
 
         // ✅ CHANGED HERE ONLY
         _cell(_yesNo(h.iodizedSalt)),

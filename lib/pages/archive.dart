@@ -396,7 +396,7 @@ class _ArchivedHouseholdPageState extends State<ArchivedHouseholdPage> {
                       icon: const Icon(Icons.unarchive,
                           color: Colors.black),
                       label: const Text("Unarchive",
-                          style: TextStyle(color: Colors.black)),
+                          style: TextStyle(color: Colors.black)), 
                     ),
                     TextButton.icon(
                       onPressed: deleteSelected,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../db/config.dart';
 import '../models/household.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
 
 class EditHouseholdPage extends StatefulWidget {
   final Household household;
@@ -15,7 +16,9 @@ class EditHouseholdPage extends StatefulWidget {
 
 class _EditHouseholdPageState extends State<EditHouseholdPage> {
   // Dropdowns
-  String? barangay, toilet, garbage, water, food, dwellingType;
+  String? barangay, toilet, water, dwellingType;
+  List<String> garbage = [];
+List<String> food = [];
   String? fatherOccupation, fatherEducation;
   String? motherOccupation, motherEducation;
 
@@ -179,10 +182,18 @@ bool _isAgeGroupValid() {
 
     barangay = hh.barangay;
     toilet = hh.toilet;
-    garbage = hh.garbage;
+
     water = hh.water;
-    food = hh.food;
+
     dwellingType = hh.dwellingType;
+    garbage = hh.garbage == null || hh.garbage!.isEmpty
+    ? []
+    : hh.garbage!.split(", ").map((e) => e.trim()).toList();
+
+food = hh.food == null || hh.food!.isEmpty
+    ? []
+    : hh.food!.split(", ").map((e) => e.trim()).toList();
+    
 
     fatherOccupation = hh.fatherOccupation;
     fatherEducation = hh.fatherEducation;
@@ -407,18 +418,40 @@ const Padding(
 ),            _drop("Toilet Type", toilet,
                 ["Water Sealed","Antipolo","Open Pit","Shared","No Toilet"],
                 (v) => setState(() => toilet = v)),
-            _drop("Garbage Disposal", garbage,
-                ["Barangay Collector","Compost Pit","Burning","Dumping"],
-                (v) => setState(() => garbage = v)),
+
             _drop("Water Source", water,
                 ["Pipe Water","Deep Well","Purified","Shallow Well","Artesian","Spring"],
                 (v) => setState(() => water = v)),
-            _drop("Food Production", food,
-                ["Vegetable Garden","Poultry","Fishpond","No Garden"],
-                (v) => setState(() => food = v)),
+
             _drop("Dwelling Type", dwellingType,
                 ["Concrete","Semi Concrete","Wooden","Nipa Bamboo House","Barong-Barong","Makeshift"],
                 (v) => setState(() => dwellingType = v)),
+
+                _multiSelectDrop(
+  "Garbage Disposal",
+  garbage,
+  [
+    "City Garbage Collector",
+    "Barangay Garbage Collector",
+    "Compost Pit",
+    "Burning",
+    "Dumping"
+  ],
+  (v) => setState(() => garbage = v),
+),
+
+_multiSelectDrop(
+  "Food Production",
+  food,
+  [
+    "Vegetable Garden",
+    "Poultry",
+    "Livestock",
+    "Fishpond",
+    "No Garden"
+  ],
+  (v) => setState(() => food = v),
+),
 
             CheckboxListTile(
                 value: iodizedSalt,
@@ -501,10 +534,12 @@ const Padding(
                           "severelyStunted": _num(ss),
                           "stunted": _num(st),
                           "toilet": toilet,
-                          "garbage": garbage,
+                         
                           "water": water,
-                          "food": food,
+                      
                           "dwellingType": dwellingType,
+                    "garbage": garbage.join(", "),
+                    "food": food.join(", "),
                           "updated_at": formattedDate,
                         },
                       );
@@ -570,4 +605,77 @@ Widget _field(String label, TextEditingController controller,
       ),
     );
   }
+
+
+  Widget _multiSelectDrop(
+  String label,
+  List<String> selected,
+  List<String> items,
+  void Function(List<String>) onChanged,
+) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: InkWell(
+      onTap: () async {
+        final result = await showDialog<List<String>>(
+          context: context,
+          builder: (context) {
+            List<String> tempSelected = List.from(selected);
+
+            return StatefulBuilder(
+              builder: (context, setStateDialog) {
+                return AlertDialog(
+                  title: Text(label),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      children: items.map((item) {
+                        return CheckboxListTile(
+                          value: tempSelected.contains(item),
+                          title: Text(item),
+                          onChanged: (val) {
+                            setStateDialog(() {
+                              if (val == true) {
+                                tempSelected.add(item);
+                              } else {
+                                tempSelected.remove(item);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Cancel"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, tempSelected),
+                      child: const Text("OK"),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+
+        if (result != null) {
+          onChanged(result);
+          setState(() {});
+        }
+      },
+      child: InputDecorator(
+        decoration: const InputDecoration(
+          labelText: "",
+          border: OutlineInputBorder(),
+        ),
+        child: Text(
+          selected.isEmpty ? "Select $label" : selected.join(", "),
+        ),
+      ),
+    ),
+  );
+}
 }
