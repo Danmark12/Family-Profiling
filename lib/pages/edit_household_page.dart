@@ -686,7 +686,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color: isInvalid ? Colors.red : Colors.blue,
+              color: isInvalid ? Colors.red : const Color.fromARGB(255, 13, 127, 1),
               width: 2,
             ),
           ),
@@ -733,7 +733,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(
-              color: showError ? Colors.red : Colors.blue,
+              color: showError ? Colors.red : const Color.fromARGB(255, 13, 127, 1),
               width: 2,
             ),
           ),
