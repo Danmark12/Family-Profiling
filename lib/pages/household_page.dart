@@ -4,6 +4,7 @@ import '../models/household.dart';
 import 'household_detail_page.dart';
 import 'add_household_page.dart';
 import 'edit_household_page.dart';
+import 'import/import_csv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HouseholdPage extends StatefulWidget {
@@ -356,9 +357,141 @@ class _HouseholdPageState extends State<HouseholdPage> {
         ],
       ),
 
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: avocado,
-        child: const Icon(Icons.add),
+     floatingActionButton: Column(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    // 📥 IMPORT BUTTON (White with border)
+    SizedBox(
+      width: 56,
+      height: 56,
+      child: FloatingActionButton(
+        heroTag: "import",
+        backgroundColor: Colors.white,
+        elevation: 2,
+        child: const Icon(Icons.upload_file, color: Colors.blue),
+        onPressed: () async {
+          if (userId == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("User not logged in")),
+            );
+            return;
+          }
+
+          // Show loading dialog
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Importing households...',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Please wait', style: TextStyle(fontSize: 12)),
+                ],
+              ),
+            ),
+          );
+
+          try {
+            // ✅ FIXED: Use correct import method
+            final result = await ImportBarangayCSV.import(
+              userId: userId!,
+              barangay: widget.barangayFilter ?? "",
+            );
+
+            // Close loading dialog
+            if (context.mounted) Navigator.pop(context);
+
+            // Show result
+            if (result.success) {
+              // Refresh the list
+              await fetchHouseholds(barangay: widget.barangayFilter);
+              
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(result.message),
+                    backgroundColor: Colors.green,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            } else {
+              // Show detailed error in dialog
+              if (context.mounted) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text("Import Failed"),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(result.message),
+                          if (result.errors.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            const Text(
+                              "Details:",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            ...result.errors.map((error) => Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                error,
+                                style: const TextStyle(fontSize: 12, color: Colors.red),
+                              ),
+                            )),
+                          ],
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("OK"),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            }
+          } catch (e) {
+            // Close loading dialog
+            if (context.mounted) Navigator.pop(context);
+            
+            // Show error
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Import error: $e"),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        },
+      ),
+    ),
+
+    const SizedBox(height: 10),
+
+    // ➕ ADD BUTTON (White with border)
+    SizedBox(
+      width: 56,
+      height: 56,
+      child: FloatingActionButton(
+        heroTag: "add",
+        backgroundColor: Colors.white,
+        elevation: 2,
+        child: const Icon(Icons.add, color: Color(0xFF568203)), // avocado color
         onPressed: () {
           Navigator.push(
             context,
@@ -369,6 +502,9 @@ class _HouseholdPageState extends State<HouseholdPage> {
               fetchHouseholds(barangay: widget.barangayFilter));
         },
       ),
+    ),
+  ],
+),
     );
   }
 

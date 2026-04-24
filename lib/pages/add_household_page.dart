@@ -11,7 +11,33 @@ class AddHouseholdPage extends StatefulWidget {
   
 }
 
+
 class _AddHouseholdPageState extends State<AddHouseholdPage> {
+
+
+
+  
+  final ScrollController _scrollController = ScrollController();
+final Map<String, GlobalKey> _fieldKeys = {};
+
+bool _submitted = false;
+
+// Father/Mother error tracking
+bool get _fatherValid {
+  if (noFather) return true;
+
+  return father.text.trim().isNotEmpty &&
+      fatherOccupation != null &&
+      fatherEducation != null;
+}
+
+bool get _motherValid {
+  if (noMother) return true;
+
+  return mother.text.trim().isNotEmpty &&
+      motherOccupation != null &&
+      motherEducation != null;
+}
   int householdNo = 1;
 
   // Dropdowns / Selections
@@ -27,6 +53,7 @@ List<String> food = [];
   bool iodizedSalt = false;
   bool noFather = false;
   bool noMother = false;
+
 
   // Controllers
   final zone = TextEditingController();
@@ -214,7 +241,8 @@ bool _isAgeGroupValid() {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Family Profiling Form")),
-      body: SingleChildScrollView(
+body: SingleChildScrollView(
+  controller: _scrollController,
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -231,210 +259,217 @@ Center(
 ),
 const SizedBox(height: 12),
 
-            _field("Zone / Purok", zone),
-            _field("Barangay", barangayController, readOnly: true),
+_field("Zone / Purok", zone, keyName: "zone"),
+_field("Barangay", barangayController, readOnly: true, keyName: "barangay"),
 
-            CheckboxListTile(
-              value: fourPs,
-              onChanged: (v) => setState(() => fourPs = v!),
-              title: const Text("4Ps"),
-            ),
-            CheckboxListTile(
-              value: indigenousPeople,
-              onChanged: (v) => setState(() => indigenousPeople = v!),
-              title: const Text("IPs"),
-            ),
+CheckboxListTile(
+  value: fourPs,
+  onChanged: (v) => setState(() => fourPs = v!),
+  title: const Text("4Ps"),
+),
 
+CheckboxListTile(
+  value: indigenousPeople,
+  onChanged: (v) => setState(() => indigenousPeople = v!),
+  title: const Text("IPs"),
+),
+
+// ======================= FATHER =======================
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
-  child: Text(
-    "Father",
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-  ),
-),            CheckboxListTile(
-              value: noFather,
-              onChanged: (v) {
-                setState(() {
-                  noFather = v!;
-                  if (noFather) {
-                    father.clear();
-                    fatherOccupation = null;
-                    fatherEducation = null;
-                  }
-                });
-              },
-              title: const Text("None"),
-            ),
-            _field("Name of father", father,
-                type: TextInputType.text, readOnly: noFather),
-            _drop("Occupation", fatherOccupation, occupations,
-                noFather ? null : (v) => setState(() => fatherOccupation = v),
-                disabled: noFather),
-            _drop("Educational Attainment", fatherEducation, educ,
-                noFather ? null : (v) => setState(() => fatherEducation = v),
-                disabled: noFather),
+  child: Text("Father",
+      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+),
 
+CheckboxListTile(
+  value: noFather,
+  onChanged: (v) {
+    setState(() {
+      noFather = v!;
+      if (noFather) {
+        father.clear();
+        fatherOccupation = null;
+        fatherEducation = null;
+      }
+    });
+  },
+  title: const Text("None"),
+),
+
+_field("Name of father", father,
+    type: TextInputType.text,
+    readOnly: noFather,
+    keyName: "father_name"),
+
+_drop("Occupation", fatherOccupation, occupations,
+    noFather ? null : (v) => setState(() => fatherOccupation = v),
+    disabled: noFather),
+
+_drop("Educational Attainment", fatherEducation, educ,
+    noFather ? null : (v) => setState(() => fatherEducation = v),
+    disabled: noFather),
+
+// ======================= MOTHER =======================
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
-  child: Text(
-    "Mother",
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-  ),
-),            CheckboxListTile(
-              value: noMother,
-              onChanged: (v) {
-                setState(() {
-                  noMother = v!;
-                  if (noMother) {
-                    mother.clear();
-                    motherOccupation = null;
-                    motherEducation = null;
-                  }
-                });
-              },
-              title: const Text("None"),
-            ),
-            _field("Name of mother", mother,
-                type: TextInputType.text, readOnly: noMother),
-            _drop("Occupation", motherOccupation, occupations,
-                noMother ? null : (v) => setState(() => motherOccupation = v),
-                disabled: noMother),
-            _drop("Educational Attainment", motherEducation, educ,
-                noMother ? null : (v) => setState(() => motherEducation = v),
-                disabled: noMother),
+  child: Text("Mother",
+      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+),
 
+CheckboxListTile(
+  value: noMother,
+  onChanged: (v) {
+    setState(() {
+      noMother = v!;
+      if (noMother) {
+        mother.clear();
+        motherOccupation = null;
+        motherEducation = null;
+      }
+    });
+  },
+  title: const Text("None"),
+),
+
+_field("Name of mother", mother,
+    type: TextInputType.text,
+    readOnly: noMother,
+    keyName: "mother_name"),
+
+_drop("Occupation", motherOccupation, occupations,
+    noMother ? null : (v) => setState(() => motherOccupation = v),
+    disabled: noMother),
+
+_drop("Educational Attainment", motherEducation, educ,
+    noMother ? null : (v) => setState(() => motherEducation = v),
+    disabled: noMother),
+
+// ======================= HOUSEHOLD MEMBERS =======================
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
-  child: Text(
-    "Household Members",
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-  ),
-),            _field("Male", male),
-            _field("Female", female),
-            _field("Total members", total, readOnly: true),
-            _field("No. of families", families),
-            _field("No. of fully immunized children", immunized),
+  child: Text("Household Members",
+      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+),
 
-            const Padding(
+_field("Male", male, keyName: "male"),
+_field("Female", female, keyName: "female"),
+_field("Total members", total, readOnly: true, keyName: "total"),
+_field("No. of families", families, keyName: "families"),
+_field("Fully immunized children", immunized, keyName: "immunized"),
+
+// ======================= AGE GROUP =======================
+const Padding(
   padding: EdgeInsets.only(bottom: 8),
-  child: Text(
-    "Age Group",
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-  ),
-),           
-_field("Infants 0-5 months old", i0_5,
+  child: Text("Age Group",
+      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+),
+
+_field("Infants 0-5 months old", i0_5, keyName: "i0_5",
     disabled: _shouldDisableField(i0_5)),
 
-_field("Infants 6-11 months old", i6_11,
+_field("Infants 6-11 months old", i6_11, keyName: "i6_11",
     disabled: _shouldDisableField(i6_11)),
 
-_field("Preschool 12-23 months old", c12_23,
+_field("Preschool 12-23 months old", c12_23, keyName: "c12_23",
     disabled: _shouldDisableField(c12_23)),
 
-_field("Preschool 24-59 months old", c24_59,
+_field("Preschool 24-59 months old", c24_59, keyName: "c24_59",
     disabled: _shouldDisableField(c24_59)),
 
-_field("5-9 years old", a5_9,
+_field("5-9 years old", a5_9, keyName: "a5_9",
     disabled: _shouldDisableField(a5_9)),
 
-_field("10-19 years old", a10_19,
+_field("10-19 years old", a10_19, keyName: "a10_19",
     disabled: _shouldDisableField(a10_19)),
 
-_field("20-59 years old", a20_59,
+_field("20-59 years old", a20_59, keyName: "a20_59",
     disabled: _shouldDisableField(a20_59)),
 
-_field("60 years old and above", a60,
+_field("60 years old and above", a60, keyName: "a60",
     disabled: _shouldDisableField(a60)),
-            _field("PWD", pwd),
 
+_field("PWD", pwd, keyName: "pwd"),
+
+// ======================= WOMEN =======================
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
-  child: Text(
-    "Women Status",
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-  ),
-),            _field("Pregnant 19 bellow", preg19),
-            _field("Pregnant 20 above", preg20),
-            _field("Lactating", lactating),
+  child: Text("Women Status",
+      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+),
 
+_field("Pregnant 19 below", preg19, keyName: "preg19"),
+_field("Pregnant 20 above", preg20, keyName: "preg20"),
+_field("Lactating", lactating, keyName: "lactating"),
+
+// ======================= IYCF =======================
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
-  child: Text(
-    "IYCF",
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-  ),
-),            _field("0-5 months exclusive breastfeeding", exclusive),
-            _field("0-5 months mixed feeding", mixed),
-            _field("0-5 months bottle feeding", bottle),
-            _field("6-12 complementary feeding", complementary),
+  child: Text("IYCF",
+      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+),
 
+_field("0-5 months exclusive breastfeeding", exclusive, keyName: "exclusive"),
+_field("0-5 months mixed feeding", mixed, keyName: "mixed"),
+_field("0-5 months bottle feeding", bottle, keyName: "bottle"),
+_field("6-12 complementary feeding", complementary, keyName: "complementary"),
+
+// ======================= NUTRITION =======================
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
-  child: Text(
-    "Preschool children nutritional status",
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-  ),
-),            _field("Severely Underweight", su),
-            _field("Underweight", uw),
-            _field("Normal", nw),
-            _field("Severely Wasted", sw),
-            _field("Wasted", w),
-            _field("Overweight", ow),
-            _field("Obese", ob),
-            _field("Severely Stunted", ss),
-            _field("Stunted", st),
+  child: Text("Preschool children nutritional status",
+      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+),
 
+_field("Severely Underweight", su, keyName: "su"),
+_field("Underweight", uw, keyName: "uw"),
+_field("Normal", nw, keyName: "nw"),
+_field("Severely Wasted", sw, keyName: "sw"),
+_field("Wasted", w, keyName: "w"),
+_field("Overweight", ow, keyName: "ow"),
+_field("Obese", ob, keyName: "ob"),
+_field("Severely Stunted", ss, keyName: "ss"),
+_field("Stunted", st, keyName: "st"),
+
+// ======================= FACILITIES =======================
 const Padding(
   padding: EdgeInsets.only(bottom: 8),
-  child: Text(
-    "Facilities",
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-  ),
-),            _drop("Toilet Type", toilet,
-                ["Water Sealed", "Antipolo", "Open Pit", "Shared", "No Toilet"],
-                (v) => setState(() => toilet = v)),
+  child: Text("Facilities",
+      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+),
 
-            _drop("Water Source", water,
-                ["Pipe Water", "Deep Well", "Purified", "Shallow Well", "Artesian", "Spring"],
-                (v) => setState(() => water = v)),
+_drop("Toilet Type", toilet,
+    ["Water Sealed", "Antipolo", "Open Pit", "Shared", "No Toilet"],
+    (v) => setState(() => toilet = v)),
 
-            _drop("Dwelling Type", dwellingType,
-                ["Concrete","Semi Concrete", "Wooden", "Nipa Bamboo House", "Barong-Barong", "Makeshift"],
-                (v) => setState(() => dwellingType = v)),
-                _multiSelectDrop(
+_drop("Water Source", water,
+    ["Pipe Water", "Deep Well", "Purified", "Shallow Well", "Artesian", "Spring"],
+    (v) => setState(() => water = v)),
+
+_drop("Dwelling Type", dwellingType,
+    ["Concrete", "Semi Concrete", "Wooden", "Nipa Bamboo House", "Barong-Barong", "Makeshift"],
+    (v) => setState(() => dwellingType = v)),
+
+_multiSelectDrop(
   "Garbage Disposal",
   garbage,
-  [
-    "City Garbage Collector",
-    "Barangay Garbage Collector",
-    "Compost Pit",
-    "Burning",
-    "Dumping"
-  ],
+  ["City Garbage Collector", "Barangay Garbage Collector", "Compost Pit", "Burning", "Dumping"],
   (v) => setState(() => garbage = v),
 ),
 
 _multiSelectDrop(
   "Food Production",
   food,
-  [
-    "Vegetable Garden",
-    "Poultry",
-    "Livestock",
-    "Fishpond",
-    "No Garden"
-  ],
+  ["Vegetable Garden", "Poultry", "Livestock", "Fishpond", "No Garden"],
   (v) => setState(() => food = v),
 ),
 
-            CheckboxListTile(
-                value: iodizedSalt,
-                onChanged: (v) => setState(() => iodizedSalt = v!),
-                title: const Text("Uses Iodized Salt")),
+CheckboxListTile(
+  value: iodizedSalt,
+  onChanged: (v) => setState(() => iodizedSalt = v!),
+  title: const Text("Uses Iodized Salt"),
+),
 
-            // Extra spacing before button
-            const SizedBox(height: 20),
-
+const SizedBox(height: 20),
             // Full-width Save button
 Center(
   child: SizedBox(
@@ -461,8 +496,13 @@ side: BorderSide(
                   textStyle: const TextStyle(fontSize: 16, ),
 
                 ),
-onPressed: _isFormValid
-    ? () async {
+onPressed: () async {
+  setState(() => _submitted = true);
+
+  if (!_isFormValid) {
+    _scrollToFirstInvalid();
+    return;
+  }
       
 if (!_isFormValid) return;
 
@@ -540,8 +580,7 @@ if (!_isAgeGroupValid()) {
                     const SnackBar(content: Text("Saved Successfully")),
                   );
                   Navigator.pop(context);
-                }
-                    : null,    
+                },   
   
                 child: const Text("Save"),
               ),
@@ -555,21 +594,46 @@ if (!_isAgeGroupValid()) {
     );
   }
 
-Widget _field(String label, TextEditingController controller,
-    {bool readOnly = false, TextInputType? type, bool disabled = false}) {
+Widget _field(
+  String label,
+  TextEditingController controller, {
+  bool readOnly = false,
+  TextInputType? type,
+  bool disabled = false,
+  String keyName = "",
+}) {
+  _fieldKeys.putIfAbsent(keyName, () => GlobalKey());
+
+  bool isInvalid = _submitted && controller.text.trim().isEmpty;
+
   return Padding(
+    key: _fieldKeys[keyName],
     padding: const EdgeInsets.only(bottom: 10),
     child: TextField(
       controller: controller,
       readOnly: readOnly || disabled,
       keyboardType: type ?? TextInputType.number,
       onChanged: (_) {
-        _limitAgeInput(controller); // ✅ ADD THIS LINE
+        _limitAgeInput(controller);
         setState(() {});
       },
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
+
+        // 🔴 RED BORDER WHEN INVALID
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: isInvalid ? Colors.red : Colors.grey,
+          ),
+        ),
+
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: isInvalid ? Colors.red : Colors.blue,
+            width: 2,
+          ),
+        ),
       ),
     ),
   );
@@ -669,4 +733,24 @@ Widget _field(String label, TextEditingController controller,
     ),
   );
 }
+
+void _scrollToFirstInvalid() {
+  for (var entry in _fieldKeys.entries) {
+    final context = entry.value.currentContext;
+
+    if (context != null) {
+      final box = context.findRenderObject() as RenderBox;
+      final pos = box.localToGlobal(Offset.zero);
+
+      _scrollController.animateTo(
+        pos.dy + _scrollController.offset - 120,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+      break;
+    }
+  }
+}
+
+
 }
