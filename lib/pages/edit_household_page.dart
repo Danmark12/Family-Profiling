@@ -498,7 +498,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
                 (v) => setState(() => toilet = v),
                 keyName: "toilet", required: true),
 
-            _drop("Water Source", water,
+            _drop("Drinking Water Source", water,
                 ["Pipe Water", "Deep Well", "Purified", "Shallow Well", "Artesian", "Spring"],
                 (v) => setState(() => water = v),
                 keyName: "water", required: true),
