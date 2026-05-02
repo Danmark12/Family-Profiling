@@ -1,5 +1,7 @@
-// lib/widgets/recent_households_table.dart (FIXED VERSION)
+// lib/widgets/recent_households_table.dart (FINAL with correct navigation)
 import 'package:flutter/material.dart';
+import '../models/household.dart';  // your Household model
+import '../pages/household_detail_page.dart';  // your detail page
 
 class RecentHouseholdsTable extends StatelessWidget {
   final List<Map<String, dynamic>> households;
@@ -174,20 +176,23 @@ class RecentHouseholdsTable extends StatelessWidget {
     );
   }
 
-  void _showHouseholdDetails(BuildContext context, Map<String, dynamic> household) {
+  void _showHouseholdDetails(BuildContext context, Map<String, dynamic> householdMap) {
+    // Convert map to Household object
+    final household = Household.fromMap(householdMap);
+
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,  // Allows the bottom sheet to be scrollable
-      useSafeArea: true,  // Respects safe area (avoid phone bar)
+      isScrollControlled: true,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return SafeArea(  // Wrap with SafeArea to avoid phone bar
+        return SafeArea(
           child: DraggableScrollableSheet(
-            initialChildSize: 0.6,  // Start at 60% of screen
-            minChildSize: 0.4,      // Can shrink to 40%
-            maxChildSize: 0.9,      // Can expand to 90%
+            initialChildSize: 0.6,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
             expand: false,
             builder: (context, scrollController) {
               return Container(
@@ -223,14 +228,14 @@ class RecentHouseholdsTable extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Household #${household['householdNo']}',
+                                'Household #${household.householdNo}',
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
-                                'Created: ${_formatDate(household['created_at'])}',
+                                'Created: ${household.formattedCreatedAt}',
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: Colors.grey[600],
@@ -248,63 +253,84 @@ class RecentHouseholdsTable extends StatelessWidget {
                         child: Column(
                           children: [
                             _buildInfoSection('Location', [
-                              _infoRow(Icons.location_on, 'Zone', household['zone']?.toString() ?? 'N/A'),
-                              _infoRow(Icons.map, 'Barangay', household['barangay']?.toString() ?? 'N/A'),
+                              _infoRow(Icons.location_on, 'Zone', household.zone ?? 'N/A'),
+                              _infoRow(Icons.map, 'Barangay', household.barangay ?? 'N/A'),
                             ]),
                             const SizedBox(height: 12),
                             _buildInfoSection('Population', [
-                              _infoRow(Icons.people, 'Total Members', '${household['total'] ?? 0}'),
-                              _infoRow(Icons.male, 'Male', '${household['male'] ?? 0}'),
-                              _infoRow(Icons.female, 'Female', '${household['female'] ?? 0}'),
+                              _infoRow(Icons.people, 'Total Members', '${household.total ?? 0}'),
+                              _infoRow(Icons.male, 'Male', '${household.male ?? 0}'),
+                              _infoRow(Icons.female, 'Female', '${household.female ?? 0}'),
                             ]),
                             const SizedBox(height: 12),
-                            if ((household['preg19'] ?? 0) > 0 || (household['preg20'] ?? 0) > 0)
+                            if ((household.preg19 ?? 0) > 0 || (household.preg20 ?? 0) > 0)
                               _buildInfoSection('Maternal Health', [
-                                _infoRow(Icons.pregnant_woman, 'Pregnant Teens', '${household['preg19'] ?? 0}'),
-                                _infoRow(Icons.woman, 'Pregnant Adults', '${household['preg20'] ?? 0}'),
-                                _infoRow(Icons.medical_services, 'Lactating', '${household['lactating'] ?? 0}'),
+                                _infoRow(Icons.pregnant_woman, 'Pregnant Teens', '${household.preg19 ?? 0}'),
+                                _infoRow(Icons.woman, 'Pregnant Adults', '${household.preg20 ?? 0}'),
+                                _infoRow(Icons.medical_services, 'Lactating', '${household.lactating ?? 0}'),
                               ]),
                             const SizedBox(height: 12),
-                            if (_hasMalnutrition(household))
-                              _buildInfoSection('Nutrition Status', [
-                                _infoRow(Icons.warning, 'Risk Level', _getRiskDescription(household),
-                                    color: Colors.red),
-                                if ((household['severelyWasted'] ?? 0) > 0)
-                                  _infoRow(Icons.health_and_safety, 'Severely Wasted', '${household['severelyWasted']}'),
-                                if ((household['wasted'] ?? 0) > 0)
-                                  _infoRow(Icons.health_and_safety, 'Wasted', '${household['wasted']}'),
-                                if ((household['severelyUnderweight'] ?? 0) > 0)
-                                  _infoRow(Icons.health_and_safety, 'Severely Underweight', '${household['severelyUnderweight']}'),
-                                if ((household['stunted'] ?? 0) > 0)
-                                  _infoRow(Icons.height, 'Stunted', '${household['stunted']}'),
-                              ]),
+                            if (_hasNutritionIssues(household))
+                              _buildInfoSection('Nutrition Status', _getNutritionDetails(household)),
                             const SizedBox(height: 12),
                             _buildInfoSection('Programs', [
-                              _infoRow(Icons.card_giftcard, '4Ps Member', household['fourPs'] == 1 ? 'Yes' : 'No'),
-                              _infoRow(Icons.people_outline, 'Indigenous People', household['indigenousPeople'] == 1 ? 'Yes' : 'No'),
-                              _infoRow(Icons.accessibility_new, 'PWD', household['pwd'] == 1 ? 'Yes' : 'No'),
+                              _infoRow(Icons.card_giftcard, '4Ps Member', _boolText(household.fourPs)),
+                              _infoRow(Icons.people_outline, 'Indigenous People', _boolText(household.indigenousPeople)),
+                              _infoRow(Icons.accessibility_new, 'PWD', '${household.pwd ?? 0}'),
                             ]),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade700,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                    // TWO BUTTONS: "View Full Details" (green) and "Close" (transparent)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context); // close bottom sheet
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => HouseholdDetailPage(hh: household),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green.shade700,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'View Full Details',
+                              style: TextStyle(fontSize: 14),
+                            ),
                           ),
                         ),
-                        child: const Text(
-                          'Close',
-                          style: TextStyle(fontSize: 14),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.grey.shade700,
+                              side: BorderSide(color: Colors.grey.shade300),
+                              backgroundColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text(
+                              'Close',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -317,6 +343,7 @@ class RecentHouseholdsTable extends StatelessWidget {
     );
   }
 
+  // ================= HELPER WIDGETS =================
   Widget _buildInfoSection(String title, List<Widget> rows) {
     return Container(
       decoration: BoxDecoration(
@@ -376,16 +403,12 @@ class RecentHouseholdsTable extends StatelessWidget {
     );
   }
 
-  String _formatDate(String? dateString) {
-    if (dateString == null || dateString.isEmpty) return 'Unknown';
-    try {
-      final date = DateTime.parse(dateString);
-      return '${date.month}/${date.day}/${date.year}';
-    } catch (e) {
-      return 'Unknown';
-    }
+  String _boolText(int? value) {
+    if (value == null) return "No";
+    return value == 1 ? "Yes" : "No";
   }
 
+  // ================= NUTRITION LOGIC =================
   NutritionRisk _getNutritionRisk(Map<String, dynamic> household) {
     int severelyWasted = household['severelyWasted'] ?? 0;
     int wasted = household['wasted'] ?? 0;
@@ -393,43 +416,72 @@ class RecentHouseholdsTable extends StatelessWidget {
     int underweight = household['underweight'] ?? 0;
     int severelyStunted = household['severelyStunted'] ?? 0;
     int stunted = household['stunted'] ?? 0;
+    int overweight = household['overweight'] ?? 0;
+    int obese = household['obese'] ?? 0;
 
     if (severelyWasted > 0 || severelyUnderweight > 0 || severelyStunted > 0) {
-      return NutritionRisk('Critical', Colors.red.shade700, 'high');
+      return NutritionRisk('Critical', Colors.red.shade700, 'critical');
     }
-    if (wasted > 0 || underweight > 0 || stunted > 0) {
-      return NutritionRisk('At Risk', Colors.orange.shade700, 'medium');
+    if (wasted > 0 || underweight > 0 || stunted > 0 || obese > 0) {
+      return NutritionRisk('At Risk', Colors.orange.shade700, 'risk');
     }
-    return NutritionRisk('Normal', Colors.green.shade600, 'low');
+    if (overweight > 0) {
+      return NutritionRisk('Monitor', Colors.amber.shade700, 'monitor');
+    }
+    return NutritionRisk('Normal', Colors.green.shade600, 'normal');
   }
 
-  bool _hasMalnutrition(Map<String, dynamic> household) {
-    return (household['severelyWasted'] ?? 0) > 0 ||
-           (household['wasted'] ?? 0) > 0 ||
-           (household['severelyUnderweight'] ?? 0) > 0 ||
-           (household['underweight'] ?? 0) > 0 ||
-           (household['severelyStunted'] ?? 0) > 0 ||
-           (household['stunted'] ?? 0) > 0;
+  bool _hasNutritionIssues(Household household) {
+    return (household.severelyWasted ?? 0) > 0 ||
+           (household.wasted ?? 0) > 0 ||
+           (household.severelyUnderweight ?? 0) > 0 ||
+           (household.underweight ?? 0) > 0 ||
+           (household.severelyStunted ?? 0) > 0 ||
+           (household.stunted ?? 0) > 0 ||
+           (household.overweight ?? 0) > 0 ||
+           (household.obese ?? 0) > 0;
   }
 
-  String _getRiskDescription(Map<String, dynamic> household) {
-    List<String> risks = [];
-    if ((household['severelyWasted'] ?? 0) > 0) risks.add('Severe Wasting');
-    if ((household['wasted'] ?? 0) > 0) risks.add('Wasting');
-    if ((household['severelyUnderweight'] ?? 0) > 0) risks.add('Severe Underweight');
-    if ((household['underweight'] ?? 0) > 0) risks.add('Underweight');
-    if ((household['severelyStunted'] ?? 0) > 0) risks.add('Severe Stunting');
-    if ((household['stunted'] ?? 0) > 0) risks.add('Stunting');
-    
-    return risks.isEmpty ? 'None' : risks.join(', ');
+  List<Widget> _getNutritionDetails(Household household) {
+    List<Widget> details = [];
+    if ((household.severelyWasted ?? 0) > 0) {
+      details.add(_infoRow(Icons.warning, 'Severely Wasted', '${household.severelyWasted}', color: Colors.red));
+    }
+    if ((household.wasted ?? 0) > 0) {
+      details.add(_infoRow(Icons.warning, 'Wasted', '${household.wasted}', color: Colors.orange));
+    }
+    if ((household.severelyUnderweight ?? 0) > 0) {
+      details.add(_infoRow(Icons.warning, 'Severely Underweight', '${household.severelyUnderweight}', color: Colors.red));
+    }
+    if ((household.underweight ?? 0) > 0) {
+      details.add(_infoRow(Icons.warning, 'Underweight', '${household.underweight}', color: Colors.orange));
+    }
+    if ((household.severelyStunted ?? 0) > 0) {
+      details.add(_infoRow(Icons.height, 'Severely Stunted', '${household.severelyStunted}', color: Colors.red));
+    }
+    if ((household.stunted ?? 0) > 0) {
+      details.add(_infoRow(Icons.height, 'Stunted', '${household.stunted}', color: Colors.orange));
+    }
+    if ((household.overweight ?? 0) > 0) {
+      details.add(_infoRow(Icons.fitness_center, 'Overweight', '${household.overweight}', color: Colors.amber));
+    }
+    if ((household.obese ?? 0) > 0) {
+      details.add(_infoRow(Icons.fitness_center, 'Obese', '${household.obese}', color: Colors.orange));
+    }
+    if (details.isEmpty) {
+      details.add(_infoRow(Icons.check_circle, 'Status', 'Normal', color: Colors.green));
+    }
+    return details;
   }
 
   IconData _getRiskIcon(String level) {
     switch (level) {
-      case 'high':
+      case 'critical':
         return Icons.warning_amber_rounded;
-      case 'medium':
+      case 'risk':
         return Icons.info_outline;
+      case 'monitor':
+        return Icons.timeline;
       default:
         return Icons.check_circle_outline;
     }
@@ -440,6 +492,5 @@ class NutritionRisk {
   final String label;
   final Color color;
   final String level;
-
   NutritionRisk(this.label, this.color, this.level);
 }

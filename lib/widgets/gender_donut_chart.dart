@@ -1,8 +1,8 @@
-// lib/widgets/gender_donut_chart.dart (COMPACT VERSION)
+// lib/widgets/gender_donut_chart.dart (tap shows number on chart, no dialog)
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-class GenderDonutChart extends StatelessWidget {
+class GenderDonutChart extends StatefulWidget {
   final int male;
   final int female;
 
@@ -13,10 +13,17 @@ class GenderDonutChart extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<GenderDonutChart> createState() => _GenderDonutChartState();
+}
+
+class _GenderDonutChartState extends State<GenderDonutChart> {
+  int? _touchedIndex;
+
+  @override
   Widget build(BuildContext context) {
-    final total = male + female;
-    final malePercent = total > 0 ? (male / total * 100).toStringAsFixed(0) : '0';
-    final femalePercent = total > 0 ? (female / total * 100).toStringAsFixed(0) : '0';
+    final total = widget.male + widget.female;
+    final malePercent = total > 0 ? (widget.male / total * 100).toStringAsFixed(1) : '0';
+    final femalePercent = total > 0 ? (widget.female / total * 100).toStringAsFixed(1) : '0';
 
     return Container(
       decoration: BoxDecoration(
@@ -44,8 +51,8 @@ class GenderDonutChart extends StatelessWidget {
                 PieChartData(
                   sections: [
                     PieChartSectionData(
-                      value: male.toDouble(),
-                      title: '$malePercent%',
+                      value: widget.male.toDouble(),
+                      title: _touchedIndex == 0 ? '${widget.male}' : '$malePercent%',
                       color: Colors.blue.shade400,
                       radius: 45,
                       titleStyle: const TextStyle(
@@ -53,10 +60,11 @@ class GenderDonutChart extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
+                      showTitle: true,
                     ),
                     PieChartSectionData(
-                      value: female.toDouble(),
-                      title: '$femalePercent%',
+                      value: widget.female.toDouble(),
+                      title: _touchedIndex == 1 ? '${widget.female}' : '$femalePercent%',
                       color: Colors.pink.shade400,
                       radius: 45,
                       titleStyle: const TextStyle(
@@ -64,10 +72,35 @@ class GenderDonutChart extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
+                      showTitle: true,
                     ),
                   ],
                   sectionsSpace: 1,
                   centerSpaceRadius: 25,
+                  pieTouchData: PieTouchData(
+                    touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                      if (event is FlTapUpEvent && pieTouchResponse != null) {
+                        final touchedSection = pieTouchResponse.touchedSection;
+                        if (touchedSection != null) {
+                          final sectionIndex = touchedSection.touchedSectionIndex;
+                          setState(() {
+                            _touchedIndex = sectionIndex;
+                          });
+                          Future.delayed(const Duration(milliseconds: 800), () {
+                            if (mounted) {
+                              setState(() {
+                                _touchedIndex = null;
+                              });
+                            }
+                          });
+                        } else {
+                          setState(() {
+                            _touchedIndex = null;
+                          });
+                        }
+                      }
+                    },
+                  ),
                 ),
               ),
             ),
@@ -80,7 +113,7 @@ class GenderDonutChart extends StatelessWidget {
                 _buildLegend('F', Colors.pink.shade400),
                 const SizedBox(width: 12),
                 Text(
-                  'Total: ${total}',
+                  'Total: $total',
                   style: TextStyle(
                     fontSize: 10,
                     color: Colors.grey[600],
