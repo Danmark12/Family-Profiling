@@ -464,13 +464,13 @@ class _ConsolidatedReportPageState extends State<ConsolidatedReportPage> {
                       _row("Backyard Composting", get(garbageCounts, "Backyard Composting")),
                       _row("Recycling/Reuse", get(garbageCounts, "Recycling Reuse")),
                       _row("Collected by City/Municipal Collection", get(garbageCounts, "Collected by City/Municipal Collection and Disposal System")),
-                      _row("Burning/Burying", get(garbageCounts, "(Burning/Burying)(within hosuehold; not satisfactory method of disposal)")),
+                      _row("Burning/Burying", get(garbageCounts, "Burning/Burying")),
 
                       _title("Households, by type of water supply:"),
                       _row("Level I (point source)", get(waterCounts, "Level I (point source)")),
                       _row("Level II (communal faucet)", get(waterCounts, "Level II (communal facet)")),
                       _row("Level III (individual connection)", get(waterCounts, "Level III (individual connection)")),
-                      _row("Others, specify (doubtful sources)", get(waterCounts, "Others, specify (for doubtful sources, e.g. open dug well, etc.)")),
+                      _row("Others, specify (doubtful sources)", get(waterCounts, "For doubtful sources, e.g. open dug well, etc.")),
 
                       _title("Households, by type of food production:"),
                       _row("Vegetable Garden", get(foodCounts, "Vegetable Garden")),

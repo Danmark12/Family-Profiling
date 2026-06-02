@@ -298,7 +298,7 @@ required bool sortAsc,
                 "S = Stunted",
               ])),
 
-pw.Expanded(child: _groupText("TOILET TYPE Facility", [
+pw.Expanded(child: _groupText("TOILET TYPE FACILITY", [
   "Pour/flush type with septic tank",
   "Ventilated Pit (VIP) Latrine",
   "Water sealed toilet w/o septic tank",
@@ -307,7 +307,7 @@ pw.Expanded(child: _groupText("TOILET TYPE Facility", [
   "Without Toilet",
 ])),
 
-pw.Expanded(child: _groupText("NOT SHARED TOILET", [
+pw.Expanded(child: _groupText("SHARED TOILET", [
   // "Shared = Yes (1)",
   // "Not Shared = No (0)",
 ])),
@@ -324,7 +324,7 @@ pw.Expanded(child: _groupText("WATER SUPPLY & FOOD", [
   "Level I (point source)",
   "Level II (communal faucet)",
   "Level III (individual connection)",
-  "Others, specify (doubtful sources)",
+  "doubtful sources e.g. open dug well, etc.",
   "Vegetable Garden",
   "Poultry",
   "Livestock",

@@ -199,14 +199,14 @@ class ExportCsvService {
     rows.add(["Backyard Composting", garbageCounts['Backyard Composting'] ?? 0]);
     rows.add(["Recycling/Reuse", garbageCounts['Recycling Reuse'] ?? 0]);
     rows.add(["Collected by City/Municipal Collection", garbageCounts['Collected by City/Municipal Collection and Disposal System'] ?? 0]);
-    rows.add(["Burning/Burying", garbageCounts['(Burning/Burying)(within hosuehold; not satisfactory method of disposal)'] ?? 0]);
+    rows.add(["Burning/Burying", garbageCounts['Burning/Burying'] ?? 0]);
 
     // WATER SOURCE SECTION
     rows.add(["Households, by type of water supply:", ""]);
     rows.add(["Level I (point source)", waterCounts['Level I (point source)'] ?? 0]);
     rows.add(["Level II (communal faucet)", waterCounts['Level II (communal facet)'] ?? 0]);
     rows.add(["Level III (individual connection)", waterCounts['Level III (individual connection)'] ?? 0]);
-    rows.add(["Others, specify (doubtful sources)", waterCounts['Others, specify (for doubtful sources, e.g. open dug well, etc.)'] ?? 0]);
+    rows.add(["Others, specify (doubtful sources)", waterCounts['For doubtful sources, e.g. open dug well, etc.'] ?? 0]);
 
     // FOOD PRODUCTION SECTION
     rows.add(["Households, by type of food production activity:", ""]);

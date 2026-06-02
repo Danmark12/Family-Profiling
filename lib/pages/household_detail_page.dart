@@ -194,7 +194,7 @@ class _HouseholdDetailPageState extends State<HouseholdDetailPage> {
                 // FACILITIES
                 buildRow("Facilities:", ""),
                 buildRow("Toilet Type Facility", household.toilet ?? "-"),
-                buildRow("Not Shared Toilet", boolText(household.shared)),
+                buildRow("Shared Toilet", boolText(household.shared)),
                 buildRow("Waste Management", household.garbage ?? "-"),
                 buildRow("Type of Water Supply", household.water ?? "-"),
                 buildRow("Food Production", household.food ?? "-"),

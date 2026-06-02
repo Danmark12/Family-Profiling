@@ -26,6 +26,17 @@ class NutritionBarChart extends StatelessWidget {
     required this.stunted,
   }) : super(key: key);
 
+  double _getYAxisInterval(double maxValue) {
+    if (maxValue <= 10) return 1;
+    if (maxValue <= 20) return 2;
+    if (maxValue <= 50) return 5;
+    if (maxValue <= 100) return 10;
+    if (maxValue <= 200) return 20;
+    if (maxValue <= 500) return 50;
+    if (maxValue <= 1000) return 100;
+    return 200;
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<_NutritionData> data = [
@@ -87,7 +98,7 @@ class NutritionBarChart extends StatelessWidget {
                       },
                     ),
                   ),
-                  titlesData: _buildTitles(data),
+                  titlesData: _buildTitles(data, maxY),
                   barGroups: _buildBarGroups(data),
                   gridData: const FlGridData(show: false),
                   borderData: FlBorderData(show: false),
@@ -99,6 +110,50 @@ class NutritionBarChart extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  FlTitlesData _buildTitles(List<_NutritionData> data, double maxY) {
+    return FlTitlesData(
+      show: true,
+      leftTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          reservedSize: 35,
+          interval: _getYAxisInterval(maxY),
+          getTitlesWidget: (value, meta) {
+            if (value != value.toInt().toDouble()) return const Text('');
+            String formattedValue = value.toInt().toString();
+            if (value >= 1000) {
+              formattedValue = '${(value / 1000).toStringAsFixed(0)}k';
+            }
+            return Text(
+              formattedValue,
+              style: const TextStyle(fontSize: 9, color: Color(0xFF7F8C8D)),
+            );
+          },
+        ),
+      ),
+      bottomTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          reservedSize: 48,
+          getTitlesWidget: (value, meta) {
+            final index = value.toInt();
+            if (index < 0 || index >= data.length) return const Text('');
+            return Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                data[index].label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w500, color: Color(0xFF546E7A)),
+              ),
+            );
+          },
+        ),
+      ),
+      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
     );
   }
 
@@ -163,53 +218,10 @@ class NutritionBarChart extends StatelessWidget {
     );
   }
 
-  FlTitlesData _buildTitles(List<_NutritionData> data) {
-    return FlTitlesData(
-      show: true,
-      leftTitles: AxisTitles(
-  sideTitles: SideTitles(
-    showTitles: true,
-    reservedSize: 28,
-    interval: 1,
-    getTitlesWidget: (value, meta) {
-      // Only show integer values and prevent duplicates
-      final intValue = value.toInt();
-      if (value != intValue.toDouble()) return const Text('');
-      return Text(
-        intValue.toString(),
-        style: const TextStyle(fontSize: 9, color: Color(0xFF7F8C8D)),
-      );
-    },
-  ),
-),
-      bottomTitles: AxisTitles(
-        sideTitles: SideTitles(
-          showTitles: true,
-          reservedSize: 48,
-          getTitlesWidget: (value, meta) {
-            final index = value.toInt();
-            if (index < 0 || index >= data.length) return const Text('');
-            return Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                data[index].label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w500, color: Color(0xFF546E7A)),
-              ),
-            );
-          },
-        ),
-      ),
-      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-    );
-  }
-
   List<BarChartGroupData> _buildBarGroups(List<_NutritionData> data) {
     return data.asMap().entries.map((entry) {
       final index = entry.key;
       final item = entry.value;
-      
       return BarChartGroupData(
         x: index,
         barRods: [

@@ -504,11 +504,11 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
 CheckboxListTile(
   value: shared,
   onChanged: (v) => setState(() => shared = v ?? false),
-  title: const Text("Not Shared Toilet"),
+  title: const Text("Shared Toilet"),
 ),
 
 _drop("Type of Water Supply", water,
-    ["Level I (point source)", "Level II (communal facet)", "Level III (individual connection)", "Others, specify (for doubtful sources, e.g. open dug well, etc.)"],
+    ["Level I (point source)", "Level II (communal facet)", "Level III (individual connection)", "For doubtful sources, e.g. open dug well, etc."],
     (v) => setState(() => water = v),
     keyName: "water", required: true),
 
@@ -520,7 +520,7 @@ _drop("Dwelling Type", dwellingType,
 _multiSelectDrop(
   "Waste Management",
   garbage,
-  ["Waste Segregation", "Backyard Composting", "Recycling Reuse", "Collected by City/Municipal Collection and Disposal System", "Burning/Burying (within household; not satisfactory method of disposal)"],
+  ["Waste Segregation", "Backyard Composting", "Recycling Reuse", "Collected by City/Municipal Collection and Disposal System", "Burning/Burying"],
   (v) => setState(() => garbage = v),
   keyName: "garbage", required: true,
 ),

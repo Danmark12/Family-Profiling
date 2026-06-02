@@ -252,14 +252,14 @@ class ExportPdfService {
               _row('Backyard Composting', '${garbageCounts['Backyard Composting'] ?? 0}'),
               _row('Recycling/Reuse', '${garbageCounts['Recycling Reuse'] ?? 0}'),
               _row('Collected by City/Municipal Collection', '${garbageCounts['Collected by City/Municipal Collection and Disposal System'] ?? 0}'),
-              _row('Burning/Burying', '${garbageCounts['(Burning/Burying)(within hosuehold; not satisfactory method of disposal)'] ?? 0}'),
+              _row('Burning/Burying', '${garbageCounts['Burning/Burying'] ?? 0}'),
 
               // WATER SOURCE SECTION
               _row('Households, by type of water supply:', ''),
               _row('Level I (point source)', '${waterCounts['Level I (point source)'] ?? 0}'),
               _row('Level II (communal faucet)', '${waterCounts['Level II (communal facet)'] ?? 0}'),
               _row('Level III (individual connection)', '${waterCounts['Level III (individual connection)'] ?? 0}'),
-              _row('Others, specify (doubtful sources)', '${waterCounts['Others, specify (for doubtful sources, e.g. open dug well, etc.)'] ?? 0}'),
+              _row('Others, specify (doubtful sources)', '${waterCounts['For doubtful sources, e.g. open dug well, etc.'] ?? 0}'),
 
               // FOOD PRODUCTION SECTION
               _row('Households, by type of food production activity:', ''),

@@ -322,7 +322,7 @@ await ExportBarangayCSV.generate(
       "St",
 
       "Toilet",
-      "Not Shared", 
+      "Shared", 
       "Garbage",
       "Water",
       "Food",

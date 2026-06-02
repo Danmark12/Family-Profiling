@@ -76,7 +76,7 @@ class ExportBarangayCSV {
       "Sev St",
       "St",
       "Toilet",
-      "Not Shared",
+      "Shared",
       "Garbage",
       "Water",
       "Food",
