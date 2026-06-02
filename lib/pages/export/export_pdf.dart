@@ -6,16 +6,16 @@ import '../../models/household.dart';
 class ExportPdfService {
   final List<Household> households;
   final String barangay;
-  
-    final String generatedDate;
+  final String zone;
+  final String generatedDate;
   final String generatedTime;
 
   ExportPdfService({
     required this.households,
     required this.barangay,
-    required this.generatedDate,   // ✅ ADDED
-    required this.generatedTime,   
-    
+    required this.zone,
+    required this.generatedDate,
+    required this.generatedTime,
   });
 
   Future<Uint8List> generate() async {
@@ -55,6 +55,7 @@ class ExportPdfService {
     int totalSS = 0, totalST = 0;
 
     Map<String, int> toiletCounts = {};
+    Map<String, int> sharedToiletCounts = {};
     Map<String, int> garbageCounts = {};
     Map<String, int> waterCounts = {};
     Map<String, int> foodCounts = {};
@@ -65,17 +66,16 @@ class ExportPdfService {
       map[key] = (map[key] ?? 0) + 1;
     }
 
-
     void countMulti(Map<String, int> map, String? raw) {
-  if (raw == null || raw.isEmpty) return;
+      if (raw == null || raw.isEmpty) return;
 
-  final items = raw.split(",").map((e) => e.trim());
+      final items = raw.split(",").map((e) => e.trim());
 
-  for (final item in items) {
-    if (item.isEmpty) continue;
-    map[item] = (map[item] ?? 0) + 1;
-  }
-}
+      for (final item in items) {
+        if (item.isEmpty) continue;
+        map[item] = (map[item] ?? 0) + 1;
+      }
+    }
 
     for (var h in households) {
       int members = (h.male ?? 0) + (h.female ?? 0);
@@ -125,18 +125,17 @@ class ExportPdfService {
       totalST += h.stunted ?? 0;
 
       count(toiletCounts, h.toilet);
-countMulti(garbageCounts, h.garbage);
+      countMulti(garbageCounts, h.garbage);
       count(waterCounts, h.water);
-countMulti(foodCounts, h.food);
+      countMulti(foodCounts, h.food);
       count(dwellingCounts, h.dwellingType);
+      count(sharedToiletCounts, h.shared == 1 ? "Shared" : "Not Shared");
     }
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
 
-
-        // ⭐ FOOTER ADDED HERE (EVERY PAGE)
         footer: (context) {
           return pw.Container(
             alignment: pw.Alignment.centerRight,
@@ -149,8 +148,6 @@ countMulti(foodCounts, h.food);
           );  
         },
 
-
-
         build: (context) => [
           pw.Center(
             child: pw.Text(
@@ -159,12 +156,9 @@ countMulti(foodCounts, h.food);
             ),
           ),
           pw.SizedBox(height: 10),
-          pw.Text('Barangay: $barangay'),
-          // pw.Text('Date Generated: $generatedDate'),
-          // pw.Text('Time Generated: $generatedTime (Philippine Time)'),
-          pw.SizedBox(height: 15),
+          pw.Text('Barangay: $barangay'), 
+          pw.SizedBox(height: 5),
 
-          // ✅ MANUAL TABLE (NO REPEATED HEADERS)
           pw.Table(
             border: pw.TableBorder.all(),
             columnWidths: {
@@ -172,7 +166,6 @@ countMulti(foodCounts, h.food);
               1: pw.FlexColumnWidth(1),
             },
             children: [
-
               // HEADER (ONLY ONCE)
               pw.TableRow(
                 decoration: pw.BoxDecoration(color: PdfColors.grey300),
@@ -194,7 +187,7 @@ countMulti(foodCounts, h.food);
                 ],
               ),
 
-              // DATA ROWS (ALL YOUR ORIGINAL TEXT)
+              // DATA ROWS
               _row('Total households', '$totalHouseholds'),
               _row('Total number of members', '$totalMembers'),
               _row('Male', '$totalMale'),
@@ -218,7 +211,7 @@ countMulti(foodCounts, h.food);
               _row('Total number of PWD', '$totalPWD'),
 
               _row('Total number of women who are:', ''),
-              _row('Pregnant 19 bellow', '$totalPreg19'),
+              _row('Pregnant 19 below', '$totalPreg19'),
               _row('Pregnant 20 above', '$totalPreg20'),
               _row('Lactating', '$totalLactating'),
 
@@ -228,7 +221,7 @@ countMulti(foodCounts, h.food);
               _row('Total number of 0 - 5 bottle fed', '$totalBottleFed'),
               _row('Total number of 6-12 given complementary fed', '$totalComplementary'),
 
-              _row('Total number of children who are:', ''),
+              _row('Total number of preschool children who are:', ''),
               _row('Severely underweight', '$totalSU'),
               _row('Underweight', '$totalUW'),
               _row('Normal weight', '$totalNW'),
@@ -239,44 +232,53 @@ countMulti(foodCounts, h.food);
               _row('Severely Stunted', '$totalSS'),
               _row('Stunted', '$totalST'),
 
-              _row('Households, by type of toilet disposal:', ''),
-              _row('Water Sealed', '${toiletCounts['Water Sealed'] ?? 0}'),
-              _row('Antipolo (Unsanitary toilet)', '${toiletCounts['Antipolo'] ?? 0}'),
-              _row('Open pit', '${toiletCounts['Open Pit'] ?? 0}'),
-              _row('Shared', '${toiletCounts['Shared'] ?? 0}'),
-              _row('No toilet', '${toiletCounts['No Toilet'] ?? 0}'),
+              // TOILET DISPOSAL SECTION
+              _row('Households, by type of toilet facility:', ''),
+              _row('Pour/flush type with septic tank', '${toiletCounts['Pour/flush type with septic tank'] ?? 0}'),
+              _row('Ventilated Pit (VIP) Latrine', '${toiletCounts['Ventilated Pit (VIP) Lactrine'] ?? 0}'),
+              _row('Water sealed toilet w/o septic tank', '${toiletCounts['Water sealed toilet w/o septic tank'] ?? 0}'),
+              _row('Over hung Latrine', '${toiletCounts['Over hung Latrine'] ?? 0}'),
+              _row('Open Pit Latrine', '${toiletCounts['Open Pit Latrine'] ?? 0}'),
+              _row('Without Toilet', '${toiletCounts['Without Toilet'] ?? 0}'),
 
-              _row('Households, by type of garbage disposal:', ''),
-              _row('City Garbage Collector', '${garbageCounts['City Garbage Collector'] ?? 0}'),
-              _row('Garbage Garbage Collector', '${garbageCounts['Barangay Garbage Collector'] ?? 0}'),
-              _row('Own Compost Pit', '${garbageCounts['Compost Pit'] ?? 0}'),
-              _row('Burning', '${garbageCounts['Burning'] ?? 0}'),
-              _row('Dumping', '${garbageCounts['Dumping'] ?? 0}'),
+              // SHARED TOILET SECTION
+              _row('Shared Toilet Status:', ''),
+              _row('Shared Toilet', '${sharedToiletCounts['Shared'] ?? 0}'),
+              _row('Not Shared Toilet', '${sharedToiletCounts['Not Shared'] ?? 0}'),
 
-              _row('Households, by source of drinking water:', ''),
-              _row('Pipe Water (Faucet)', '${waterCounts['Pipe Water'] ?? 0}'),
-              _row('Deep Well with other source', '${waterCounts['Deep Well'] ?? 0}'),
-              _row('Purified Water', '${waterCounts['Purified'] ?? 0}'),
-              _row('Open Shallow Dug Well', '${waterCounts['Shallow Well'] ?? 0}'),
-              _row('Artesian Well', '${waterCounts['Artesian'] ?? 0}'),
-              _row('Spring', '${waterCounts['Spring'] ?? 0}'),
+              // WASTE MANAGEMENT SECTION
+              _row('Households, by type of waste management:', ''),
+              _row('Waste Segregation', '${garbageCounts['Waste Segregation'] ?? 0}'),
+              _row('Backyard Composting', '${garbageCounts['Backyard Composting'] ?? 0}'),
+              _row('Recycling/Reuse', '${garbageCounts['Recycling Reuse'] ?? 0}'),
+              _row('Collected by City/Municipal Collection', '${garbageCounts['Collected by City/Municipal Collection and Disposal System'] ?? 0}'),
+              _row('Burning/Burying', '${garbageCounts['(Burning/Burying)(within hosuehold; not satisfactory method of disposal)'] ?? 0}'),
 
+              // WATER SOURCE SECTION
+              _row('Households, by type of water supply:', ''),
+              _row('Level I (point source)', '${waterCounts['Level I (point source)'] ?? 0}'),
+              _row('Level II (communal faucet)', '${waterCounts['Level II (communal facet)'] ?? 0}'),
+              _row('Level III (individual connection)', '${waterCounts['Level III (individual connection)'] ?? 0}'),
+              _row('Others, specify (doubtful sources)', '${waterCounts['Others, specify (for doubtful sources, e.g. open dug well, etc.)'] ?? 0}'),
+
+              // FOOD PRODUCTION SECTION
               _row('Households, by type of food production activity:', ''),
               _row('Vegetable Garden', '${foodCounts['Vegetable Garden'] ?? 0}'),
-              _row('Poultry/Livestock', '${foodCounts['Poultry'] ?? 0}'),
+              _row('Poultry', '${foodCounts['Poultry'] ?? 0}'),
               _row('Livestock', '${foodCounts['Livestock'] ?? 0}'),
               _row('Fishpond', '${foodCounts['Fishpond'] ?? 0}'),
               _row('No Garden', '${foodCounts['No Garden'] ?? 0}'),
 
+              // DWELLING TYPE SECTION
               _row('Households, according to type of dwelling unit:', ''),
               _row('Concrete', '${dwellingCounts['Concrete'] ?? 0}'),
               _row('Semi Concrete', '${dwellingCounts['Semi Concrete'] ?? 0}'),
-              _row('Wooden House', '${dwellingCounts['Wooden'] ?? 0}'),
-              _row('Nipa Bamboo House', '${dwellingCounts['Nipa'] ?? 0}'),
+              _row('Wooden', '${dwellingCounts['Wooden'] ?? 0}'),
+              _row('Nipa Bamboo House', '${dwellingCounts['Nipa Bamboo House'] ?? 0}'),
               _row('Barong-Barong', '${dwellingCounts['Barong-Barong'] ?? 0}'),
               _row('Makeshift', '${dwellingCounts['Makeshift'] ?? 0}'),
 
-              _row('Total number of households usinsg iodized salt', '$totalIodizedSalt'),
+              _row('Total number of households using iodized salt', '$totalIodizedSalt'),
             ],
           ),
         ],

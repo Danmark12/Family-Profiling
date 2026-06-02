@@ -5,7 +5,11 @@ import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import '../../models/household.dart';
 
 class ExportCsvService {
-  static Future<void> generate(List<Household> households) async {
+  static Future<void> generate({
+    required List<Household> households,
+    required String barangay,
+    required String zone,
+  }) async {
 
     // =========================
     // TOTAL COMPUTATION (same logic as PDF)
@@ -45,6 +49,7 @@ class ExportCsvService {
     int totalSS = 0, totalST = 0;
 
     Map<String, int> toiletCounts = {};
+    Map<String, int> sharedToiletCounts = {};
     Map<String, int> garbageCounts = {};
     Map<String, int> waterCounts = {};
     Map<String, int> foodCounts = {};
@@ -55,16 +60,17 @@ class ExportCsvService {
       map[key] = (map[key] ?? 0) + 1;
     }
 
-void countMulti(Map<String, int> map, String? raw) {
-  if (raw == null || raw.isEmpty) return;
+    void countMulti(Map<String, int> map, String? raw) {
+      if (raw == null || raw.isEmpty) return;
 
-  final items = raw.split(",").map((e) => e.trim());
+      final items = raw.split(",").map((e) => e.trim());
 
-  for (final item in items) {
-    if (item.isEmpty) continue;
-    map[item] = (map[item] ?? 0) + 1;
-  }
-}
+      for (final item in items) {
+        if (item.isEmpty) continue;
+        map[item] = (map[item] ?? 0) + 1;
+      }
+    }
+
     for (var h in households) {
       int members = (h.male ?? 0) + (h.female ?? 0);
 
@@ -113,10 +119,11 @@ void countMulti(Map<String, int> map, String? raw) {
       totalST += h.stunted ?? 0;
 
       count(toiletCounts, h.toilet);
-countMulti(garbageCounts, h.garbage);
+      countMulti(garbageCounts, h.garbage);
       count(waterCounts, h.water);
-countMulti(foodCounts, h.food);
+      countMulti(foodCounts, h.food);
       count(dwellingCounts, h.dwellingType);
+      count(sharedToiletCounts, h.shared == 1 ? "Shared" : "Not Shared");
     }
 
     // =========================
@@ -125,7 +132,7 @@ countMulti(foodCounts, h.food);
     List<List<dynamic>> rows = [];
 
     rows.add(["Family Profile", ""]);
-    rows.add(["Barangay", households.isNotEmpty ? households.first.barangay ?? '' : '']);
+    rows.add(["Barangay", barangay]);
     rows.add(["Indicator", "Number"]);
 
     rows.add(["Total households", totalHouseholds]);
@@ -133,8 +140,9 @@ countMulti(foodCounts, h.food);
     rows.add(["Male", totalMale]);
     rows.add(["Female", totalFemale]);
     rows.add(["Total number of family", totalFamilies]);
-    rows.add(["Total number of HHs less than 5 members", totalHHMore5]);
-    rows.add(["Total number of immunized children", totalFullyImmunized]);
+    rows.add(["Total number of HHs less than 5 members", totalHHLess5]);
+    rows.add(["Total number of HHs more than 5 members", totalHHMore5]);
+    rows.add(["Total number of fully immunized children", totalFullyImmunized]);
     rows.add(["Total number of 4Ps", totalFourPs]);
     rows.add(["Total number of IPs", totalIndigenous]);
 
@@ -150,17 +158,17 @@ countMulti(foodCounts, h.food);
     rows.add(["Total number of PWD", totalPWD]);
 
     rows.add(["Total number of women who are:", ""]);
-    rows.add(["Pregnant 19 bellow", totalPreg19]);
+    rows.add(["Pregnant 19 below", totalPreg19]);
     rows.add(["Pregnant 20 above", totalPreg20]);
     rows.add(["Lactating", totalLactating]);
 
-    rows.add(["IYCF", ""]);
+    rows.add(["Infant and young child feeding (IYCF):", ""]);
     rows.add(["Total number of 0-5 months exclusively breastfed", totalExclusive]);
     rows.add(["Total number of 0 - 5 months mixed fed", totalMixed]);
     rows.add(["Total number of 0 - 5 bottle fed", totalBottleFed]);
     rows.add(["Total number of 6-12 given complementary fed", totalComplementary]);
 
-    rows.add(["Total number of children who are:", ""]);
+    rows.add(["Total number of preschool children who are:", ""]);
     rows.add(["Severely underweight", totalSU]);
     rows.add(["Underweight", totalUW]);
     rows.add(["Normal", totalNW]);
@@ -171,44 +179,53 @@ countMulti(foodCounts, h.food);
     rows.add(["Severely stunted", totalSS]);
     rows.add(["Stunted", totalST]);
 
-    rows.add(["Households, by type of toilet disposal:", ""]);
-    rows.add(["Water sealed", toiletCounts['Water Sealed'] ?? 0]);
-    rows.add(["Antipolo", toiletCounts['Antipolo'] ?? 0]);
-    rows.add(["Open pit", toiletCounts['Open Pit'] ?? 0]);
-    rows.add(["Shared", toiletCounts['Shared'] ?? 0]);
-    rows.add(["No toilet", toiletCounts['No Toilet'] ?? 0]);
+    // TOILET DISPOSAL SECTION
+    rows.add(["Households, by type of toilet facility:", ""]);
+    rows.add(["Pour/flush type with septic tank", toiletCounts['Pour/flush type with septic tank'] ?? 0]);
+    rows.add(["Ventilated Pit (VIP) Latrine", toiletCounts['Ventilated Pit (VIP) Lactrine'] ?? 0]);
+    rows.add(["Water sealed toilet w/o septic tank", toiletCounts['Water sealed toilet w/o septic tank'] ?? 0]);
+    rows.add(["Over hung Latrine", toiletCounts['Over hung Latrine'] ?? 0]);
+    rows.add(["Open Pit Latrine", toiletCounts['Open Pit Latrine'] ?? 0]);
+    rows.add(["Without Toilet", toiletCounts['Without Toilet'] ?? 0]);
 
-    rows.add(["Households, by type of garbage disposal:", ""]);
-    rows.add(["City Garbage collector", garbageCounts['City Garbage Collector'] ?? 0]);
-    rows.add(["Barangay Garbage collector", garbageCounts['Barangay Grabage Collector'] ?? 0]);
-    rows.add(["Compost pit", garbageCounts['Compost Pit'] ?? 0]);
-    rows.add(["Burning", garbageCounts['Burning'] ?? 0]);
-    rows.add(["Dumping", garbageCounts['Dumping'] ?? 0]);
+    // SHARED TOILET SECTION
+    rows.add(["Shared Toilet Status:", ""]);
+    rows.add(["Shared Toilet", sharedToiletCounts['Shared'] ?? 0]);
+    rows.add(["Not Shared Toilet", sharedToiletCounts['Not Shared'] ?? 0]);
 
-    rows.add(["Households, by source of drinking water:", ""]);
-    rows.add(["Pipe water", waterCounts['Pipe Water'] ?? 0]);
-    rows.add(["Deep well", waterCounts['Deep Well'] ?? 0]);
-    rows.add(["Purified", waterCounts['Purified'] ?? 0]);
-    rows.add(["Shallow well", waterCounts['Shallow Well'] ?? 0]);
-    rows.add(["Artesian", waterCounts['Artesian'] ?? 0]);
-    rows.add(["Spring", waterCounts['Spring'] ?? 0]);
+    // WASTE MANAGEMENT SECTION
+    rows.add(["Households, by type of waste management:", ""]);
+    rows.add(["Waste Segregation", garbageCounts['Waste Segregation'] ?? 0]);
+    rows.add(["Backyard Composting", garbageCounts['Backyard Composting'] ?? 0]);
+    rows.add(["Recycling/Reuse", garbageCounts['Recycling Reuse'] ?? 0]);
+    rows.add(["Collected by City/Municipal Collection", garbageCounts['Collected by City/Municipal Collection and Disposal System'] ?? 0]);
+    rows.add(["Burning/Burying", garbageCounts['(Burning/Burying)(within hosuehold; not satisfactory method of disposal)'] ?? 0]);
 
+    // WATER SOURCE SECTION
+    rows.add(["Households, by type of water supply:", ""]);
+    rows.add(["Level I (point source)", waterCounts['Level I (point source)'] ?? 0]);
+    rows.add(["Level II (communal faucet)", waterCounts['Level II (communal facet)'] ?? 0]);
+    rows.add(["Level III (individual connection)", waterCounts['Level III (individual connection)'] ?? 0]);
+    rows.add(["Others, specify (doubtful sources)", waterCounts['Others, specify (for doubtful sources, e.g. open dug well, etc.)'] ?? 0]);
+
+    // FOOD PRODUCTION SECTION
     rows.add(["Households, by type of food production activity:", ""]);
-    rows.add(["Vegetable garden", foodCounts['Vegetable Garden'] ?? 0]);
+    rows.add(["Vegetable Garden", foodCounts['Vegetable Garden'] ?? 0]);
     rows.add(["Poultry", foodCounts['Poultry'] ?? 0]);
     rows.add(["Livestock", foodCounts['Livestock'] ?? 0]);
     rows.add(["Fishpond", foodCounts['Fishpond'] ?? 0]);
-    rows.add(["No garden", foodCounts['No Garden'] ?? 0]);
+    rows.add(["No Garden", foodCounts['No Garden'] ?? 0]);
 
+    // DWELLING TYPE SECTION
     rows.add(["Households, according to type of dwelling unit:", ""]);
     rows.add(["Concrete", dwellingCounts['Concrete'] ?? 0]);
-    rows.add(["Semi concrete", dwellingCounts['Semi Concrete'] ?? 0]);
+    rows.add(["Semi Concrete", dwellingCounts['Semi Concrete'] ?? 0]);
     rows.add(["Wooden", dwellingCounts['Wooden'] ?? 0]);
-    rows.add(["Nipa", dwellingCounts['Nipa'] ?? 0]);
-    rows.add(["Barong-barong", dwellingCounts['Barong'] ?? 0]);
+    rows.add(["Nipa Bamboo House", dwellingCounts['Nipa Bamboo House'] ?? 0]);
+    rows.add(["Barong-Barong", dwellingCounts['Barong-Barong'] ?? 0]);
     rows.add(["Makeshift", dwellingCounts['Makeshift'] ?? 0]);
 
-    rows.add(["Total number of households usinsg iodized salt", totalIodizedSalt]);
+    rows.add(["Total number of households using iodized salt", totalIodizedSalt]);
 
     // =========================
     // EXPORT FILE
@@ -217,8 +234,9 @@ countMulti(foodCounts, h.food);
 
     final dir = await getTemporaryDirectory();
 
+    final zoneText = zone == "All" ? "AllZones" : "Zone$zone";
     final file = File(
-      "${dir.path}/Family_Profile_${DateTime.now().millisecondsSinceEpoch}.csv",
+      "${dir.path}/Family_Profile_${barangay}_${zoneText}_${DateTime.now().millisecondsSinceEpoch}.csv",
     );
 
     await file.writeAsString(csvData);
@@ -226,7 +244,7 @@ countMulti(foodCounts, h.food);
     await FlutterFileDialog.saveFile(
       params: SaveFileDialogParams(
         sourceFilePath: file.path,
-        fileName: "Family_Profile.csv",
+        fileName: "Family_Profile_${barangay}_${zoneText}.csv",
       ),
     );
   }

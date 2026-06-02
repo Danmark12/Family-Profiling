@@ -289,10 +289,8 @@ await ExportBarangayCSV.generate(
       "Total",
       "Families",
       "Fully Immunized",
-
       "4Ps",
       "IP",
-
       "0-5",
       "6-11",
       "12-23",
@@ -324,6 +322,7 @@ await ExportBarangayCSV.generate(
       "St",
 
       "Toilet",
+      "Not Shared", 
       "Garbage",
       "Water",
       "Food",
@@ -418,6 +417,7 @@ await ExportBarangayCSV.generate(
 
 
         _cell(h.toilet ?? "-"),
+        _cell(_yesNo(h.shared)),
         _cell(h.garbage ?? "-"),
         _cell(h.water ?? "-"),
         _cell(h.food ?? "-"),

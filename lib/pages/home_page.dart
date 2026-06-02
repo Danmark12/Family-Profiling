@@ -314,7 +314,7 @@ class _HomePageState extends State<HomePage> {
                         
                         _reportItem(
                           icon: Icons.table_chart_outlined,
-                          title: "Barangay Household Table",
+                          title: "Household details",
                           subtitle: "View detailed household records",
                           onTap: () {
                             Navigator.push(

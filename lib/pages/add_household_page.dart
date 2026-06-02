@@ -31,6 +31,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
   bool iodizedSalt = false;
   bool noFather = false;
   bool noMother = false;
+  bool shared = false;
 
   // Controllers
   final zone = TextEditingController();
@@ -441,13 +442,20 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
 
-            _drop("Toilet Type", toilet,
-                ["Water Sealed", "Antipolo", "Open Pit", "Shared", "No Toilet"],
-                (v) => setState(() => toilet = v),
-                keyName: "toilet", required: true),
+              _drop("Toilet Type Facility", toilet,
+                  ["Pour/flush type with septic tank", "Ventilated Pit (VIP) Lactrine", "Water sealed toilet w/o septic tank", "Over hung Latrine", "Open Pit Latrine", "Without Toilet"],
+                  (v) => setState(() => toilet = v),
+                  keyName: "toilet", required: true),
 
-            _drop("Drinking Water Source", water,
-                ["Pipe Water", "Deep Well", "Purified", "Shallow Well", "Artesian", "Spring"],
+// ✅ ADD THIS CHECKBOX BELOW
+CheckboxListTile(
+  value: shared,
+  onChanged: (v) => setState(() => shared = v ?? false),
+  title: const Text("Not Shared Toilet"),
+),
+
+            _drop("Type of Water Supply", water,
+                ["Level I (point source)", "Level II (communal facet)", "Level III (individual connection)", "Others, specify (for doubtful sources, e.g. open dug well, etc.)"],
                 (v) => setState(() => water = v),
                 keyName: "water", required: true),
 
@@ -457,9 +465,9 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
                 keyName: "dwelling_type", required: true),
 
             _multiSelectDrop(
-              "Garbage Disposal",
+              "Waste Management",
               garbage,
-              ["City Garbage Collector", "Barangay Garbage Collector", "Compost Pit", "Burning", "Dumping"],
+              ["Waste Segregation", "Backyard Composting", "Recycling Reuse", "Collected by City/Municipal Collection and Disposal System", "(Burning/Burying)(within hosuehold; not satisfactory method of disposal)"],
               (v) => setState(() => garbage = v),
               keyName: "garbage", required: true,
             ),
@@ -560,6 +568,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
                       "severelyStunted": _parseInt(ss),
                       "stunted": _parseInt(st),
                       "toilet": toilet,
+                      "shared": shared ? 1 : 0,  
                       "garbage": garbage.join(", "),
                       "water": water,
                       "food": food.join(", "),
@@ -645,7 +654,7 @@ class _AddHouseholdPageState extends State<AddHouseholdPage> {
 
     return Padding(
       key: _fieldKeys[keyName],
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 10), 
       child: TextField(
         controller: controller,
         readOnly: disabled,

@@ -19,11 +19,11 @@ class DBHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-return await openDatabase(
-  path,
-  version: 1,
-  onCreate: _createDB,
-);
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: _createDB,
+    );
   }
 
   // ---------------- ONCREATE ----------------
@@ -85,6 +85,7 @@ CREATE TABLE households(
   severelyStunted INTEGER DEFAULT 0,
   stunted INTEGER DEFAULT 0,
   toilet TEXT,
+  shared INTEGER DEFAULT 0,
   garbage TEXT,
   water TEXT,
   food TEXT,
@@ -134,6 +135,26 @@ CREATE TABLE households(
   Future<int> updateUser(int id, Map<String, dynamic> data) async {
     final db = await database;
     return await db.update('users', data, where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ✅ DELETE USER METHOD - ADD THIS
+  Future<void> deleteUser(int userId) async {
+    final db = await database;
+    // First delete all households linked to this user
+    await db.delete('households', where: 'userId = ?', whereArgs: [userId]);
+    // Then delete the user
+    await db.delete('users', where: 'id = ?', whereArgs: [userId]);
+  }
+
+  // ✅ VERIFY PASSWORD METHOD - ADD THIS (OPTIONAL)
+  Future<bool> verifyUserPassword(int userId, String password) async {
+    final db = await database;
+    final res = await db.query(
+      'users',
+      where: 'id = ? AND password = ?',
+      whereArgs: [userId, password],
+    );
+    return res.isNotEmpty;
   }
 
   // ---------------- HOUSEHOLDS FUNCTIONS ----------------

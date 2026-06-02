@@ -110,7 +110,7 @@ required bool sortAsc,
                   pw.SizedBox(), pw.SizedBox(), pw.SizedBox(), pw.SizedBox(),
 
                   _groupCell("Facilities"),
-                  pw.SizedBox(), pw.SizedBox(), pw.SizedBox(), pw.SizedBox(),
+                  pw.SizedBox(), pw.SizedBox(), pw.SizedBox(), pw.SizedBox(),pw.SizedBox(),
 
                   _groupCell(""),
                 ],
@@ -137,7 +137,7 @@ required bool sortAsc,
 
                   "PWD","SUW","UW","N","SW","W","OW","O","SS","S",
 
-                  "T","G","W","F","D",
+                  "T","NS","G","W","F","D",
 
                   "St",
                 ].map((text) => _headerCell(text)).toList(),
@@ -199,6 +199,7 @@ required bool sortAsc,
                     "${h.stunted ?? 0}",
 
                     h.toilet ?? "",
+                    _yesNo(h.shared), 
                     h.garbage ?? "",
                     h.water ?? "",
                     h.food ?? "",
@@ -297,35 +298,39 @@ required bool sortAsc,
                 "S = Stunted",
               ])),
 
-              pw.Expanded(child: _groupText("TOILET TYPE", [
-                "Water Sealed",
-                "Antipolo (Unsanitary Toilet)",
-                "Open Pit",
-                "Shared",
-                "No Toilet",
-              ])),
+pw.Expanded(child: _groupText("TOILET TYPE Facility", [
+  "Pour/flush type with septic tank",
+  "Ventilated Pit (VIP) Latrine",
+  "Water sealed toilet w/o septic tank",
+  "Over hung Latrine",
+  "Open Pit Latrine",
+  "Without Toilet",
+])),
 
-              pw.Expanded(child: _groupText("GARBAGE DISPOSAL", [
-                "City Garbage Collector",
-                "Barangay Garbage Collector",
-                "Own Compost Pit",
-                "Burning",
-                "Dumping",
-              ])),
+pw.Expanded(child: _groupText("NOT SHARED TOILET", [
+  // "Shared = Yes (1)",
+  // "Not Shared = No (0)",
+])),
 
-              pw.Expanded(child: _groupText("WATER & FOOD", [
-                "Pipe Water (Faucet)",
-                "Deep Well with other source",
-                "Purified Water",
-                "Open Shallow Dug Well",
-                "Artesian Well",
-                "Spring",
-                "Vegetable Garden",
-                "Poultry",
-                "Livestock",
-                "Fishpond",
-                "No Garden",
-              ])),
+pw.Expanded(child: _groupText("WASTE MANAGEMENT", [
+  "Waste Segregation",
+  "Backyard Composting",
+  "Recycling/Reuse",
+  "Collected by City/Municipal Collection",
+  "Burning/Burying",
+])),
+
+pw.Expanded(child: _groupText("WATER SUPPLY & FOOD", [
+  "Level I (point source)",
+  "Level II (communal faucet)",
+  "Level III (individual connection)",
+  "Others, specify (doubtful sources)",
+  "Vegetable Garden",
+  "Poultry",
+  "Livestock",
+  "Fishpond",
+  "No Garden",
+])),
 
               pw.Expanded(child: _groupText("DWELLING & OTHER", [
                 "Semi Concrete",

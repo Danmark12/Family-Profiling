@@ -32,6 +32,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
   bool iodizedSalt = false;
   bool noFather = false;
   bool noMother = false;
+  bool shared = false;
 
   // Controllers
   late final zone = TextEditingController();
@@ -264,6 +265,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
     fourPs = hh.fourPs == 1;
     indigenousPeople = hh.indigenousPeople == 1;
     iodizedSalt = hh.iodizedSalt == 1;
+      shared = hh.shared == 1;
     noFather = (hh.fatherOccupation == null || hh.fatherOccupation == "None") && (hh.fatherName == null || hh.fatherName!.isEmpty);
     noMother = (hh.motherOccupation == null || hh.motherOccupation == "None") && (hh.motherName == null || hh.motherName!.isEmpty);
 
@@ -493,34 +495,35 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
             ),
-            _drop("Toilet Type", toilet,
-                ["Water Sealed", "Antipolo", "Open Pit", "Shared", "No Toilet"],
-                (v) => setState(() => toilet = v),
-                keyName: "toilet", required: true),
+           _drop("Toilet Type Facility", toilet,
+    ["Pour/flush type with septic tank", "Ventilated Pit (VIP) Lactrine", "Water sealed toilet w/o septic tank", "Over hung Latrine", "Open Pit Latrine", "Without Toilet"],
+    (v) => setState(() => toilet = v),
+    keyName: "toilet", required: true),
 
-            _drop("Drinking Water Source", water,
-                ["Pipe Water", "Deep Well", "Purified", "Shallow Well", "Artesian", "Spring"],
-                (v) => setState(() => water = v),
-                keyName: "water", required: true),
+// ✅ CHECKBOX
+CheckboxListTile(
+  value: shared,
+  onChanged: (v) => setState(() => shared = v ?? false),
+  title: const Text("Not Shared Toilet"),
+),
 
-            _drop("Dwelling Type", dwellingType,
-                ["Concrete", "Semi Concrete", "Wooden", "Nipa Bamboo House", "Barong-Barong", "Makeshift"],
-                (v) => setState(() => dwellingType = v),
-                keyName: "dwelling_type", required: true),
+_drop("Type of Water Supply", water,
+    ["Level I (point source)", "Level II (communal facet)", "Level III (individual connection)", "Others, specify (for doubtful sources, e.g. open dug well, etc.)"],
+    (v) => setState(() => water = v),
+    keyName: "water", required: true),
 
-            _multiSelectDrop(
-              "Garbage Disposal",
-              garbage,
-              [
-                "City Garbage Collector",
-                "Barangay Garbage Collector",
-                "Compost Pit",
-                "Burning",
-                "Dumping"
-              ],
-              (v) => setState(() => garbage = v),
-              keyName: "garbage", required: true,
-            ),
+_drop("Dwelling Type", dwellingType,
+    ["Concrete", "Semi Concrete", "Wooden", "Nipa Bamboo House", "Barong-Barong", "Makeshift"],
+    (v) => setState(() => dwellingType = v),
+    keyName: "dwelling_type", required: true),
+
+_multiSelectDrop(
+  "Waste Management",
+  garbage,
+  ["Waste Segregation", "Backyard Composting", "Recycling Reuse", "Collected by City/Municipal Collection and Disposal System", "Burning/Burying (within household; not satisfactory method of disposal)"],
+  (v) => setState(() => garbage = v),
+  keyName: "garbage", required: true,
+),
 
             _multiSelectDrop(
               "Food Production",
@@ -617,6 +620,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
                           "severelyStunted": _num(ss),
                           "stunted": _num(st),
                           "toilet": toilet,
+                          "shared": shared ? 1 : 0,
                           "water": water,
                           "dwellingType": dwellingType,
                           "garbage": garbage.join(", "),
@@ -629,7 +633,7 @@ class _EditHouseholdPageState extends State<EditHouseholdPage> {
                         const SnackBar(content: Text("Updated Successfully")),
                       );
 
-                      Navigator.pop(context);
+                      Navigator.pop(context, true);
                     },
                     child: const Text(
                       "UPDATE",

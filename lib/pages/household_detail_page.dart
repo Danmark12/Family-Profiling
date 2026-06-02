@@ -1,10 +1,25 @@
 import 'package:flutter/material.dart';
+import '../db/config.dart';
 import '../models/household.dart';
+import 'edit_household_page.dart';
 
-class HouseholdDetailPage extends StatelessWidget {
+class HouseholdDetailPage extends StatefulWidget {
   final Household hh;
 
   const HouseholdDetailPage({super.key, required this.hh});
+
+  @override
+  State<HouseholdDetailPage> createState() => _HouseholdDetailPageState();
+}
+
+class _HouseholdDetailPageState extends State<HouseholdDetailPage> {
+  late Household household;
+
+  @override
+  void initState() {
+    super.initState();
+    household = widget.hh;
+  }
 
   // ================= ROW BUILDER =================
   Widget buildRow(String label, String value) {
@@ -54,22 +69,44 @@ class HouseholdDetailPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // ================= APP BAR (KEEP HOUSEHOLD # HERE ONLY) =================
+      // ================= APP BAR =================
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.black),
         title: Text(
-          "Household${hh.householdNo}",
+          "Household ${household.householdNo}",
           style: const TextStyle(color: Colors.black),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditHouseholdPage(household: household),
+                ),
+              );
+              // Refresh if edit was successful
+              if (result == true) {
+                final updated = await DBHelper.instance.getHousehold(household.id!);
+                if (updated != null) {
+                  setState(() {
+                    household = Household.fromMap(updated);
+                  });
+                }
+              }
+            },
+          ),
+        ],
       ),
 
       body: Column(
         children: [
 
-          // ================= CLEAN HEADER (NO PROFILE TEXT, NO DUPLICATE ID) =================
+          // ================= HEADER =================
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(14),
@@ -82,11 +119,11 @@ class HouseholdDetailPage extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  "Zone/Purok: ${hh.zone ?? "-"}",
+                  "Zone/Purok: ${household.zone ?? "-"}",
                   style: const TextStyle(fontSize: 13),
                 ),
                 Text(
-                  "Barangay: ${hh.barangay ?? "-"}",
+                  "Barangay: ${household.barangay ?? "-"}",
                   style: const TextStyle(fontSize: 13),
                 ),
               ],
@@ -99,71 +136,71 @@ class HouseholdDetailPage extends StatelessWidget {
               children: [
 
                 // PROGRAMS
-                buildRow("4Ps", boolText(hh.fourPs)),
-                buildRow("Indigenous People", boolText(hh.indigenousPeople)),
+                buildRow("4Ps", boolText(household.fourPs)),
+                buildRow("Indigenous People", boolText(household.indigenousPeople)),
 
                 // FATHER
-                buildRow("Father Name", hh.fatherName ?? "-"),
-                buildRow("Father Occupation", hh.fatherOccupation ?? "None"),
-                buildRow("Father Education", hh.fatherEducation ?? "None"),
+                buildRow("Father Name", household.fatherName ?? "-"),
+                buildRow("Father Occupation", household.fatherOccupation ?? "None"),
+                buildRow("Father Education", household.fatherEducation ?? "None"),
 
                 // MOTHER
-                buildRow("Mother Name", hh.motherName ?? "-"),
-                buildRow("Mother Occupation", hh.motherOccupation ?? "None"),
-                buildRow("Mother Education", hh.motherEducation ?? "None"),
+                buildRow("Mother Name", household.motherName ?? "-"),
+                buildRow("Mother Occupation", household.motherOccupation ?? "None"),
+                buildRow("Mother Education", household.motherEducation ?? "None"),
 
                 // HOUSEHOLD
- buildRow("Household Members:", ""),               
-                buildRow("Male", "${hh.male ?? 0}"),
-                buildRow("Female", "${hh.female ?? 0}"),
-                buildRow("No. of Families", "${hh.families ?? 0}"),
-                buildRow("Fully Immunized Child", "${hh.fullyImmunized ?? 0}"),
+                buildRow("Household Members:", ""),               
+                buildRow("Male", "${household.male ?? 0}"),
+                buildRow("Female", "${household.female ?? 0}"),
+                buildRow("No. of Families", "${household.families ?? 0}"),
+                buildRow("Fully Immunized Child", "${household.fullyImmunized ?? 0}"),
 
-                                // AGE GROUP
+                // AGE GROUP
                 buildRow("Age Group:", ""),
-                buildRow("0-5 months old", "${hh.infant0to5 ?? 0}"),
-                buildRow("6–11 months old", "${hh.infant6to11 ?? 0}"),
-                buildRow("12–23 months old", "${hh.child12to23 ?? 0}"),
-                buildRow("24–59 months old", "${hh.child24to59 ?? 0}"),
-                buildRow("5–9 years old", "${hh.age5to9 ?? 0}"),
-                buildRow("10–19 years old", "${hh.age10to19 ?? 0}"),
-                buildRow("20–59 years old", "${hh.age20to59 ?? 0}"),
-                buildRow("60+ years old", "${hh.age60above ?? 0}"),
-                buildRow("PWD", "${hh.pwd ?? 0}"),
+                buildRow("0-5 months old", "${household.infant0to5 ?? 0}"),
+                buildRow("6–11 months old", "${household.infant6to11 ?? 0}"),
+                buildRow("12–23 months old", "${household.child12to23 ?? 0}"),
+                buildRow("24–59 months old", "${household.child24to59 ?? 0}"),
+                buildRow("5–9 years old", "${household.age5to9 ?? 0}"),
+                buildRow("10–19 years old", "${household.age10to19 ?? 0}"),
+                buildRow("20–59 years old", "${household.age20to59 ?? 0}"),
+                buildRow("60+ years old", "${household.age60above ?? 0}"),
+                buildRow("PWD", "${household.pwd ?? 0}"),
 
-buildRow("Women Status:", ""),
-                buildRow("Pregnant 19 below", "${hh.preg19 ?? 0}"),
-buildRow("Pregnant 20 above", "${hh.preg20 ?? 0}"),
-buildRow("Lactating", "${hh.lactating ?? 0}"),
+                buildRow("Women Status:", ""),
+                buildRow("Pregnant 19 below", "${household.preg19 ?? 0}"),
+                buildRow("Pregnant 20 above", "${household.preg20 ?? 0}"),
+                buildRow("Lactating", "${household.lactating ?? 0}"),
 
                 // IYCF
                 buildRow("IYCF:", ""),
-buildRow("0-5 Months Exclusive Breastfeeding", "${hh.exclusive ?? 0}"),
-buildRow("0-5 Months Mixed Feeding", "${hh.mixed ?? 0}"),
-buildRow("0-5 Months Bottle Feeding", "${hh.bottleFed ?? 0}"),
-buildRow("6-12 Months Complementary Feeding", "${hh.complementary ?? 0}"),
-
+                buildRow("0-5 Months Exclusive Breastfeeding", "${household.exclusive ?? 0}"),
+                buildRow("0-5 Months Mixed Feeding", "${household.mixed ?? 0}"),
+                buildRow("0-5 Months Bottle Feeding", "${household.bottleFed ?? 0}"),
+                buildRow("6-12 Months Complementary Feeding", "${household.complementary ?? 0}"),
 
                 buildRow("Preschool Children Nutritional Status:", ""),
-                buildRow("Severely Underweight", "${hh.severelyUnderweight ?? 0}"),
-buildRow("Underweight", "${hh.underweight ?? 0}"),
-buildRow("Normal", "${hh.normal ?? 0}"),
-buildRow("Severely Wasted", "${hh.severelyWasted ?? 0}"),
-buildRow("Wasted", "${hh.wasted ?? 0}"),
-buildRow("Overweight", "${hh.overweight ?? 0}"),
-buildRow("Obese", "${hh.obese ?? 0}"),
-buildRow("Severely Stunted", "${hh.severelyStunted ?? 0}"),
-buildRow("Stunted", "${hh.stunted ?? 0}"),
+                buildRow("Severely Underweight", "${household.severelyUnderweight ?? 0}"),
+                buildRow("Underweight", "${household.underweight ?? 0}"),
+                buildRow("Normal", "${household.normal ?? 0}"),
+                buildRow("Severely Wasted", "${household.severelyWasted ?? 0}"),
+                buildRow("Wasted", "${household.wasted ?? 0}"),
+                buildRow("Overweight", "${household.overweight ?? 0}"),
+                buildRow("Obese", "${household.obese ?? 0}"),
+                buildRow("Severely Stunted", "${household.severelyStunted ?? 0}"),
+                buildRow("Stunted", "${household.stunted ?? 0}"),
 
                 // FACILITIES
                 buildRow("Facilities:", ""),
-                buildRow("Toilet Type", hh.toilet ?? "-"),
-                buildRow("Garbage Disposal", hh.garbage ?? "-"),
-                buildRow("Water Source", hh.water ?? "-"),
-                buildRow("Food Production", hh.food ?? "-"),
-                buildRow("Dwelling Type", hh.dwellingType ?? "-"),
+                buildRow("Toilet Type Facility", household.toilet ?? "-"),
+                buildRow("Not Shared Toilet", boolText(household.shared)),
+                buildRow("Waste Management", household.garbage ?? "-"),
+                buildRow("Type of Water Supply", household.water ?? "-"),
+                buildRow("Food Production", household.food ?? "-"),
+                buildRow("Dwelling Type", household.dwellingType ?? "-"),
 
-                buildRow("Iodized Salt", boolText(hh.iodizedSalt)),
+                buildRow("Iodized Salt", boolText(household.iodizedSalt)),
               ],
             ),
           ),

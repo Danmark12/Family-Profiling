@@ -56,6 +56,7 @@ class Household {
   final int? stunted;
 
   final String? toilet;
+  final int? shared;
   final String? garbage;
   final String? water;
   final String? food;
@@ -122,6 +123,7 @@ class Household {
     this.stunted,
 
     this.toilet,
+    this.shared,  
     this.garbage,
     this.water,
     this.food,
@@ -189,6 +191,7 @@ class Household {
       "stunted": stunted,
 
       "toilet": toilet,
+      "shared": shared,
       "garbage": garbage,
       "water": water,
       "food": food,
@@ -257,6 +260,7 @@ class Household {
       stunted: map['stunted'],
 
       toilet: map['toilet'],
+      shared: map['shared'],  
       garbage: map['garbage'],
       water: map['water'],
       food: map['food'],
