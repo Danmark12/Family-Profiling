@@ -1,4 +1,4 @@
-// lib/services/dashboard_service.dart (UPDATED with overweight & obese)
+// lib/services/dashboard_service.dart
 import '../db/config.dart';
 
 class DashboardService {
@@ -26,8 +26,8 @@ class DashboardService {
     int underweight = 0;
     int severelyStunted = 0;
     int stunted = 0;
-    int overweight = 0;      // ADDED
-    int obese = 0;           // ADDED
+    int overweight = 0;
+    int obese = 0;
     int normal = 0;
     
     // Age groups
@@ -37,9 +37,11 @@ class DashboardService {
     int age20to59 = 0;
     int age60plus = 0;
     
-    // Pregnancy
+    // Pregnancy & Lactating
     int pregnant = 0;
-    int teenPregnant = 0;
+    int teenPregnant = 0;      // 19 and below
+    int adultPregnant = 0;     // 20 and above
+    int lactating = 0;
     
     // Feeding
     int exclusive = 0;
@@ -53,7 +55,7 @@ class DashboardService {
     
     // Special groups
     int fourPs = 0;
-    int indigenous = 0;
+    int ips = 0;
     int pwd = 0;
     int iodizedSalt = 0;
     
@@ -75,8 +77,8 @@ class DashboardService {
       underweight += (h['underweight'] as int?) ?? 0;
       severelyStunted += (h['severelyStunted'] as int?) ?? 0;
       stunted += (h['stunted'] as int?) ?? 0;
-      overweight += (h['overweight'] as int?) ?? 0;      // ADDED
-      obese += (h['obese'] as int?) ?? 0;                // ADDED
+      overweight += (h['overweight'] as int?) ?? 0;
+      obese += (h['obese'] as int?) ?? 0;
       normal += (h['normal'] as int?) ?? 0;
       
       // Age groups
@@ -91,11 +93,15 @@ class DashboardService {
       age20to59 += (h['age20to59'] as int?) ?? 0;
       age60plus += (h['age60above'] as int?) ?? 0;
       
-      // Pregnancy
+      // Pregnancy & Lactating
       int preg19 = (h['preg19'] as int?) ?? 0;
       int preg20 = (h['preg20'] as int?) ?? 0;
+      int lactatingCount = (h['lactating'] as int?) ?? 0;
+      
       pregnant += preg19 + preg20;
       teenPregnant += preg19;
+      adultPregnant += preg20;
+      lactating += lactatingCount;
       
       // Feeding
       exclusive += (h['exclusive'] as int?) ?? 0;
@@ -110,7 +116,7 @@ class DashboardService {
       
       // Special groups
       fourPs += (h['fourPs'] as int?) ?? 0;
-      indigenous += (h['indigenousPeople'] as int?) ?? 0;
+      ips += (h['indigenousPeople'] as int?) ?? 0;
       pwd += (h['pwd'] as int?) ?? 0;
       iodizedSalt += (h['iodizedSalt'] as int?) ?? 0;
       
@@ -137,7 +143,10 @@ class DashboardService {
       malnourishedChildren: malnourishedChildren,
       pregnant: pregnant,
       teenPregnant: teenPregnant,
+      adultPregnant: adultPregnant,
+      lactating: lactating,
       fourPs: fourPs,
+      ips: ips,
       pwd: pwd,
       totalMale: totalMale,
       totalFemale: totalFemale,
@@ -147,8 +156,8 @@ class DashboardService {
       underweight: underweight,
       severelyStunted: severelyStunted,
       stunted: stunted,
-      overweight: overweight,        // ADDED
-      obese: obese,                  // ADDED
+      overweight: overweight,
+      obese: obese,
       normal: normal,
       age0to4: age0to4,
       age5to9: age5to9,
@@ -161,7 +170,6 @@ class DashboardService {
       complementary: complementary,
       fullyImmunized: fullyImmunized,
       totalChildren: totalChildren,
-      indigenous: indigenous,
       iodizedSalt: iodizedSalt,
       zoneCount: zoneCount,
       recentHouseholds: recentHouseholds,
@@ -175,7 +183,10 @@ class DashboardData {
   final int malnourishedChildren;
   final int pregnant;
   final int teenPregnant;
+  final int adultPregnant;
+  final int lactating;
   final int fourPs;
+  final int ips;
   final int pwd;
   final int totalMale;
   final int totalFemale;
@@ -185,8 +196,8 @@ class DashboardData {
   final int underweight;
   final int severelyStunted;
   final int stunted;
-  final int overweight;      // ADDED
-  final int obese;           // ADDED
+  final int overweight;
+  final int obese;
   final int normal;
   final int age0to4;
   final int age5to9;
@@ -199,7 +210,6 @@ class DashboardData {
   final int complementary;
   final int fullyImmunized;
   final int totalChildren;
-  final int indigenous;
   final int iodizedSalt;
   final Map<String, int> zoneCount;
   final List<Map<String, dynamic>> recentHouseholds;
@@ -210,7 +220,10 @@ class DashboardData {
     required this.malnourishedChildren,
     required this.pregnant,
     required this.teenPregnant,
+    required this.adultPregnant,
+    required this.lactating,
     required this.fourPs,
+    required this.ips,
     required this.pwd,
     required this.totalMale,
     required this.totalFemale,
@@ -220,8 +233,8 @@ class DashboardData {
     required this.underweight,
     required this.severelyStunted,
     required this.stunted,
-    required this.overweight,        // ADDED
-    required this.obese,             // ADDED
+    required this.overweight,
+    required this.obese,
     required this.normal,
     required this.age0to4,
     required this.age5to9,
@@ -234,7 +247,6 @@ class DashboardData {
     required this.complementary,
     required this.fullyImmunized,
     required this.totalChildren,
-    required this.indigenous,
     required this.iodizedSalt,
     required this.zoneCount,
     required this.recentHouseholds,

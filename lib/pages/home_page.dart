@@ -1,4 +1,4 @@
-// lib/pages/home_page.dart (UPDATED with overweight & obese)
+// lib/pages/home_page.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../db/config.dart';
@@ -152,20 +152,17 @@ class _HomePageState extends State<HomePage> {
                                 icon: Icons.health_and_safety,
                                 color: Colors.red.shade700,
                                 subtitle: _dashboardData!.totalChildrenUnder5 > 0
-                                    ? '${_dashboardData!.malnourishedPercentage}%'
+                                    ? '${_dashboardData!.malnourishedPercentage}% of under5'
                                     : null,
                               ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: KPICard(
-                                title: 'Pregnant',
-                                value: _dashboardData!.pregnant,
-                                icon: Icons.pregnant_woman,
-                                color: Colors.pink.shade700,
-                                subtitle: _dashboardData!.teenPregnant > 0
-                                    ? '${_dashboardData!.teenPregnant} teens'
-                                    : null,
+                                title: '4Ps',
+                                value: _dashboardData!.fourPs,
+                                icon: Icons.card_giftcard,
+                                color: Colors.orange.shade700,
                               ),
                             ),
                           ],
@@ -177,10 +174,10 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             Expanded(
                               child: KPICard(
-                                title: '4Ps',
-                                value: _dashboardData!.fourPs,
-                                icon: Icons.card_giftcard,
-                                color: Colors.orange.shade700,
+                                title: 'Indigenous People (IPs)',
+                                value: _dashboardData!.ips,
+                                icon: Icons.diversity_3,
+                                color: Colors.teal.shade700,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -194,18 +191,47 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 8),
+                        
+                        // ================= KPI ROW 4 =================
+                        Row(
+                          children: [
+                            Expanded(
+                              child: KPICard(
+                                title: 'Pregnant Women',
+                                value: _dashboardData!.pregnant,
+                                icon: Icons.pregnant_woman,
+                                color: Colors.pink.shade700,
+                                breakdown: {
+                                  '≤19': _dashboardData!.teenPregnant,
+                                  '20+': _dashboardData!.adultPregnant,
+                                },
+                                inlineBreakdown: true,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: KPICard(
+                                title: 'Lactating Women',
+                                value: _dashboardData!.lactating,
+                                icon: Icons.baby_changing_station,
+                                color: Colors.deepOrange.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
                         
                         const SizedBox(height: 16),
                         
-                        // ================= NUTRITION CHART (UPDATED with ALL indicators) =================
+                        // ================= NUTRITION CHART =================
                         NutritionBarChart(
                           severelyUnderweight: _dashboardData!.severelyUnderweight,
                           underweight: _dashboardData!.underweight,
                           normal: _dashboardData!.normal,
                           severelyWasted: _dashboardData!.severelyWasted,
                           wasted: _dashboardData!.wasted,
-                          overweight: _dashboardData!.overweight,      // ADDED
-                          obese: _dashboardData!.obese,                // ADDED
+                          overweight: _dashboardData!.overweight,
+                          obese: _dashboardData!.obese,
                           severelyStunted: _dashboardData!.severelyStunted,
                           stunted: _dashboardData!.stunted,
                         ),
